@@ -1,7 +1,8 @@
 // Toggle password visibility
-function togglePassword() {
-    const passwordInput = document.getElementById('contrasena');
-    const eyeIcon = document.querySelector('.eye-icon');
+function togglePassword(fieldId) {
+    const passwordInput = document.getElementById(fieldId || 'contrasena');
+    const button = passwordInput.parentElement.querySelector('.toggle-password');
+    const eyeIcon = button.querySelector('.eye-icon');
     
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
