@@ -55,3 +55,31 @@ Route::post('/perfil/cambiar-password', function () {
     // Lógica de cambio de contraseña pendiente
     return back()->with('success', 'Contraseña actualizada correctamente');
 })->name('perfil.cambiar-password');
+
+// Rutas de Pedidos
+Route::get('/pedidos', function () {
+    return view('pedidos');
+})->name('pedidos');
+
+Route::get('/pedido/{id}', function ($id) {
+    return view('pedido_detalle');
+})->name('pedido.detalle');
+
+Route::get('/checkout', function () {
+    return view('checkout');
+})->name('checkout');
+
+Route::post('/pedido/crear', function () {
+    // Lógica de creación de pedido pendiente
+    return redirect()->route('pedidos')->with('success', 'Pedido creado exitosamente');
+})->name('pedido.crear');
+
+Route::post('/pedido/{id}/cancelar', function ($id) {
+    // Lógica de cancelación de pedido pendiente
+    return redirect()->route('pedido.detalle', $id)->with('success', 'Pedido cancelado');
+})->name('pedido.cancelar');
+
+Route::get('/pedido/{id}/descargar', function ($id) {
+    // Lógica de descarga de PDF pendiente
+    return response()->download(public_path('pedido.pdf'));
+})->name('pedido.descargar');

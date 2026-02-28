@@ -19,8 +19,60 @@
             <h2>Carrito de Compras</h2>
             
             <div class="carrito-container">
-                <!-- Aquí irá el contenido del carrito -->
-                <p>Tu carrito está vacío</p>
+                <!-- Ejemplo de carrito con productos -->
+                <div class="card">
+                    <h3>Productos en el Carrito</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Precio</th>
+                                <th>Cantidad</th>
+                                <th>Subtotal</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Frenos</td>
+                                <td>$1,200.00</td>
+                                <td>2</td>
+                                <td>$2,400.00</td>
+                                <td>
+                                    <button class="btn-eliminar">Eliminar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Amortiguadores</td>
+                                <td>$2,300.00</td>
+                                <td>1</td>
+                                <td>$2,300.00</td>
+                                <td>
+                                    <button class="btn-eliminar">Eliminar</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3"><strong>Total:</strong></td>
+                                <td colspan="2"><strong>$4,700.00</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    
+                    <div class="carrito-actions">
+                        <a href="{{ route('catalogo') }}" class="btn-secondary">Continuar Comprando</a>
+                        <a href="{{ route('checkout') }}" class="btn-login">Proceder al Pago</a>
+                    </div>
+                </div>
+                
+                <!-- Mensaje si el carrito está vacío -->
+                <!-- 
+                <div class="card">
+                    <p>Tu carrito está vacío</p>
+                    <a href="{{ route('catalogo') }}" class="btn-login">Ir al Catálogo</a>
+                </div>
+                -->
             </div>
         </main>
     </div>

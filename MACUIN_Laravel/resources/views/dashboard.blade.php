@@ -28,10 +28,12 @@
                     </div>
                 </a>
 
-                <div class="card">
-                    <h3>Mis Pedidos</h3>
-                    <p>Consulta el estado de tus pedidos</p>
-                </div>
+                <a href="{{ route('pedidos') }}" class="card-link">
+                    <div class="card">
+                        <h3>Mis Pedidos</h3>
+                        <p>Consulta el estado de tus pedidos</p>
+                    </div>
+                </a>
                 
                 <a href="{{ route('perfil') }}" class="card-link">
                     <div class="card">
