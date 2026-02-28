@@ -1,23 +1,33 @@
-# Autopartes MACUIN - Sistema Web
+# Autopartes MACUIN - Sistema Web Flask (Cliente web 2 - Personal Interno)
 
-Sistema web desarrollado con Flask para la gestión de autopartes MACUIN.
+Sistema web desarrollado con Flask para la gestión de **personal interno** de Autopartes MACUIN.
+
+## [IMPORTANTE] IMPORTANTE - Cambio de Arquitectura
+
+Este proyecto ha sido reorganizado. Ahora maneja **únicamente el sistema para personal interno**.
+
+Las funcionalidades de **clientes externos** (catálogo, carrito, perfil, etc.) han sido migradas al proyecto Laravel ubicado en `../MACUIN_Laravel/`.
+
+### División de Responsabilidades:
+- **Flask (este proyecto)**: Personal interno, administración
+- **Laravel (MACUIN_Laravel)**: Clientes externos, catálogo, compras
 
 ## Estructura del Proyecto
 
 ```
 MACUIN_flask/
-├── app.py                  # Aplicación principal de Flask
-├── templates/              # Plantillas HTML
-│   ├── login.html         # Página de inicio de sesión
-│   ├── register.html      # Página de registro
-│   └── dashboard.html     # Panel de control
-├── static/                 # Archivos estáticos
+├── app.py                     # Aplicación principal de Flask (código comentado de clientes externos)
+├── templates/                 # Plantillas HTML
+│   └── login_personal.html   # [OK] Login para personal interno
+├── static/                    # Archivos estáticos
 │   ├── css/
-│   │   └── style.css      # Estilos CSS
-│   └── js/
-│       └── script.js      # JavaScript
-├── requirements.txt        # Dependencias de Python
-└── README.md              # Este archivo
+│   │   └── style.css         # Estilos CSS
+│   ├── js/
+│   │   └── script.js         # JavaScript con toggle de contraseña
+│   └── img/
+│       └── *.png             # Imágenes
+├── requirements.txt           # Dependencias de Python
+└── README.md                 # Este archivo
 ```
 
 ## Instalación
@@ -43,17 +53,35 @@ Para ejecutar la aplicación:
 python app.py
 ```
 
-La aplicación estará disponible en: http://localhost:5000
+La aplicación estará disponible en: http://localhost:5001
 
-## Características
+## Rutas Activas (Personal Interno)
 
-- ✅ Inicio de sesión de clientes
-- ✅ Registro de nuevos usuarios
-- ✅ Validación de contraseñas
-- ✅ Sistema de sesiones
-- ✅ Interfaz responsiva
-- ✅ Mensajes flash para feedback
-- ✅ Toggle de visibilidad de contraseña
+- `GET /` - Login de personal interno
+- `GET /login_personal_interno` - Login de personal interno
+
+## Rutas Comentadas (Migradas a Laravel)
+
+Las siguientes rutas han sido comentadas en `app.py` ya que ahora están en Laravel:
+- `/login` (clientes)
+- `/registro`
+- `/dashboard`
+- `/catalogo`
+- `/carrito`
+- `/perfil`
+- `/producto/<id>`
+- `/agregar_carrito/<id>`
+- `/eliminar_carrito/<id>`
+
+## Características Activas
+
+- [OK] Inicio de sesión de personal interno
+- [OK] Registro de nuevos usuarios
+- [OK] Validación de contraseñas
+- [OK] Sistema de sesiones
+- [OK] Interfaz responsiva
+- [OK] Mensajes flash para feedback
+- [OK] Toggle de visibilidad de contraseña
 
 ## Próximas Mejoras
 

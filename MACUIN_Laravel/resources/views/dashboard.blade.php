@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autopartes MACUIN - Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-c
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+</head>
 <body>
     <div class="dashboard-container">
         <header class="dashboard-header">
             <h1>Autopartes MACUIN</h1>
             <div class="user-info">
                 <span>Bienvenido, Usuario</span>
-                <a href="{{ url_for('login') }}" class="btn-logout">Cerrar sesión</a>
+                <a href="{{ route('login') }}" class="btn-logout">Cerrar sesión</a>
             </div>
         </header>
         
@@ -21,24 +21,24 @@ c
             <p>Has iniciado sesión exitosamente en el sistema de Autopartes MACUIN.</p>
             
             <div class="dashboard-cards">
-              <a href="{{ url_for('catalogo') }}" class="card-link">
-                  <div class="card">
-                <h3>Catálogo</h3>
-                  <p>Explora nuestro catálogo de autopartes</p>
-               </div>
-                   </a>
+                <a href="{{ route('catalogo') }}" class="card-link">
+                    <div class="card">
+                        <h3>Catálogo</h3>
+                        <p>Explora nuestro catálogo de autopartes</p>
+                    </div>
+                </a>
 
                 <div class="card">
                     <h3>Mis Pedidos</h3>
                     <p>Consulta el estado de tus pedidos</p>
                 </div>
                 
-
-                <div class="card">
-                    <a href="{{ url_for('perfil') }}" class="card-link">
-                    <h3>Mi Perfil</h3>
-                    <p>Actualiza tu información personal</p>
-                </div>
+                <a href="{{ route('perfil') }}" class="card-link">
+                    <div class="card">
+                        <h3>Mi Perfil</h3>
+                        <p>Actualiza tu información personal</p>
+                    </div>
+                </a>
             </div>
         </main>
     </div>
