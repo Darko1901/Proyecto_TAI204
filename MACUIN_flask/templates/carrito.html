@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Carrito de compras</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Estilos generales estilo Amazon */
+        body {
+            font-family: "Amazon Ember", Arial, sans-serif;
+            background-color: #eaeded; /* Gris claro característico */
+            color: #0f1111;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .contenedor-principal {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .carrito-wrapper {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start; /* Evita que los contenedores se estiren igual */
+        }
+
+        /* Contenedor blanco izquierdo (Lista) */
+        .carrito-lista-container {
+            flex: 3;
+            background-color: white;
+            padding: 20px;
+            border-radius: 4px;
+        }
+
+        .carrito-lista-container h2 {
+            margin-top: 0;
+            font-size: 28px;
+            font-weight: 400;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 0;
+        }
+
+        .precio-header {
+            text-align: right;
+            color: #565959;
+            font-size: 14px;
+            margin-top: -30px;
+            margin-bottom: 10px;
+        }
+
+        /* Cada producto */
+        .carrito-item {
+            display: flex;
+            padding: 20px 0;
+            border-bottom: 1px solid #ddd;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .carrito-item:last-child {
+            border-bottom: none;
+        }
+
+        .carrito-item img {
+            width: 180px;
+            height: 180px;
+            object-fit: contain;
+        }
+
+        .carrito-info {
+            flex-grow: 1;
+        }
+
+        /* Título tipo enlace azul */
+        .carrito-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+            font-weight: 500;
+            color: #007185;
+            cursor: pointer;
+        }
+
+        .carrito-info h3:hover {
+            color: #c45500;
+            text-decoration: underline;
+        }
+
+        .stock-verde {
+            color: #007600;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+
+        .precio-item {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+            min-width: 100px;
+        }
+
+        /* Fila de acciones (Cantidad y Eliminar) */
+        .acciones-fila {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        /* Control de cantidad tipo píldora */
+        .cantidad-control form {
+            display: flex;
+            align-items: center;
+            background: #f0f2f2;
+            border: 1px solid #d5d9d9;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(15,17,17,.15);
+            overflow: hidden;
+        }
+
+        .cantidad-control button {
+            background: #f0f2f2;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .cantidad-control button:hover {
+            background: #e3e6e6;
+        }
+
+        .cantidad-valor {
+            background: white;
+            padding: 6px 14px;
+            border-left: 1px solid #d5d9d9;
+            border-right: 1px solid #d5d9d9;
+            font-size: 14px;
+        }
+
+        /* Separador vertical */
+        .separador {
+            color: #ddd;
+        }
+
+        /* Botón eliminar como enlace de texto */
+        .btn-link {
+            background: none;
+            border: none;
+            color: #007185;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 0;
+            text-decoration: none;
+        }
+
+        .btn-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Resumen derecho */
+        .resumen {
+            flex: 1;
+            background-color: white;
+            padding: 20px;
+            border-radius: 4px;
+        }
+
+        .resumen p {
+            font-size: 18px;
+            margin: 0 0 15px 0;
+        }
+
+        .resumen span.total-precio {
+            font-weight: bold;
+        }
+
+        /* Botones estilo Amazon */
+        .btn-comprar, .btn-seguir {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(15,17,17,.15);
+        }
+
+        .btn-comprar {
+            background-color: #ffd814;
+            color: #0f1111;
+            border: 1px solid #fcd200;
+        }
+
+        .btn-comprar:hover {
+            background-color: #f7ca00;
+        }
+
+        .btn-seguir {
+            background-color: white;
+            color: #0f1111;
+            border: 1px solid #d5d9d9;
+            box-shadow: 0 2px 5px rgba(15,17,17,.15);
+        }
+
+        .btn-seguir:hover {
+            background-color: #f7f8f8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor-principal">
+    {% if productos|length == 0 %}
+        <div class="carrito-lista-container">
+            <h2>Tu carrito de Amazon está vacío.</h2>
+            <p><a href="{{ url_for('catalogo') }}" style="color: #007185;">Compra las ofertas del día</a></p>
+        </div>
+    {% else %}
+
+    <div class="carrito-wrapper">
+        
+        <div class="carrito-lista-container">
+            <h2>Carrito de compras</h2>
+            <div class="precio-header">Precio</div>
+
+            {% for item in productos %}
+            <div class="carrito-item">
+                <img src="{{ url_for('static', filename='img/' + item.imagen) }}" alt="{{ item.nombre }}">
+                
+                <div class="carrito-info">
+                    <h3>{{ item.nombre }}</h3>
+                    <p class="stock-verde">En stock</p>
+                    
+                    <div class="acciones-fila">
+                        <div class="cantidad-control">
+                            <form method="POST" action="{{ url_for('actualizar_cantidad', id=item.id) }}">
+                                <button type="submit" name="accion" value="menos">-</button>
+                                <span class="cantidad-valor">{{ item.cantidad }}</span>
+                                <button type="submit" name="accion" value="mas">+</button>
+                            </form>
+                        </div>
+
+                        <span class="separador">|</span>
+
+                        <form method="GET" action="{{ url_for('eliminar_carrito', id=item.id) }}" style="display:inline;">
+                            <button class="btn-link" type="submit">Eliminar</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="precio-item">
+                    ${{ item.precio * item.cantidad }}
+                </div>
+            </div>
+            {% endfor %}
+            <div style="text-align: right; margin-top: 15px; font-size: 18px;">
+                Subtotal: <span style="font-weight: bold;">${{ total }} MXN</span>
+            </div>
+        </div>
+
+        <div class="resumenn">
+            <p>Subtotal: <span class="total-precio">${{ total }} MXN</span></p>
+            <a href="{{ url_for('dashboard') }}" class="btn-comprar">Proceder al pago</a>
+            <a href="{{ url_for('catalogo') }}" class="btn-seguir">Seguir comprando</a>
+        </div>
+
+    </div>
+
+    {% endif %}
+</div>
+
+</body>
+</html>

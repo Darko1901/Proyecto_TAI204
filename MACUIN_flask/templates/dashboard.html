@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autopartes MACUIN - Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
+c
 <body>
     <div class="dashboard-container">
         <header class="dashboard-header">
@@ -21,17 +21,21 @@
             <p>Has iniciado sesión exitosamente en el sistema de Autopartes MACUIN.</p>
             
             <div class="dashboard-cards">
-                <div class="card">
-                    <h3>Catálogo</h3>
-                    <p>Explora nuestro catálogo de autopartes</p>
-                </div>
-                
+              <a href="{{ url_for('catalogo') }}" class="card-link">
+                  <div class="card">
+                <h3>Catálogo</h3>
+                  <p>Explora nuestro catálogo de autopartes</p>
+               </div>
+                   </a>
+
                 <div class="card">
                     <h3>Mis Pedidos</h3>
                     <p>Consulta el estado de tus pedidos</p>
                 </div>
                 
+
                 <div class="card">
+                    <a href="{{ url_for('perfil') }}" class="card-link">
                     <h3>Mi Perfil</h3>
                     <p>Actualiza tu información personal</p>
                 </div>
