@@ -296,3 +296,112 @@ body {
     background-color: #ef5350;
     transform: scale(1.1);
 }
+
+
+/* =========================================
+   Estilos Enterprise para Tablas y KPIs
+   ========================================= */
+.stats-container { display: flex; gap: 20px; margin-bottom: 25px; }
+.stat-card { background: white; padding: 20px; border-radius: 8px; flex: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 5px solid #e57373; display: flex; align-items: center; justify-content: space-between; }
+.stat-info h4 { color: #666; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+.stat-info span { font-size: 1.8rem; font-weight: bold; color: #333; }
+.stat-icon { font-size: 2.5rem; color: #f5f5f5; }
+
+.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+.search-box { display: flex; align-items: center; background: #f9f9f9; padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd; width: 300px; }
+.search-box input { border: none; background: transparent; outline: none; margin-left: 10px; width: 100%; font-size: 0.9rem; }
+
+.btn-action { padding: 8px 15px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.9rem; transition: 0.3s; color: white; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.btn-pdf { background-color: #333; }
+.btn-pdf:hover { background-color: #555; }
+.btn-add { background-color: #e57373; }
+.btn-add:hover { background-color: #ef5350; }
+
+.macuin-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.macuin-table th, .macuin-table td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+.macuin-table th { background-color: #f8f9fa; color: #555; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; }
+.macuin-table tr:hover { background-color: #fcfcfc; }
+
+.badge { padding: 5px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+.badge-success { background: #d4edda; color: #155724; }
+.badge-warning { background: #fff3cd; color: #856404; }
+.badge-danger { background: #f8d7da; color: #721c24; }
+
+.row-actions button { background: none; border: none; cursor: pointer; font-size: 1.1rem; margin: 0 5px; transition: 0.2s; }
+.icon-edit { color: #f5b041; }
+.icon-delete { color: #e57373; }
+.icon-view { color: #3498db; }
+.row-actions button:hover { transform: scale(1.2); }
+
+/* =========================================
+   Estilos para Modales (Ventanas Flotantes)
+   ========================================= */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    width: 500px;
+    max-width: 90%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.modal-header h3 { color: #333; }
+.btn-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999; }
+.btn-close:hover { color: #e57373; }
+
+/* Ajuste para 4 tarjetas de KPIs */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+/*almacen */
+.tag-categoria {
+    background: #f0f2f5;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #555;
+    font-weight: 500;
+}
+
+.badge-danger {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+    animation: pulse-red 2s infinite; /* Alerta visual para stock bajo */
+}
+
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
+
+.icon-edit i.fa-plus-circle { color: #2ecc71; }
+.icon-delete i.fa-minus-circle { color: #e67e22; }
+
+
+

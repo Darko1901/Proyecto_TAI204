@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Almacén - MACUIN Enterprise</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        
+        <header class="dashboard-header">
+            <h1><i class="fas fa-warehouse"></i> Gestión de Almacén e Inventario</h1>
+            <div class="user-info">
+                <span><i class="fas fa-user-shield"></i> {{ session.get('usuario', 'Admin') }}</span>
+                <a href="{{ url_for('dashboard') }}" class="btn-logout" style="margin-right: 10px;">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </header>
+
+        <main class="dashboard-content">
+            
+            <div class="stats-container">
+                <div class="stat-card" style="border-left: 5px solid #3498db;">
+                    <div class="stat-info">
+                        <h4>Total de Artículos</h4>
+                        <span id="kpi-total-piezas">0</span>
+                    </div>
+                    <i class="fas fa-boxes stat-icon" style="color: #3498db;"></i>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid #e74c3c;">
+                    <div class="stat-info">
+                        <h4>Alertas de Stock Bajo</h4>
+                        <span id="kpi-stock-bajo" style="color: #e74c3c;">0</span>
+                    </div>
+                    <i class="fas fa-exclamation-triangle stat-icon" style="color: #e74c3c;"></i>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid #2ecc71;">
+                    <div class="stat-info">
+                        <h4>Valor del Inventario</h4>
+                        <span id="kpi-valor-total">$0.00</span>
+                    </div>
+                    <i class="fas fa-hand-holding-usd stat-icon" style="color: #2ecc71;"></i>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid #f1c40f;">
+                    <div class="stat-info">
+                        <h4>Categorías</h4>
+                        <span>12</span>
+                    </div>
+                    <i class="fas fa-tags stat-icon" style="color: #f1c40f;"></i>
+                </div>
+            </div>
+
+            <div class="card" id="panel-almacen" style="width: 100%;">
+                <div class="toolbar">
+                    <div class="search-box">
+                        <i class="fas fa-search" style="color: #999;"></i>
+                        <input type="text" id="buscador-almacen" placeholder="Buscar por SKU, nombre o ubicación..." onkeyup="filtrarAlmacen()">
+                    </div>
+                    <div>
+                        <button class="btn-action btn-add" onclick="abrirModalAlmacen()">
+                            <i class="fas fa-plus"></i> Registrar Entrada
+                        </button>
+                    </div>
+                </div>
+
+                <table class="macuin-table">
+                    <thead>
+                        <tr>
+                            <th>SKU / Código</th>
+                            <th>Descripción de Pieza</th>
+                            <th>Categoría</th>
+                            <th>Ubicación</th>
+                            <th>Existencias</th>
+                            <th>Precio Unit.</th>
+                            <th>Acciones Rápidas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-almacen-body">
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        
+        window.onload = function() {
+            if (typeof renderAlmacen === "function") {
+                renderAlmacen();
+            } else {
+                console.error("La función renderAlmacen no se encuentra en script.js");
+            }
+        };
+    </script>
+</body>
+</html>
+
+

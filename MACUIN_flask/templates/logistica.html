@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Logística - MACUIN Enterprise</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1><i class="fas fa-truck-moving"></i> Centro de Control Logístico</h1>
+            <div class="user-info">
+                <a href="{{ url_for('dashboard') }}" class="btn-logout" style="margin-right: 10px;">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</a>
+            </div>
+        </header>
+
+        <main class="dashboard-content">
+            <div class="stats-container">
+                <div class="stat-card" style="border-left: 5px solid #3498db;">
+                    <div class="stat-info"><h4>En Tránsito</h4><span id="kpi-transito">0</span></div>
+                    <i class="fas fa-shipping-fast stat-icon"></i>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid #f1c40f;">
+                    <div class="stat-info"><h4>Pendientes</h4><span id="kpi-despacho">0</span></div>
+                    <i class="fas fa-box-open stat-icon"></i>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid #2ecc71;">
+                    <div class="stat-info"><h4>Entregados</h4><span id="kpi-entregados">0</span></div>
+                    <i class="fas fa-check-double stat-icon"></i>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid #e74c3c;">
+                    <div class="stat-info"><h4>Retrasos</h4><span id="kpi-error">0</span></div>
+                    <i class="fas fa-clock stat-icon"></i>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="toolbar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="buscador-logistica" placeholder="Rastreo por Guía o Cliente..." onkeyup="filtrarLogistica()">
+                    </div>
+                    <button class="btn-action btn-add" onclick="abrirModalLogistica()" style="background: #2c3e50;">
+                        <i class="fas fa-plus-circle"></i> Nuevo Despacho
+                    </button>
+                </div>
+                <table class="macuin-table">
+                    <thead>
+                        <tr>
+                            <th>Guía</th>
+                            <th>Destinatario</th>
+                            <th>Paquetería</th>
+                            <th>Progreso</th>
+                            <th>Estado</th>
+                            <th>Entrega Est.</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-logistica-body"></tbody>
+                </table>
+            </div>
+        </main>
+
+        <div class="modal-overlay" id="modalLogistica">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Generar Nuevo Despacho</h3>
+                    <button class="btn-close" onclick="cerrarModalLogistica()">&times;</button>
+                </div>
+                <form id="formLogistica">
+                    <div class="form-group">
+                        <label>Cliente / Destino</label>
+                        <input type="text" id="log-cliente" placeholder="Nombre del taller o cliente" required>
+                    </div>
+                    <div class="form-row" style="display:flex; gap:10px;">
+                        <div class="form-group" style="flex:1;">
+                            <label>Paquetería</label>
+                            <select id="log-courier">
+                                <option value="DHL">DHL</option>
+                                <option value="FedEx">FedEx</option>
+                                <option value="Estafeta">Estafeta</option>
+                                <option value="Interno">Reparto Interno</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Fecha Estimada</label>
+                            <input type="date" id="log-fecha">
+                        </div>
+                    </div>
+                    <button type="button" class="btn-login" style="background:#3498db; width:100%; margin-top:15px;" onclick="guardarDespacho()">
+                        <i class="fas fa-paper-plane"></i> Iniciar Envío
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>window.onload = renderLogistica;</script>
+</body>
+</html>
+
+
+
