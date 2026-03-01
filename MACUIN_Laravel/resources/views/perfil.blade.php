@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autopartes MACUIN - Mi Perfil</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
 <body>
 
@@ -14,7 +14,7 @@
         <h1>Autopartes MACUIN</h1>
         <div class="user-info">
             <span>Mi Perfil</span>
-            <a href="{{ url_for('dashboard') }}" class="btn-logout">
+            <a href="{{ route('dashboard') }}" class="btn-logout">
                 Volver
             </a>
         </div>
@@ -24,33 +24,37 @@
 
         <h2>Actualizar Información Personal</h2>
 
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endwith %}
+        @if(session('error'))
+            <div class="alert alert-error">
+                {{ session('error') }}
+            </div>
+        @endif
 
         
         <div class="card">
 
-            <form method="POST">
+            <form method="POST" action="{{ route('perfil.update') }}">
+                @csrf
 
                 <div class="form-group">
                     <label>Nombre completo</label>
-                    <input type="text" name="nombre" value="{{ usuario.nombre }}" required>
+                    <input type="text" name="nombre" value="{{ old('nombre', $usuario->nombre ?? '') }}" required>
                 </div>
 
                 <div class="form-group">
                     <label>Correo electrónico</label>
-                    <input type="email" name="correo" value="{{ usuario.correo }}" required>
+                    <input type="email" name="correo" value="{{ old('correo', $usuario->correo ?? '') }}" required>
                 </div>
 
                 <div class="form-group">
                     <label>Teléfono</label>
-                    <input type="text" name="telefono" value="{{ usuario.telefono }}" required>
+                    <input type="text" name="telefono" value="{{ old('telefono', $usuario->telefono ?? '') }}" required>
                 </div>
 
                 <button type="submit" name="guardar_datos" class="btn-login">
@@ -68,7 +72,8 @@
                 Cambiar Contraseña
             </h3>
 
-            <form method="POST">
+            <form method="POST" action="{{ route('perfil.cambiar-password') }}">
+                @csrf
 
                 <div class="form-group">
                     <label>Contraseña Actual</label>

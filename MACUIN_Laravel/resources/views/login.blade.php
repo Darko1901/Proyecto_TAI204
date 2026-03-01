@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autopartes MACUIN - Inicio de sesión</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
 <body>
     <div class="container">
@@ -16,7 +17,8 @@
             <div class="login-section">
                 <h2>Inicio de sesión<br>Clientes</h2>
                 
-                <form method="POST" action="{{ url_for('login') }}">
+                <form method="POST" action="{{ route('login') }}">
+                    @csrf
                     <div class="form-group">
                         <label for="usuario">Usuario</label>
                         <input type="text" id="usuario" name="usuario" required>
@@ -27,7 +29,7 @@
                         <div class="password-wrapper">
                             <input type="password" id="contrasena" name="contrasena" required>
                             <button type="button" class="toggle-password" onclick="togglePassword('contrasena')">
-                                <span class="eye-icon">👁</span>
+                                <i class="fas fa-eye-slash eye-icon"></i>
                             </button>
                         </div>
                         <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
@@ -36,7 +38,7 @@
                     <button type="submit" class="btn-login">Iniciar sesión</button>
                     
                     <p class="register-link">
-                        ¿No tienes una cuenta? <a href="{{ url_for('registro') }}">Regístrate aquí</a>
+                        ¿No tienes una cuenta? <a href="{{ route('registro') }}">Regístrate aquí</a>
                     </p>
                 </form>
             </div>
@@ -47,6 +49,6 @@
         </div>
     </div>
     
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ asset('js/script.js') }}"></script>
 </body>
 </html>
