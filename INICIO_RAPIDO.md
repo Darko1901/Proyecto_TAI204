@@ -6,7 +6,7 @@
 ```bash
 cd MACUIN_Laravel
 php artisan serve
-```
+
 **Acceder en:** http://localhost:8000
 
 ### Flask - Cliente Web 2 (Puerto 5001)

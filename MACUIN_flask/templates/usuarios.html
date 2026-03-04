@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Usuarios - MACUIN Enterprise</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1><i class="fas fa-users-cog"></i> Control de Personal y Accesos</h1>
+            <div class="user-info">
+                <a href="{{ url_for('dashboard') }}" class="btn-logout" style="margin-right: 10px;">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</a>
+            </div>
+        </header>
+
+        <main class="dashboard-content">
+            <div class="stats-container">
+                <div class="stat-card" style="border-left: 5px solid #2ecc71;">
+                    <div class="stat-info"><h4>Usuarios Activos</h4><span id="kpi-activos">0</span></div>
+                    <i class="fas fa-user-check stat-icon"></i>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid #3498db;">
+                    <div class="stat-info"><h4>Administradores</h4><span id="kpi-admins">0</span></div>
+                    <i class="fas fa-user-shield stat-icon"></i>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid #f1c40f;">
+                    <div class="stat-info"><h4>Operativos</h4><span id="kpi-operativos">0</span></div>
+                    <i class="fas fa-user-tag stat-icon"></i>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid #e74c3c;">
+                    <div class="stat-info"><h4>Bajas</h4><span id="kpi-bajas">0</span></div>
+                    <i class="fas fa-user-slash stat-icon"></i>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="toolbar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="buscador-usuarios" placeholder="Buscar por nombre o correo..." onkeyup="filtrarUsuarios()">
+                    </div>
+                    <button class="btn-action btn-add" onclick="abrirModalUsuario()" style="background: #1abc9c;">
+                        <i class="fas fa-user-plus"></i> Nuevo Colaborador
+                    </button>
+                </div>
+
+                <table class="macuin-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Nombre Completo</th>
+                            <th>Rol / Permisos</th>
+                            <th>Último Acceso</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-usuarios-body"></tbody>
+                </table>
+            </div>
+        </main>
+
+        <div class="modal-overlay" id="modalUsuario">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-titulo-user">Registrar Nuevo Usuario</h3>
+                    <button class="btn-close" onclick="cerrarModalUsuario()">&times;</button>
+                </div>
+                <form id="formUsuario">
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" id="user-nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="user-email" required>
+                    </div>
+                    <div class="form-row" style="display:flex; gap:10px;">
+                        <div class="form-group" style="flex:1;">
+                            <label>Rol de Sistema</label>
+                            <select id="user-rol">
+                                <option value="Administrador">Administrador</option>
+                                <option value="Ventas">Ventas</option>
+                                <option value="Almacén">Almacén</option>
+                                <option value="Logística">Logística</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Contraseña</label>
+                            <input type="password" id="user-pass" required>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-login" style="background:#1abc9c; width:100%; margin-top:15px;" onclick="guardarUsuario()">
+                        <i class="fas fa-save"></i> Crear Cuenta
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>window.onload = renderUsuarios;</script>
+</body>
+</html>
+
+
+

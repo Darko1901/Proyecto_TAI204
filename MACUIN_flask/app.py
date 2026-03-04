@@ -3,7 +3,7 @@ from flask import request, redirect, flash,url_for, session
 import os
 
 app = Flask(__name__)
-
+app.secret_key = 'macuin_secreto_123'
 
 # ====================================================================
 # DATOS DE PRODUCTOS - Movidos a Laravel (Cliente web 1)
@@ -132,16 +132,61 @@ app = Flask(__name__)
 # ====================================================================
 # RUTAS PARA PERSONAL INTERNO - Flask (Cliente web 2)
 # ====================================================================
-
 @app.route('/')
 def index():
     return render_template('login_personal.html')
 
-@app.route('/login_personal_interno')
+@app.route('/login_personal_interno', methods=['GET', 'POST'])
 def login_personal_interno():
+    if request.method == 'POST':
+        usuario = request.form.get('usuario')
+        contrasena = request.form.get('contrasena')
+        
+        if usuario and contrasena:
+            session['usuario'] = usuario
+            return redirect(url_for('dashboard'))
+            
     return render_template('login_personal.html')
+
+@app.route('/dashboard')
+def dashboard():
+    if 'usuario' not in session:
+        return redirect(url_for('login_personal_interno'))
+    
+    return render_template('dashboard.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('usuario', None)
+    return redirect(url_for('login_personal_interno'))
+
+@app.route('/ventas')
+def ventas():
+  
+    if 'usuario' not in session:
+        return redirect(url_for('login_personal_interno'))
+    
+    return render_template('ventas.html')
+
+@app.route('/logistica')
+def logistica():
+    if 'usuario' not in session:
+        return redirect(url_for('login_personal_interno'))
+    
+    return render_template('logistica.html')
+
+@app.route('/almacen')
+def almacen():
+    if 'usuario' not in session:
+        return redirect(url_for('login_personal_interno'))
+    return render_template('almacen.html')
+
+@app.route('/usuarios')
+def usuarios():
+    if 'usuario' not in session:
+        return redirect(url_for('login_personal_interno'))
+    return render_template('usuarios.html')
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001) 
-
+    app.run(debug=True, host='0.0.0.0', port=5001)

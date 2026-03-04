@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  web-personal:
+    build: .
+    container_name: macuin_personal_container
+    ports:
+      - "5001:5001"
+    volumes:
+      - .:/app
+    environment:
+      - FLASK_ENV=development
+      - PYTHONUNBUFFERED=1
+    restart: always
