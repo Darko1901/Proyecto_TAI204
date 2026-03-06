@@ -39,7 +39,38 @@ Route::get('/carrito', function () {
 })->name('carrito');
 
 Route::get('/detalle-producto/{id}', function ($id) {
-    return view('detalle_producto');
+    $productos = [
+        1 => [
+            'nombre' => 'Amortiguador Delantero',
+            'imagen' => 'amortiguador.png',
+            'precio' => '$1,250.00 MXN',
+            'descripcion' => 'Amortiguador de alta resistencia para suspensión delantera. Diseñado para soportar las condiciones más exigentes de los caminos mexicanos.',
+            'marca' => 'Monroe',
+            'modelo' => 'AM-4521',
+            'compatibilidad' => 'Nissan Tsuru, Chevrolet Aveo, Volkswagen Jetta A4',
+            'garantia' => '2 años o 40,000 km',
+            'disponible' => true,
+        ],
+        2 => [
+            'nombre' => 'Kit de Frenos',
+            'imagen' => 'frenos.png',
+            'precio' => '$890.00 MXN',
+            'descripcion' => 'Kit completo de pastillas y discos de freno de alto rendimiento. Incluye 4 pastillas y 2 discos ventilados para máxima seguridad.',
+            'marca' => 'Brembo',
+            'modelo' => 'BK-7832',
+            'compatibilidad' => 'Ford Fiesta, Chevrolet Spark, Nissan March',
+            'garantia' => '1 año o 20,000 km',
+            'disponible' => true,
+        ],
+    ];
+
+    $producto = $productos[$id] ?? null;
+
+    if (!$producto) {
+        return redirect()->route('catalogo')->with('error', 'Producto no encontrado');
+    }
+
+    return view('detalle_producto', ['producto' => $producto, 'id' => $id]);
 })->name('detalle_producto');
 
 Route::get('/perfil', function () {
