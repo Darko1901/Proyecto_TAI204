@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Control - MACUIN Global</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body style="background-color: #f4f6f9; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+
+    <header class="master-header">
+        <h1><i class="fas fa-globe-americas" style="color: #3498db;"></i> MACUIN SuperAdmin Network</h1>
+        <div class="user-info" style="display: flex; align-items: center; gap: 20px;">
+            <span><i class="fas fa-crown" style="color: #f1c40f;"></i> Master: {{ session.get('usuario', 'Admin') }}</span>
+            <a href="{{ url_for('logout') }}" class="btn-logout-master" style="background: rgba(255,255,255,0.1); color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px;">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </a>
+        </div>
+    </header>
+
+    <div class="master-container">
+        
+        <h2 class="section-title"><i class="fas fa-building"></i> Operación Interna MACUIN</h2>
+        <div class="module-grid">
+            <a href="{{ url_for('ventas') }}" class="module-card card-ventas">
+                <i class="fas fa-cash-register module-icon" style="color: #3498db;"></i>
+                <h3 style="margin: 0 0 5px 0; font-size: 1.1rem;">Ventas</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #7f8c8d;">Caja y Facturación</p>
+            </a>
+            <a href="{{ url_for('almacen') }}" class="module-card card-almacen">
+                <i class="fas fa-boxes module-icon" style="color: #e67e22;"></i>
+                <h3 style="margin: 0 0 5px 0; font-size: 1.1rem;">Almacén</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #7f8c8d;">Inventario y Stock</p>
+            </a>
+            <a href="{{ url_for('logistica') }}" class="module-card card-logistica">
+                <i class="fas fa-truck-loading module-icon" style="color: #2ecc71;"></i>
+                <h3 style="margin: 0 0 5px 0; font-size: 1.1rem;">Logística</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #7f8c8d;">Envíos y Rastreo</p>
+            </a>
+            <a href="{{ url_for('usuarios') }}" class="module-card card-perfil">
+                <i class="fas fa-user-circle module-icon" style="color: #9b59b6;"></i>
+                <h3 style="margin: 0 0 5px 0; font-size: 1.1rem;">Mi Perfil</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #7f8c8d;">Mis Credenciales</p>
+            </a>
+        </div>
+
+        <h2 class="section-title"><i class="fas fa-users-cog"></i> Gestión de Usuarios Globales</h2>
+        
+        <div class="kpi-grid">
+            <div class="kpi-card" style="border-left: 5px solid #9b59b6;">
+                <div>
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; color: #7f8c8d; text-transform: uppercase;">Empresas Registradas</h4>
+                    <span id="kpi-empresas" style="font-size: 1.8rem; font-weight: bold; color: #2c3e50;">0</span>
+                </div>
+                <i class="fas fa-city kpi-icon"></i>
+            </div>
+            <div class="kpi-card" style="border-left: 5px solid #3498db;">
+                <div>
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; color: #7f8c8d; text-transform: uppercase;">Usuarios Activos</h4>
+                    <span id="kpi-usuarios" style="font-size: 1.8rem; font-weight: bold; color: #2c3e50;">0</span>
+                </div>
+                <i class="fas fa-users kpi-icon"></i>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-toolbar">
+                <input type="text" id="buscador" placeholder="Buscar usuario u origen..." onkeyup="filtrarTabla()">
+                <button class="btn-add-user" onclick="abrirModal()"><i class="fas fa-user-plus"></i> Dar de Alta</button>
+            </div>
+            
+            <table class="master-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre Completo</th>
+                        <th>Origen / Asignación</th>
+                        <th>Tipo de Perfil</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body"></tbody>
+            </table>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 40px;"><i class="fas fa-handshake"></i> Solicitudes de Registro (Empresas)</h2>
+        <div class="table-container">
+            <table class="master-table">
+                <thead>
+                    <tr>
+                        <th>ID Solicitud</th>
+                        <th>Razón Social / Taller</th>
+                        <th>Correo de Contacto</th>
+                        <th>Estado</th>
+                        <th>Validación</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-solicitudes-body"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="modalUsuario">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="margin: 0; color: #2c3e50;"><i class="fas fa-user-plus"></i> Alta de Usuario</h3>
+                <button class="btn-close" onclick="cerrarModal()">&times;</button>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Nombre Completo</label>
+                <input type="text" id="nuevo-nombre" placeholder="Ej. Juan Pérez" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Tipo de Perfil (Rol)</label>
+                <select id="nuevo-rol" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="Cliente">Cliente (Comprador)</option>
+                    <option value="Trabajador">Trabajador Interno</option>
+                    <option value="Empresa">Empresa / Taller B2B</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem;">
+                    <span>Origen / Asignación</span>
+                    <a href="#" onclick="cerrarModal(); abrirModalEmpresa();" style="color: #3498db; text-decoration: none; font-size: 0.8rem; font-weight: bold;"><i class="fas fa-plus"></i> Nueva empresa</a>
+                </label>
+                <select id="nuevo-origen" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></select>
+            </div>
+            
+            <button onclick="guardarUsuario()" style="width: 100%; padding: 10px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                <i class="fas fa-save"></i> Registrar Usuario
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalEditarUsuario">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="margin: 0; color: #2c3e50;"><i class="fas fa-edit"></i> Editar Usuario</h3>
+                <button class="btn-close" onclick="cerrarModalEditar()">&times;</button>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Nombre Completo</label>
+                <input type="text" id="edit-nombre" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Tipo de Perfil (Rol)</label>
+                <select id="edit-rol" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="Cliente">Cliente (Comprador)</option>
+                    <option value="Trabajador">Trabajador Interno</option>
+                    <option value="Empresa">Empresa / Taller B2B</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Origen / Asignación</label>
+                <select id="edit-origen" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></select>
+            </div>
+            <button onclick="guardarEdicionUsuario()" style="width: 100%; padding: 10px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                <i class="fas fa-check"></i> Guardar Cambios
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalEmpresa">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="margin: 0; color: #2c3e50;"><i class="fas fa-building"></i> Registrar Empresa</h3>
+                <button class="btn-close" onclick="cerrarModalEmpresa()">&times;</button>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Razón Social o Taller</label>
+                <input type="text" id="nueva-empresa-nombre" placeholder="Ej. Autopartes del Centro" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <button onclick="guardarEmpresa()" style="width: 100%; padding: 10px; background: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                <i class="fas fa-paper-plane"></i> Enviar a Solicitudes
+            </button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
+
+
+
+
