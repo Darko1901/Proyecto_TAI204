@@ -67,9 +67,4 @@ php artisan serve
 
 ## Relación con Flask
 
-Este proyecto Laravel complementa al proyecto Flask (`MACUIN_flask`), que maneja:
-- Login de personal interno
-- Panel administrativo (futuro)
-- Gestión de productos (futuro)
-
 Ambos proyectos eventualmente deberán compartir la misma base de datos o comunicarse mediante API.

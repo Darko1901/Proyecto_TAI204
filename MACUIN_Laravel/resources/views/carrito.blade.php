@@ -61,7 +61,6 @@
                     </table>
                     
                     <div class="carrito-actions">
-                        <a href="{{ route('catalogo') }}" class="btn-secondary">Continuar Comprando</a>
                         <a href="{{ route('checkout') }}" class="btn-login">Proceder al Pago</a>
                     </div>
                 </div>
