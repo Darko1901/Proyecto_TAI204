@@ -2,109 +2,66 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Gestión de Usuarios - MACUIN Enterprise</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de Cuenta - MACUIN</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-    <div class="dashboard-container">
-        <header class="dashboard-header">
-            <h1><i class="fas fa-users-cog"></i> Control de Personal y Accesos</h1>
-            <div class="user-info">
-                <a href="{{ url_for('dashboard') }}" class="btn-logout" style="margin-right: 10px;">
-                    <i class="fas fa-arrow-left"></i> Volver
-                </a>
-                <a href="{{ url_for('logout') }}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</a>
-            </div>
-        </header>
-
-        <main class="dashboard-content">
-            <div class="stats-container">
-                <div class="stat-card" style="border-left: 5px solid #2ecc71;">
-                    <div class="stat-info"><h4>Usuarios Activos</h4><span id="kpi-activos">0</span></div>
-                    <i class="fas fa-user-check stat-icon"></i>
-                </div>
-                <div class="stat-card" style="border-left: 5px solid #3498db;">
-                    <div class="stat-info"><h4>Administradores</h4><span id="kpi-admins">0</span></div>
-                    <i class="fas fa-user-shield stat-icon"></i>
-                </div>
-                <div class="stat-card" style="border-left: 5px solid #f1c40f;">
-                    <div class="stat-info"><h4>Operativos</h4><span id="kpi-operativos">0</span></div>
-                    <i class="fas fa-user-tag stat-icon"></i>
-                </div>
-                <div class="stat-card" style="border-left: 5px solid #e74c3c;">
-                    <div class="stat-info"><h4>Bajas</h4><span id="kpi-bajas">0</span></div>
-                    <i class="fas fa-user-slash stat-icon"></i>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="toolbar">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="buscador-usuarios" placeholder="Buscar por nombre o correo..." onkeyup="filtrarUsuarios()">
-                    </div>
-                    <button class="btn-action btn-add" onclick="abrirModalUsuario()" style="background: #1abc9c;">
-                        <i class="fas fa-user-plus"></i> Nuevo Colaborador
-                    </button>
-                </div>
-
-                <table class="macuin-table">
-                    <thead>
-                        <tr>
-                            <th>Usuario</th>
-                            <th>Nombre Completo</th>
-                            <th>Rol / Permisos</th>
-                            <th>Último Acceso</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-usuarios-body"></tbody>
-                </table>
-            </div>
-        </main>
-
-        <div class="modal-overlay" id="modalUsuario">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="modal-titulo-user">Registrar Nuevo Usuario</h3>
-                    <button class="btn-close" onclick="cerrarModalUsuario()">&times;</button>
-                </div>
-                <form id="formUsuario">
-                    <div class="form-group">
-                        <label>Nombre Completo</label>
-                        <input type="text" id="user-nombre" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Correo Electrónico</label>
-                        <input type="email" id="user-email" required>
-                    </div>
-                    <div class="form-row" style="display:flex; gap:10px;">
-                        <div class="form-group" style="flex:1;">
-                            <label>Rol de Sistema</label>
-                            <select id="user-rol">
-                                <option value="Administrador">Administrador</option>
-                                <option value="Ventas">Ventas</option>
-                                <option value="Almacén">Almacén</option>
-                                <option value="Logística">Logística</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="flex:1;">
-                            <label>Contraseña</label>
-                            <input type="password" id="user-pass" required>
-                        </div>
-                    </div>
-                    <button type="button" class="btn-login" style="background:#1abc9c; width:100%; margin-top:15px;" onclick="guardarUsuario()">
-                        <i class="fas fa-save"></i> Crear Cuenta
-                    </button>
-                </form>
-            </div>
+<body style="background-color: #f4f6f9; margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+    
+    <header style="background-color: #df6c6c; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="margin: 0; font-size: 1.2rem;"><i class="fas fa-user-circle"></i> Configuración de Cuenta</h1>
+        <div style="display: flex; gap: 15px;">
+            <a href="{{ url_for('dashboard') }}" style="background: white; color: #df6c6c; padding: 6px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.85rem;"><i class="fas fa-arrow-left"></i> Volver al Menú</a>
+            <a href="{{ url_for('logout') }}" style="background: white; color: #df6c6c; padding: 6px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.85rem;"><i class="fas fa-sign-out-alt"></i> Salir</a>
         </div>
-    </div>
+    </header>
+
+    <main style="display: flex; justify-content: center; padding: 40px 20px;">
+        <div style="background: white; width: 100%; max-width: 500px; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid #1abc9c;">
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="width: 70px; height: 70px; background: #e8f8f5; color: #1abc9c; border-radius: 50%; font-size: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto;">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h3 style="margin: 0 0 10px 0; color: #333;">{{ session.get('usuario', 'usuario@macuin.com') }}</h3>
+                <span style="background: #d4edda; color: #155724; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">Cuenta Activa</span>
+            </div>
+
+            <form id="formPerfil">
+                <h4 style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; color: #555;"><i class="fas fa-id-card"></i> Datos Personales</h4>
+                
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 5px; color: #555; font-size: 0.9rem;">Correo Electrónico Corporativo</label>
+                    <input type="email" id="perfil-email" value="{{ session.get('usuario', '') }}" readonly style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background-color: #f9f9f9; color: #666;">
+                </div>
+
+                <h4 style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; margin-top: 35px; color: #555;"><i class="fas fa-lock"></i> Seguridad y Contraseña</h4>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #555; font-size: 0.9rem;">Contraseña Actual (Requerida para hacer cambios)</label>
+                    <input type="password" id="pass-actual" placeholder="••••••••" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px; color: #555; font-size: 0.9rem;">Nueva Contraseña</label>
+                        <input type="password" id="pass-nueva" placeholder="Mínimo 8 caracteres" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px; color: #555; font-size: 0.9rem;">Confirmar Contraseña</label>
+                        <input type="password" id="pass-confirmar" placeholder="Repite la contraseña" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                    </div>
+                </div>
+
+                <button type="button" onclick="actualizarCredenciales()" style="width: 100%; background: #1abc9c; color: white; padding: 12px; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; font-weight: bold;">
+                    <i class="fas fa-lock"></i> Actualizar Credenciales
+                </button>
+            </form>
+        </div>
+    </main>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    <script>window.onload = renderUsuarios;</script>
 </body>
 </html>
 

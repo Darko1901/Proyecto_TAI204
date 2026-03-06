@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña - MACUIN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body style="margin: 0;">
+
+    <div class="login-wrapper">
+        <div class="login-left">
+            <div class="brand-title">
+                <span>Autopartes</span><br>
+                <strong>MACUIN</strong>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #333; margin-bottom: 10px;">Recuperar acceso</h3>
+                <p style="color: #666; font-size: 0.9rem;">Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña.</p>
+            </div>
+
+            <form action="#" method="POST" onsubmit="alert('Enlace de recuperación enviado al correo.'); return false;">
+                <div class="form-group-login">
+                    <label>Correo Electrónico</label>
+                    <input type="email" placeholder="ejemplo@macuin.com" required>
+                </div>
+                
+                <button type="submit" class="btn-submit-login">Enviar enlace</button>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="{{ url_for('login_personal_interno') }}" style="color: #666; text-decoration: none; font-size: 0.9rem;">
+                        <i class="fas fa-arrow-left"></i> Volver al inicio de sesión
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="login-right"></div>
+    </div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+

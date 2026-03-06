@@ -204,14 +204,6 @@ function descargarPDF() {
     }
 }
 
-// ================================================================
-// 5. INICIALIZACIÓN
-// ================================================================
-
-window.onload = function() {
-    renderTabla();
-};
-
 
 // ================================================================
 // MÓDULO DE ALMACÉN (Inventario Inteligente)
@@ -230,7 +222,6 @@ function renderAlmacen() {
     tbody.innerHTML = "";
 
     inventarioData.forEach(item => {
-        // Lógica de Alerta de Stock
         let stockStatus = item.stock <= item.min ? 'badge-danger' : 'badge-success';
         let stockIcon = item.stock <= item.min ? '<i class="fas fa-exclamation-triangle"></i> ' : '';
 
@@ -272,9 +263,6 @@ function ajustarStock(id, cantidad) {
     renderAlmacen();
 }
 
-// ================================================================
-// BUSCADOR UNIVERSAL (Sirve para Ventas y Almacén)
-// ================================================================
 function filtrarAlmacen() {
     let input = document.getElementById("buscador-almacen");
     let filter = input.value.toLowerCase();
@@ -282,51 +270,43 @@ function filtrarAlmacen() {
     let tr = tbody.getElementsByTagName("tr");
 
     for (let i = 0; i < tr.length; i++) {
-        // Buscamos en el texto de toda la fila
         let textValue = tr[i].textContent || tr[i].innerText;
         tr[i].style.display = textValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
     }
 }
 
-// ================================================================
-// ACCIONES DE LA TUERCA Y AJUSTES
-// ================================================================
 function editarPieza(id) {
     const item = inventarioData.find(i => i.id === id);
-    // Por ahora lanzamos un prompt profesional, luego podemos hacer un Modal
     let nuevoPrecio = prompt(`Editando ${item.pieza}.\nIngrese el nuevo precio unitario:`, item.price || item.precio);
     
     if (nuevoPrecio !== null && !isNaN(nuevoPrecio)) {
         item.precio = parseFloat(nuevoPrecio);
-        renderAlmacen(); // Refrescamos la tabla y KPIs
+        renderAlmacen(); 
         alert("Actualización exitosa.");
     }
 }
 
-// Función para el botón "Registrar Entrada" (El botón naranja de arriba)
 function abrirModalAlmacen() {
     alert("Abriendo Formulario de Recepción de Mercancía...\n(Aquí conectaremos con la API de Proveedores pronto)");
 }
+
 
 // ================================================================
 // LÓGICA DE LOGÍSTICA (Envío y Rastreo - MACUIN Enterprise)
 // ================================================================
 
-// 1. Base de datos simulada de envíos
 let enviosData = [
     { guia: "TRK-7721", cliente: "Autozone Querétaro", courier: "FedEx", status: "En Tránsito", progreso: 65, fecha: "2026-03-02" },
     { guia: "TRK-1104", cliente: "Refaccionaria Mendoza", courier: "DHL", status: "Entregado", progreso: 100, fecha: "2026-02-28" },
     { guia: "TRK-8840", cliente: "Taller Hermanos", courier: "Interno", status: "Preparando", progreso: 10, fecha: "2026-03-05" }
 ];
 
-// 2. Renderizar la tabla con barras de progreso
 function renderLogistica() {
     const tbody = document.getElementById("tabla-logistica-body");
     if (!tbody) return;
     tbody.innerHTML = "";
 
     enviosData.forEach(envio => {
-        // Asignación de colores según estatus
         let statusClass = "";
         switch(envio.status) {
             case "Entregado": statusClass = "badge-success"; break;
@@ -363,7 +343,6 @@ function renderLogistica() {
     actualizarKPIsLogistica();
 }
 
-// 3. Funciones de Modal
 function abrirModalLogistica() {
     const modal = document.getElementById("modalLogistica");
     if(modal) modal.style.display = "flex";
@@ -374,7 +353,6 @@ function cerrarModalLogistica() {
     if(modal) modal.style.display = "none";
 }
 
-// 4. Guardar Nuevo Despacho
 function guardarDespacho() {
     const cliente = document.getElementById("log-cliente").value;
     const courier = document.getElementById("log-courier").value;
@@ -400,12 +378,10 @@ function guardarDespacho() {
     document.getElementById("formLogistica").reset();
 }
 
-// 5. Actualizar Estatus (La lógica de la "Tuerca" o Sincronización)
 function actualizarEstatus(guia) {
     const envio = enviosData.find(e => e.guia === guia);
     if (!envio) return;
 
-    // Ciclo lógico de un paquete
     if (envio.status === "Preparando") {
         envio.status = "En Tránsito";
         envio.progreso = 50;
@@ -419,12 +395,10 @@ function actualizarEstatus(guia) {
     renderLogistica();
 }
 
-// 6. Rastrear (Simulación de GPS)
 function rastrearPaquete(guia) {
     alert(`🛰️ Conectando con GPS...\n\nEl envío ${guia} se encuentra actualmente en tránsito hacia su destino. \nPróxima parada: Centro de Distribución Norte.`);
 }
 
-// 7. KPIs y Buscador
 function actualizarKPIsLogistica() {
     if (!document.getElementById("kpi-transito")) return;
     document.getElementById("kpi-transito").innerText = enviosData.filter(e => e.status === "En Tránsito").length;
@@ -440,103 +414,298 @@ function filtrarLogistica() {
     }
 }
 
+
 // ================================================================
-// MÓDULO DE USUARIOS (Seguridad y Roles - MACUIN)
+// LÓGICA DE PERFIL Y CREDENCIALES (MACUIN Enterprise)
 // ================================================================
 
-let usuariosData = [
-    { id: 1, nombre: "Admin Macuin", email: "admin@macuin.com", rol: "Administrador", ultimo: "2026-03-01", status: "Activo" },
-    { id: 2, nombre: "Brenda López", email: "b.lopez@macuin.com", rol: "Ventas", ultimo: "2026-02-28", status: "Activo" },
-    { id: 3, nombre: "Carlos Ruiz", email: "c.ruiz@macuin.com", rol: "Almacén", ultimo: "2026-03-01", status: "Inactivo" }
+function actualizarCredenciales() {
+    const email = document.getElementById('perfil-email').value;
+    const passActual = document.getElementById('pass-actual').value;
+    const passNueva = document.getElementById('pass-nueva').value;
+    const passConfirmar = document.getElementById('pass-confirmar').value;
+
+    if (passNueva || passConfirmar || passActual) {
+        if (!passActual) {
+            alert("Seguridad: Debes ingresar tu contraseña actual para autorizar el cambio.");
+            return;
+        }
+        if (passNueva !== passConfirmar) {
+            alert("Error: Las contraseñas nuevas no coinciden. Por favor, revísalas.");
+            return;
+        }
+    }
+
+    alert(`Éxito: Credenciales actualizadas correctamente para ${email}.`);
+    
+    document.getElementById('pass-actual').value = "";
+    document.getElementById('pass-nueva').value = "";
+    document.getElementById('pass-confirmar').value = "";
+}
+
+
+// ================================================================
+// PANEL SUPER ADMIN (Gestión Multi-Empresa)
+// ================================================================
+
+let empresasData = [
+    { id: "EMP-001", nombre: "Taller Mecánico Los Hermanos", plan: "Pro", usuarios: 4, estado: "Activo" },
+    { id: "EMP-002", nombre: "Refaccionaria Mendoza", plan: "Enterprise", usuarios: 12, estado: "Activo" },
+    { id: "EMP-003", nombre: "Servicio Automotriz Rayo", plan: "Básico", usuarios: 2, estado: "Suspendido (Falta de Pago)" }
 ];
 
-function renderUsuarios() {
-    const tbody = document.getElementById("tabla-usuarios-body");
+function renderSuperAdmin() {
+    const tbody = document.getElementById("tabla-empresas-body");
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    usuariosData.forEach(user => {
-        let statusClass = user.status === "Activo" ? "badge-success" : "badge-danger";
-        let rolIcon = user.rol === "Administrador" ? "fa-user-shield" : "fa-user";
+    let totalUsuarios = 0;
 
+    empresasData.forEach(empresa => {
+        totalUsuarios += empresa.usuarios;
+        let statusClass = empresa.estado === "Activo" ? "badge-success" : "badge-danger";
+        
         tbody.innerHTML += `
             <tr>
-                <td>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="width:35px; height:35px; background:#ddd; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#666;">
-                            ${user.nombre.charAt(0)}
-                        </div>
-                        <strong>${user.email.split('@')[0]}</strong>
-                    </div>
-                </td>
-                <td>${user.nombre}</td>
-                <td><i class="fas ${rolIcon}"></i> ${user.rol}</td>
-                <td>${user.ultimo}</td>
-                <td><span class="badge ${statusClass}" onclick="toggleUserStatus(${user.id})" style="cursor:pointer;">${user.status}</span></td>
+                <td><strong>${empresa.id}</strong></td>
+                <td>${empresa.nombre}</td>
+                <td><span class="tag-categoria">${empresa.plan}</span></td>
+                <td><i class="fas fa-users" style="color:#7f8c8d;"></i> ${empresa.usuarios}</td>
+                <td><span class="badge ${statusClass}">${empresa.estado}</span></td>
                 <td class="row-actions">
-                    <button class="icon-edit" onclick="alert('Función para resetear contraseña enviada a ${user.email}')" title="Resetear Pass"><i class="fas fa-key"></i></button>
-                    <button class="icon-delete" onclick="eliminarUsuario(${user.id})" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                    <button class="icon-view" onclick="alert('Entrando al servidor de ${empresa.nombre} como SuperUsuario...')" title="Inspeccionar Empresa"><i class="fas fa-sign-in-alt"></i></button>
+                    <button class="icon-edit" onclick="alert('Modificando roles y permisos de ${empresa.nombre}')" title="Asignar Roles"><i class="fas fa-cogs"></i></button>
+                    <button class="icon-delete" onclick="alert('Suspendiendo servicio a ${empresa.nombre}')" title="Suspender Cuenta"><i class="fas fa-ban"></i></button>
                 </td>
             </tr>
         `;
     });
-    actualizarKPIsUsuarios();
-}
 
-function abrirModalUsuario() {
-    document.getElementById("modalUsuario").style.display = "flex";
-}
-
-function cerrarModalUsuario() {
-    document.getElementById("modalUsuario").style.display = "none";
-}
-
-function guardarUsuario() {
-    const nombre = document.getElementById("user-nombre").value;
-    const email = document.getElementById("user-email").value;
-    const rol = document.getElementById("user-rol").value;
-
-    if(!nombre || !email) return alert("⚠️ Datos incompletos");
-
-    usuariosData.unshift({
-        id: Date.now(),
-        nombre: nombre,
-        email: email,
-        rol: rol,
-        ultimo: "Nunca",
-        status: "Activo"
-    });
-
-    cerrarModalUsuario();
-    renderUsuarios();
-}
-
-function toggleUserStatus(id) {
-    const user = usuariosData.find(u => u.id === id);
-    user.status = user.status === "Activo" ? "Inactivo" : "Activo";
-    renderUsuarios();
-}
-
-function eliminarUsuario(id) {
-    if(confirm("¿Seguro que desea eliminar este acceso? Esta acción no se puede deshacer.")) {
-        usuariosData = usuariosData.filter(u => u.id !== id);
-        renderUsuarios();
+    if(document.getElementById("kpi-empresas")) {
+        document.getElementById("kpi-empresas").innerText = empresasData.length;
+        document.getElementById("kpi-usuarios-global").innerText = totalUsuarios;
     }
 }
 
-function actualizarKPIsUsuarios() {
-    if (!document.getElementById("kpi-activos")) return;
-    document.getElementById("kpi-activos").innerText = usuariosData.filter(u => u.status === "Activo").length;
-    document.getElementById("kpi-admins").innerText = usuariosData.filter(u => u.rol === "Administrador").length;
-    document.getElementById("kpi-operativos").innerText = usuariosData.filter(u => u.rol !== "Administrador").length;
-    document.getElementById("kpi-bajas").innerText = usuariosData.filter(u => u.status === "Inactivo").length;
-}
-
-function filtrarUsuarios() {
-    let filter = document.getElementById("buscador-usuarios").value.toLowerCase();
-    let rows = document.getElementById("tabla-usuarios-body").getElementsByTagName("tr");
+function filtrarEmpresas() {
+    let filter = document.getElementById("buscador-empresas").value.toLowerCase();
+    let rows = document.getElementById("tabla-empresas-body").getElementsByTagName("tr");
     for (let row of rows) {
         row.style.display = row.textContent.toLowerCase().includes(filter) ? "" : "none";
     }
 }
 
+
+// =========================================
+// LÓGICA DEL PANEL SUPER ADMIN REDISEÑADO
+// =========================================
+let empresasActivas = ["Público General", "MACUIN Central", "Refaccionaria Mendoza", "Taller Los Hermanos"];
+
+let usuariosGlobales = [
+    { id: "USR-001", nombre: "Carlos Mendoza", origen: "Refaccionaria Mendoza", rol: "Empresa", estado: "Activo" },
+    { id: "USR-002", nombre: "Ana López", origen: "MACUIN Central", rol: "Trabajador", estado: "Activo" },
+    { id: "USR-003", nombre: "Luis Rayo", origen: "Público General", rol: "Cliente", estado: "Suspendido" },
+    { id: "USR-004", nombre: "Eduardo Castillo", origen: "MACUIN Central", rol: "Trabajador", estado: "Activo" }
+];
+
+let solicitudesEmpresas = [
+    { id: "REQ-101", nombre: "AutoPartes del Norte", contacto: "norte@ejemplo.com", estado: "Pendiente" },
+    { id: "REQ-102", nombre: "Mecánica Rápida Sur", contacto: "sur@ejemplo.com", estado: "Pendiente" }
+];
+
+let usuarioEnEdicion = null;
+
+function renderTablas() {
+    renderTablaUsuarios();
+    renderTablaSolicitudes();
+    actualizarListasEmpresas();
+}
+
+function renderTablaUsuarios() {
+    const tbody = document.getElementById('tabla-body');
+    if (!tbody) return; 
+    
+    tbody.innerHTML = '';
+    let usuariosActivosCount = 0;
+
+    usuariosGlobales.forEach(usr => {
+        const badgeClass = usr.estado === 'Activo' ? 'badge-act' : 'badge-sus';
+        if (usr.estado === 'Activo') usuariosActivosCount++;
+
+        let iconoOrigen = "fa-user";
+        if (usr.rol === "Empresa") iconoOrigen = "fa-building";
+        if (usr.rol === "Trabajador") iconoOrigen = "fa-id-badge";
+
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>${usr.id}</strong></td>
+                <td>${usr.nombre}</td>
+                <td><i class="fas ${iconoOrigen}" style="color:#7f8c8d; font-size: 0.8rem; margin-right: 5px;"></i> ${usr.origen}</td>
+                <td><strong>${usr.rol}</strong></td>
+                <td><span class="${badgeClass}">${usr.estado}</span></td>
+                <td>
+                    <button style="background:none; border:none; color:#3498db; cursor:pointer; font-size: 1.1rem; margin-right: 15px;" title="Editar" onclick="abrirModalEditar('${usr.id}')"><i class="fas fa-edit"></i></button>
+                    <button style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size: 1.1rem;" title="Suspender/Activar" onclick="suspenderUsuario('${usr.id}')"><i class="fas fa-ban"></i></button>
+                </td>
+            </tr>
+        `;
+    });
+
+    const kpiElement = document.getElementById('kpi-usuarios');
+    if (kpiElement) kpiElement.innerText = usuariosActivosCount;
+    
+    const kpiEmpresas = document.getElementById('kpi-empresas');
+    if (kpiEmpresas) kpiEmpresas.innerText = empresasActivas.length > 2 ? empresasActivas.length - 2 : 0;
+}
+
+function renderTablaSolicitudes() {
+    const tbody = document.getElementById('tabla-solicitudes-body');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    solicitudesEmpresas.forEach(sol => {
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>${sol.id}</strong></td>
+                <td>${sol.nombre}</td>
+                <td>${sol.contacto}</td>
+                <td><span class="badge-pen">${sol.estado}</span></td>
+                <td>
+                    <button class="btn-accept" title="Aceptar Empresa" onclick="aceptarSolicitud('${sol.id}')"><i class="fas fa-check-circle"></i></button>
+                    <button class="btn-reject" title="Rechazar Empresa" onclick="rechazarSolicitud('${sol.id}')"><i class="fas fa-times-circle"></i></button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function actualizarListasEmpresas() {
+    const selectNuevo = document.getElementById('nuevo-origen');
+    const selectEdit = document.getElementById('edit-origen');
+    if(!selectNuevo || !selectEdit) return;
+
+    let opciones = "";
+    empresasActivas.forEach(emp => {
+        opciones += `<option value="${emp}">${emp}</option>`;
+    });
+    
+    selectNuevo.innerHTML = opciones;
+    selectEdit.innerHTML = opciones;
+}
+
+function abrirModalUsuariosMaster() { document.getElementById('modalUsuario').style.display = 'flex'; }
+function cerrarModalUsuariosMaster() { document.getElementById('modalUsuario').style.display = 'none'; }
+
+function guardarUsuarioMaster() {
+    const nombre = document.getElementById('nuevo-nombre').value;
+    if(!nombre) { alert("Ingresa el nombre."); return; }
+
+    usuariosGlobales.push({ 
+        id: "USR-00" + (usuariosGlobales.length + 1), 
+        nombre: nombre, 
+        origen: document.getElementById('nuevo-origen').value, 
+        rol: document.getElementById('nuevo-rol').value, 
+        estado: "Activo" 
+    });
+
+    document.getElementById('nuevo-nombre').value = '';
+    cerrarModalUsuariosMaster();
+    renderTablas();
+}
+
+function abrirModalEditar(id) {
+    const usuario = usuariosGlobales.find(u => u.id === id);
+    if(usuario) {
+        usuarioEnEdicion = id;
+        document.getElementById('edit-nombre').value = usuario.nombre;
+        document.getElementById('edit-rol').value = usuario.rol;
+        document.getElementById('edit-origen').value = usuario.origen;
+        document.getElementById('modalEditarUsuario').style.display = 'flex';
+    }
+}
+
+function cerrarModalEditar() { 
+    document.getElementById('modalEditarUsuario').style.display = 'none'; 
+    usuarioEnEdicion = null; 
+}
+
+function guardarEdicionUsuario() {
+    if(usuarioEnEdicion) {
+        const usuario = usuariosGlobales.find(u => u.id === usuarioEnEdicion);
+        usuario.nombre = document.getElementById('edit-nombre').value;
+        usuario.rol = document.getElementById('edit-rol').value;
+        usuario.origen = document.getElementById('edit-origen').value;
+        
+        cerrarModalEditar();
+        renderTablas();
+    }
+}
+
+function suspenderUsuario(id) {
+    if(confirm("¿Cambiar el estado de este usuario?")) {
+        const usuario = usuariosGlobales.find(u => u.id === id);
+        if(usuario) {
+            usuario.estado = usuario.estado === "Activo" ? "Suspendido" : "Activo";
+            renderTablas(); 
+        }
+    }
+}
+
+function abrirModalEmpresa() { document.getElementById('modalEmpresa').style.display = 'flex'; }
+function cerrarModalEmpresa() { document.getElementById('modalEmpresa').style.display = 'none'; }
+
+function guardarEmpresa() {
+    const nombre = document.getElementById('nueva-empresa-nombre').value;
+    if(nombre) {
+        solicitudesEmpresas.push({
+            id: "REQ-" + Math.floor(Math.random() * 900 + 100),
+            nombre: nombre,
+            contacto: "pendiente@porasignar.com",
+            estado: "Pendiente"
+        });
+        
+        document.getElementById('nueva-empresa-nombre').value = '';
+        cerrarModalEmpresa();
+        renderTablas();
+        alert(`¡Listo! La empresa "${nombre}" se ha enviado a la tabla de solicitudes.`);
+    }
+}
+
+function aceptarSolicitud(id) {
+    const index = solicitudesEmpresas.findIndex(s => s.id === id);
+    if(index !== -1) {
+        const empresaAceptada = solicitudesEmpresas[index].nombre;
+        empresasActivas.push(empresaAceptada); 
+        solicitudesEmpresas.splice(index, 1); 
+        renderTablas();
+        alert(`¡Empresa aceptada! "${empresaAceptada}" ya aparece en el seleccionador.`);
+    }
+}
+
+function rechazarSolicitud(id) {
+    if(confirm("¿Seguro que deseas rechazar esta solicitud? Se eliminará de la tabla.")) {
+        solicitudesEmpresas = solicitudesEmpresas.filter(s => s.id !== id);
+        renderTablas();
+    }
+}
+
+// ================================================================
+// INICIALIZACIÓN GLOBAL INTELIGENTE (CARGADOR MAESTRO)
+// ================================================================
+window.onload = function() {
+    if (document.getElementById("tabla-ventas-body") && typeof renderTabla === 'function') {
+        renderTabla();
+    }
+    if (document.getElementById("tabla-almacen-body") && typeof renderAlmacen === 'function') {
+        renderAlmacen();
+    }
+    if (document.getElementById("tabla-logistica-body") && typeof renderLogistica === 'function') {
+        renderLogistica();
+    }
+    if (document.getElementById("tabla-empresas-body") && typeof renderSuperAdmin === 'function') {
+        renderSuperAdmin();
+    }
+    if (document.getElementById("tabla-body") && typeof renderTablas === 'function') {
+        renderTablas();
+    }
+};

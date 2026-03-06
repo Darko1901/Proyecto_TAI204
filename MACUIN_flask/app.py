@@ -5,174 +5,73 @@ import os
 app = Flask(__name__)
 app.secret_key = 'macuin_secreto_123'
 
-# ====================================================================
-# DATOS DE PRODUCTOS - Movidos a Laravel (Cliente web 1)
-# ====================================================================
-# productos = [
-#     {
-#         "id": 1,
-#         "nombre": "Frenos",
-#         "precio": 1200,
-#         "descripcion": "Sistema de frenos de alta calidad para mayor seguridad.",
-#         "imagen": "frenos.png"
-#     },
-#     {
-#         "id": 2,
-#         "nombre": "Amortiguadores",
-#         "precio": 2300,
-#         "descripcion": "Amortiguadores resistentes para todo tipo de terreno.",
-#         "imagen": "amortiguador.png"
-#     }
-# ]
+# ==========================================
+# BASE DE DATOS SIMULADA (Roles y Permisos)
+# ==========================================
+USUARIOS_DB = {
+    "master": {
+        "contrasena": "admin123",
+        "rol": "superadmin"
+    },
+    "empleado": {
+        "contrasena": "ventas123",
+        "rol": "operativo"
+    }
+}
 
 
-# ====================================================================
-# RUTAS PARA CLIENTES EXTERNOS - Movidas a Laravel (Cliente web 1)
-# ====================================================================
-# Estas rutas ahora están en el proyecto MACUIN_Laravel
-    
-# @app.route('/')
-# def index():
-#     return render_template('login.html')
-
-# @app.route('/login')
-# def login():
-#     return render_template('login.html')
-
-# @app.route('/registro')
-# def registro():
-#     return render_template('registro.html')
-
-# @app.route('/dashboard')
-# def dashboard():
-#     return render_template('dashboard.html')
-
-# @app.route('/perfil', methods=['GET', 'POST'])
-# def perfil():
-#     usuario = {
-#         "nombre": "Alberto Luna",
-#         "correo": "alberto@gmail.com",
-#         "telefono": "4421234567"
-#     }
-#     if request.method == 'POST':
-#         if 'guardar_datos' in request.form:
-#             nombre = request.form['nombre']
-#             correo = request.form['correo']
-#             telefono = request.form['telefono']
-#             flash("Información actualizada correctamente", "success")
-#         elif 'cambiar_password' in request.form:
-#             actual = request.form['actual']
-#             nueva = request.form['nueva']
-#             confirmar = request.form['confirmar']
-#             if nueva != confirmar:
-#                 flash("Las contraseñas no coinciden", "error")
-#             elif len(nueva) < 6:
-#                 flash("La nueva contraseña debe tener al menos 6 caracteres", "error")
-#             else:
-#                 flash("Contraseña actualizada correctamente", "success")
-#         return redirect(url_for('perfil'))
-#     return render_template('perfil.html', usuario=usuario)
-
-# @app.route('/catalogo')
-# def catalogo():
-#     return render_template('catalogo.html', productos=productos)
-
-# # Diccionario para opiniones (temporal en memoria)
-# opiniones = {
-#     1: [{"usuario": "Juan Pérez", "texto": "Excelente calidad, lo recomiendo."}],
-#     2: [{"usuario": "María López", "texto": "Muy buen producto y llegó rápido."}]
-# }
-
-# @app.route('/producto/<int:id>', methods=['GET','POST'])
-# def detalle_producto(id):
-#     producto = next((p for p in productos if p["id"] == id), None)
-#     if producto is None:
-#         return redirect(url_for('catalogo'))
-#     if id not in opiniones:
-#         opiniones[id] = []
-#     if request.method == 'POST':
-#         opinion_texto = request.form.get('opinion')
-#         if opinion_texto:
-#             opiniones[id].append({"usuario": "Anonimo", "texto": opinion_texto})
-#             flash("Opinión publicada", "success")
-#         return redirect(url_for('detalle_producto', id=id))
-#     return render_template('detalle_producto.html', 
-#                            producto=producto, 
-#                            productos=productos,
-#                            opiniones=opiniones[id])
-
-# @app.route('/agregar_carrito/<int:id>')
-# def agregar_carrito(id):
-#     if 'carrito' not in session:
-#         session['carrito'] = []
-#     session['carrito'].append(id)
-#     session.modified = True
-#     flash("Producto agregado al carrito", "success")
-#     return redirect(url_for('catalogo'))
-
-# @app.route('/carrito')
-# def ver_carrito():
-#     carrito_ids = session.get('carrito', [])
-#     carrito_productos = []
-#     for p in productos:
-#         cantidad = carrito_ids.count(p["id"])
-#         if cantidad > 0:
-#             carrito_productos.append({**p, "cantidad": cantidad})
-#     total = sum(p["precio"] * p["cantidad"] for p in carrito_productos)
-#     return render_template('carrito.html', productos=carrito_productos, total=total)
-
-# @app.route('/eliminar_carrito/<int:id>')
-# def eliminar_carrito(id):
-#     if 'carrito' in session:
-#         session['carrito'] = [p for p in session['carrito'] if p != id]
-#         session.modified = True
-#     return redirect(url_for('ver_carrito'))
-
-
-# ====================================================================
-# RUTAS PARA PERSONAL INTERNO - Flask (Cliente web 2)
-# ====================================================================
 @app.route('/')
 def index():
-    return render_template('login_personal.html')
+    return redirect(url_for('login_personal_interno'))
+
 
 @app.route('/login_personal_interno', methods=['GET', 'POST'])
 def login_personal_interno():
+    if 'usuario' in session:
+        return redirect(url_for('dashboard'))
+
     if request.method == 'POST':
-        usuario = request.form.get('usuario')
-        contrasena = request.form.get('contrasena')
+        usuario = request.form.get('usuario', '')
+        contrasena = request.form.get('contrasena', '')
         
+        if '@' not in usuario:
+            flash('Formato inválido: El usuario debe contener un "@".', 'error')
+            return render_template('login_personal.html')
+            
         if usuario and contrasena:
             session['usuario'] = usuario
             return redirect(url_for('dashboard'))
             
     return render_template('login_personal.html')
 
+
+@app.route('/superadmin')
+def superadmin():
+    if 'usuario' not in session:
+        return redirect(url_for('login_personal_interno'))
+    return render_template('superadmin.html')
+
 @app.route('/dashboard')
 def dashboard():
     if 'usuario' not in session:
         return redirect(url_for('login_personal_interno'))
-    
     return render_template('dashboard.html')
 
 @app.route('/logout')
 def logout():
-    session.pop('usuario', None)
+    session.clear() 
     return redirect(url_for('login_personal_interno'))
 
 @app.route('/ventas')
 def ventas():
-  
     if 'usuario' not in session:
         return redirect(url_for('login_personal_interno'))
-    
     return render_template('ventas.html')
 
 @app.route('/logistica')
 def logistica():
     if 'usuario' not in session:
         return redirect(url_for('login_personal_interno'))
-    
     return render_template('logistica.html')
 
 @app.route('/almacen')
@@ -186,6 +85,10 @@ def usuarios():
     if 'usuario' not in session:
         return redirect(url_for('login_personal_interno'))
     return render_template('usuarios.html')
+
+@app.route('/recuperar')
+def recuperar():
+    return render_template('recuperar.html')
 
 
 if __name__ == '__main__':
