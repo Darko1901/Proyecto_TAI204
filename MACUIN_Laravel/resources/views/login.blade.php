@@ -32,7 +32,7 @@
                                 <i class="fas fa-eye-slash eye-icon"></i>
                             </button>
                         </div>
-                        <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                        <a href="{{ route('recuperar') }}" class="forgot-password">¿Olvidaste tu contraseña?</a>
                     </div>
                     
                     <button type="submit" class="btn-login">Iniciar sesión</button>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autopartes MACUIN - Detalle del Pedido</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
 <body>
@@ -12,6 +13,7 @@
             <h1>Autopartes MACUIN</h1>
             <div class="user-info">
                 <span>Detalle del Pedido</span>
+                <a href="{{ route('carrito') }}" class="btn-logout" title="Mi Carrito"><i class="fas fa-shopping-cart"></i></a>
                 <a href="{{ route('pedidos') }}" class="btn-logout">Volver a Mis Pedidos</a>
             </div>
         </header>
@@ -149,8 +151,6 @@
                 <!-- Acciones -->
                 <div class="card">
                     <div class="pedido-actions">
-                        <a href="{{ route('pedido.descargar', 1) }}" class="btn-login">Descargar Comprobante PDF</a>
-                        
                         <!-- Solo mostrar si el pedido está en estado "Recibido" -->
                         <!-- 
                         <form method="POST" action="{{ route('pedido.cancelar', 1) }}" style="display: inline;">

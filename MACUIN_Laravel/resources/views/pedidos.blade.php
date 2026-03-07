@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autopartes MACUIN - Mis Pedidos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
 <body>
@@ -12,6 +13,7 @@
             <h1>Autopartes MACUIN</h1>
             <div class="user-info">
                 <span>Mis Pedidos</span>
+                <a href="{{ route('carrito') }}" class="btn-logout" title="Mi Carrito"><i class="fas fa-shopping-cart"></i></a>
                 <a href="{{ route('dashboard') }}" class="btn-logout">Volver al Dashboard</a>
             </div>
         </header>
@@ -47,7 +49,6 @@
                     
                     <div class="pedido-footer">
                         <a href="{{ route('pedido.detalle', 1) }}" class="btn-secondary">Ver Detalles</a>
-                        <a href="{{ route('pedido.descargar', 1) }}" class="btn-secondary">Descargar PDF</a>
                     </div>
                 </div>
 
@@ -77,7 +78,6 @@
                     
                     <div class="pedido-footer">
                         <a href="{{ route('pedido.detalle', 2) }}" class="btn-secondary">Ver Detalles</a>
-                        <a href="{{ route('pedido.descargar', 2) }}" class="btn-secondary">Descargar PDF</a>
                     </div>
                 </div>
 

@@ -25,6 +25,16 @@ Route::post('/registro', function () {
     return redirect()->route('login');
 })->name('registro.post');
 
+// Rutas de recuperación de contraseña
+Route::get('/recuperar', function () {
+    return view('recuperar');
+})->name('recuperar');
+
+Route::post('/recuperar', function () {
+    // Lógica de envío de correo pendiente
+    return back()->with('success', 'Enlace de recuperación enviado al correo.');
+})->name('recuperar.post');
+
 // Rutas del dashboard y funcionalidades principales
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -109,8 +119,3 @@ Route::post('/pedido/{id}/cancelar', function ($id) {
     // Lógica de cancelación de pedido pendiente
     return redirect()->route('pedido.detalle', $id)->with('success', 'Pedido cancelado');
 })->name('pedido.cancelar');
-
-Route::get('/pedido/{id}/descargar', function ($id) {
-    // Lógica de descarga de PDF pendiente
-    return response()->download(public_path('pedido.pdf'));
-})->name('pedido.descargar');
