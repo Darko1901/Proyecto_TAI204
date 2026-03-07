@@ -13,17 +13,23 @@
             <h1>Autopartes MACUIN</h1>
             <div class="user-info">
                 <a href="{{ route('carrito') }}" class="btn-logout" title="Mi Carrito"><i class="fas fa-shopping-cart"></i></a>
-                <a href="{{ route('catalogo') }}" class="btn-logout">Volver al Catálogo</a>
+                <a href="{{ route('catalogo') }}" class="btn-logout">Volver al Catalogo</a>
             </div>
         </header>
         
         <main class="dashboard-content">
+            <p class="detalle-breadcrumb">
+                <a href="{{ route('catalogo') }}">Catalogo</a> &raquo; {{ $producto['categoria'] }} &raquo; {{ $producto['nombre'] }}
+            </p>
             <h2>{{ $producto['nombre'] }}</h2>
             
             <div class="card" style="max-width: 800px; margin: 0 auto;">
                 <div style="display: flex; gap: 30px; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 250px; text-align: center;">
-                        <img src="{{ asset('img/' . $producto['imagen']) }}" alt="{{ $producto['nombre'] }}" style="width: 100%; max-width: 300px; height: auto; object-fit: contain;">
+                        <div class="detalle-icono-container">
+                            <i class="{{ $producto['icono'] }}"></i>
+                        </div>
+                        <span class="detalle-categoria-badge">{{ $producto['categoria'] }}</span>
                     </div>
                     <div style="flex: 1; min-width: 250px;">
                         <p style="font-size: 1.5rem; color: #333; font-weight: bold; margin-bottom: 15px;">{{ $producto['precio'] }}</p>
