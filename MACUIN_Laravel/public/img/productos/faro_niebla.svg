@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Faro niebla redondo -->
+  <circle cx="200" cy="200" r="80" fill="#333" stroke="#222" stroke-width="3"/>
+  <!-- Reflector cromado -->
+  <circle cx="200" cy="200" r="65" fill="#ddd"/>
+  <circle cx="200" cy="200" r="55" fill="#eee"/>
+  <!-- Foco -->
+  <circle cx="200" cy="200" r="20" fill="#ffffcc" stroke="#ffcc00" stroke-width="2"/>
+  <circle cx="200" cy="200" r="8" fill="white"/>
+  <!-- Lente texturizada -->
+  <circle cx="200" cy="200" r="70" fill="none" stroke="#ccc" stroke-width="0.5" opacity="0.5"/>
+  <line x1="135" y1="180" x2="265" y2="180" stroke="#ddd" stroke-width="0.5"/>
+  <line x1="135" y1="200" x2="265" y2="200" stroke="#ddd" stroke-width="0.5"/>
+  <line x1="135" y1="220" x2="265" y2="220" stroke="#ddd" stroke-width="0.5"/>
+  <!-- Soporte montaje -->
+  <rect x="270" y="185" width="40" height="30" rx="4" fill="#444" stroke="#333" stroke-width="1.5"/>
+  <circle cx="300" cy="200" r="5" fill="#666"/>
+</svg>

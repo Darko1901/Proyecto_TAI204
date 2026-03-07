@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Plumas limpiaparabrisas / Wiper blades -->
+  <!-- Pluma 1 -->
+  <rect x="100" y="140" width="220" height="12" rx="6" fill="#333" stroke="#222" stroke-width="1.5"/>
+  <!-- Goma -->
+  <rect x="105" y="148" width="210" height="4" rx="2" fill="#111"/>
+  <!-- Conector central -->
+  <rect x="190" y="132" width="40" height="20" rx="4" fill="#555" stroke="#444" stroke-width="1.5"/>
+  <rect x="200" y="128" width="20" height="8" rx="2" fill="#666"/>
+  <!-- Pluma 2 -->
+  <rect x="80" y="220" width="240" height="14" rx="7" fill="#333" stroke="#222" stroke-width="1.5"/>
+  <!-- Goma -->
+  <rect x="85" y="230" width="230" height="4" rx="2" fill="#111"/>
+  <!-- Conector central -->
+  <rect x="185" y="211" width="45" height="22" rx="4" fill="#555" stroke="#444" stroke-width="1.5"/>
+  <rect x="197" y="207" width="22" height="8" rx="2" fill="#666"/>
+  <!-- Spoilers aerodinámicos -->
+  <path d="M105,140 Q200,128 315,140" fill="none" stroke="#444" stroke-width="1"/>
+  <path d="M85,220 Q190,206 315,220" fill="none" stroke="#444" stroke-width="1"/>
+  <!-- Label -->
+  <text x="200" y="300" font-family="Arial,sans-serif" font-size="12" fill="#999" text-anchor="middle">22" + 16"</text>
+</svg>

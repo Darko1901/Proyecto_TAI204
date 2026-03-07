@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Bujía / Spark plug -->
+  <!-- Terminal -->
+  <rect x="190" y="70" width="20" height="25" rx="3" fill="#888" stroke="#777" stroke-width="1.5"/>
+  <!-- Aislador cerámico -->
+  <rect x="185" y="95" width="30" height="80" rx="4" fill="#f5f5f5" stroke="#ddd" stroke-width="2"/>
+  <!-- Anillos del aislador -->
+  <ellipse cx="200" cy="110" rx="15" ry="5" fill="none" stroke="#ddd" stroke-width="1.5"/>
+  <ellipse cx="200" cy="130" rx="15" ry="5" fill="none" stroke="#ddd" stroke-width="1.5"/>
+  <ellipse cx="200" cy="150" rx="15" ry="5" fill="none" stroke="#ddd" stroke-width="1.5"/>
+  <!-- Hexágono (llave) -->
+  <polygon points="200,175 218,185 218,205 200,215 182,205 182,185" fill="#aaa" stroke="#888" stroke-width="2"/>
+  <!-- Cuerpo roscado -->
+  <rect x="188" y="215" width="24" height="60" rx="2" fill="#999" stroke="#888" stroke-width="1.5"/>
+  <!-- Roscas -->
+  <line x1="188" y1="225" x2="212" y2="225" stroke="#888" stroke-width="1"/>
+  <line x1="188" y1="235" x2="212" y2="235" stroke="#888" stroke-width="1"/>
+  <line x1="188" y1="245" x2="212" y2="245" stroke="#888" stroke-width="1"/>
+  <line x1="188" y1="255" x2="212" y2="255" stroke="#888" stroke-width="1"/>
+  <line x1="188" y1="265" x2="212" y2="265" stroke="#888" stroke-width="1"/>
+  <!-- Electrodo central -->
+  <rect x="197" y="275" width="6" height="20" rx="1" fill="#bbb"/>
+  <!-- Electrodo lateral -->
+  <path d="M193,295 L193,305 L207,305 L207,295" fill="none" stroke="#aaa" stroke-width="3"/>
+  <!-- Chispa -->
+  <line x1="200" y1="295" x2="200" y2="302" stroke="#ffcc00" stroke-width="2"/>
+  <circle cx="200" cy="298" r="4" fill="#ffff00" opacity="0.4"/>
+</svg>

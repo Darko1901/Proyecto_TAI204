@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Parrilla / Grille -->
+  <rect x="80" y="130" width="240" height="120" rx="12" fill="#222" stroke="#111" stroke-width="2"/>
+  <!-- Marco cromado -->
+  <rect x="80" y="130" width="240" height="120" rx="12" fill="none" stroke="#bbb" stroke-width="3"/>
+  <!-- Barras horizontales -->
+  <line x1="95" y1="155" x2="305" y2="155" stroke="#888" stroke-width="4"/>
+  <line x1="95" y1="175" x2="305" y2="175" stroke="#888" stroke-width="4"/>
+  <line x1="95" y1="195" x2="305" y2="195" stroke="#888" stroke-width="4"/>
+  <line x1="95" y1="215" x2="305" y2="215" stroke="#888" stroke-width="4"/>
+  <line x1="95" y1="235" x2="305" y2="235" stroke="#888" stroke-width="4"/>
+  <!-- Logo central -->
+  <circle cx="200" cy="190" r="22" fill="#333" stroke="#aaa" stroke-width="2"/>
+  <circle cx="200" cy="190" r="15" fill="none" stroke="#999" stroke-width="1.5"/>
+  <!-- Soportes -->
+  <rect x="120" y="250" width="25" height="12" rx="3" fill="#555"/>
+  <rect x="255" y="250" width="25" height="12" rx="3" fill="#555"/>
+</svg>

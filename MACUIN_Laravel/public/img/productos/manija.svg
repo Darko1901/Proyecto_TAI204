@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Manija exterior / Door handle -->
+  <!-- Carcasa de la puerta (parte) -->
+  <rect x="60" y="120" width="280" height="200" rx="8" fill="#444" stroke="#333" stroke-width="2"/>
+  <!-- Moldura -->
+  <rect x="60" y="200" width="280" height="3" fill="#555"/>
+  <!-- Base de manija -->
+  <rect x="120" y="165" width="160" height="45" rx="22" fill="#666" stroke="#555" stroke-width="2"/>
+  <!-- Manija cromada -->
+  <rect x="135" y="172" width="130" height="30" rx="15" fill="#ccc" stroke="#aaa" stroke-width="2"/>
+  <!-- Brillo -->
+  <rect x="145" y="178" width="100" height="8" rx="4" fill="#e8e8e8" opacity="0.6"/>
+  <!-- Keyhole -->
+  <circle cx="250" cy="187" r="6" fill="#999" stroke="#888" stroke-width="1"/>
+  <rect x="248" y="183" width="4" height="8" rx="1" fill="#777"/>
+  <!-- Sombra debajo -->
+  <rect x="135" y="202" width="130" height="5" rx="2" fill="#333" opacity="0.3"/>
+</svg>
