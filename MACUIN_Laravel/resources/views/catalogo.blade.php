@@ -38,8 +38,8 @@
                         @foreach($prods as $id => $prod)
                             <a href="{{ route('detalle_producto', $id) }}" class="card-link">
                                 <div class="card producto-card">
-                                    <div class="producto-icono">
-                                        <i class="{{ $prod['icono'] }}"></i>
+                                    <div class="producto-imagen">
+                                        <img src="{{ asset($prod['imagen']) }}" alt="{{ $prod['nombre'] }}" loading="lazy">
                                     </div>
                                     <h3>{{ $prod['nombre'] }}</h3>
                                     <p class="producto-marca"><i class="fas fa-tag"></i> {{ $prod['marca'] }}</p>

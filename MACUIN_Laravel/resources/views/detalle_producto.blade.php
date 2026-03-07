@@ -26,8 +26,8 @@
             <div class="card" style="max-width: 800px; margin: 0 auto;">
                 <div style="display: flex; gap: 30px; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 250px; text-align: center;">
-                        <div class="detalle-icono-container">
-                            <i class="{{ $producto['icono'] }}"></i>
+                        <div class="detalle-imagen-container">
+                            <img src="{{ asset($producto['imagen']) }}" alt="{{ $producto['nombre'] }}">
                         </div>
                         <span class="detalle-categoria-badge">{{ $producto['categoria'] }}</span>
                     </div>
@@ -90,7 +90,7 @@
                 nombre: "{{ addslashes($producto['nombre']) }}",
                 precio: "{{ $producto['precio'] }}",
                 precioNum: {{ (float) str_replace(['$', ',', ' MXN'], '', $producto['precio']) }},
-                icono: "{{ $producto['icono'] }}",
+                imagen: "{{ asset($producto['imagen']) }}",
                 marca: "{{ addslashes($producto['marca']) }}",
                 cantidad: 1
             };

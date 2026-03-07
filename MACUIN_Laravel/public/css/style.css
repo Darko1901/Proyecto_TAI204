@@ -730,20 +730,24 @@ body {
     padding: 25px 20px;
 }
 
-.producto-icono {
-    width: 100px;
-    height: 100px;
-    background: linear-gradient(135deg, #fce4e4 0%, #f8d7d7 100%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.producto-imagen {
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    overflow: hidden;
     margin-bottom: 15px;
+    background-color: #f5f5f5;
 }
 
-.producto-icono i {
-    font-size: 2.5rem;
-    color: #e57373;
+.producto-imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.producto-card:hover .producto-imagen img {
+    transform: scale(1.05);
 }
 
 .producto-card h3 {
@@ -808,20 +812,20 @@ body {
     text-decoration: underline;
 }
 
-.detalle-icono-container {
-    width: 180px;
-    height: 180px;
-    background: linear-gradient(135deg, #fce4e4 0%, #f8d7d7 100%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.detalle-imagen-container {
+    width: 280px;
+    height: 280px;
+    border-radius: 16px;
+    overflow: hidden;
     margin: 0 auto 20px auto;
+    background-color: #f5f5f5;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.detalle-icono-container i {
-    font-size: 5rem;
-    color: #e57373;
+.detalle-imagen-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .detalle-categoria-badge {

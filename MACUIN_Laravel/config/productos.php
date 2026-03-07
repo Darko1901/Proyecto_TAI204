@@ -8,7 +8,7 @@ return [
     1 => [
         'nombre' => 'Par Discos de Freno Ventilados',
         'icono' => 'fas fa-compact-disc',
-        'imagen' => 'img/productos/disco_freno.svg',
+        'imagen' => 'img/productos/disco_freno.jpg',
         'precio' => '$2,144.00 MXN',
         'descripcion' => 'Par de discos de freno ventilados de alto rendimiento. Fabricados con hierro fundido de alta calidad para una disipacion de calor superior y frenado seguro.',
         'marca' => 'Brembo',
@@ -21,7 +21,7 @@ return [
     2 => [
         'nombre' => 'Balatas Ceramicas Delanteras',
         'icono' => 'fas fa-brake-warning',
-        'imagen' => 'img/productos/balatas.svg',
+        'imagen' => 'img/productos/balatas.jpg',
         'precio' => '$644.00 MXN',
         'descripcion' => 'Balatas ceramicas de alta calidad con bajo nivel de ruido y polvo. Excelente rendimiento de frenado en condiciones secas y mojadas.',
         'marca' => 'Dynamik',
@@ -34,7 +34,7 @@ return [
     3 => [
         'nombre' => 'Bomba de Freno (Cilindro Maestro)',
         'icono' => 'fas fa-cogs',
-        'imagen' => 'img/productos/bomba_freno.svg',
+        'imagen' => 'img/productos/bomba_freno.jpg',
         'precio' => '$1,210.00 MXN',
         'descripcion' => 'Cilindro maestro de freno de repuesto. Fabricado bajo estrictos estandares de calidad para garantizar presion de frenado constante y segura.',
         'marca' => 'TRW',
@@ -47,7 +47,7 @@ return [
     4 => [
         'nombre' => 'Kit de Balatas Semimetalicas',
         'icono' => 'fas fa-layer-group',
-        'imagen' => 'img/productos/balatas.svg',
+        'imagen' => 'img/productos/balatas.jpg',
         'precio' => '$520.00 MXN',
         'descripcion' => 'Kit de pastillas de freno semimetalicas para uso rudo. Alta durabilidad y resistencia al desgaste, ideales para conduccion urbana y carretera.',
         'marca' => 'Partech',
@@ -60,7 +60,7 @@ return [
     5 => [
         'nombre' => 'Caliper de Freno Delantero',
         'icono' => 'fas fa-toolbox',
-        'imagen' => 'img/productos/caliper.svg',
+        'imagen' => 'img/productos/caliper.jpg',
         'precio' => '$1,850.00 MXN',
         'descripcion' => 'Mordaza de freno delantera reconstruida con piston nuevo. Incluye sellos y accesorios de montaje. Ajuste directo sin modificaciones.',
         'marca' => 'Brembo',
@@ -73,7 +73,7 @@ return [
     6 => [
         'nombre' => 'Tambor de Freno Trasero',
         'icono' => 'fas fa-drum',
-        'imagen' => 'img/productos/tambor_freno.svg',
+        'imagen' => 'img/productos/tambor_freno.jpg',
         'precio' => '$680.00 MXN',
         'descripcion' => 'Tambor de freno trasero de hierro fundido gris. Superficie de frenado rectificada de fabrica para un asentamiento optimo de las balatas.',
         'marca' => 'Dynamik',
@@ -86,7 +86,7 @@ return [
     7 => [
         'nombre' => 'Manguera de Frenos Delantera',
         'icono' => 'fas fa-grip-lines',
-        'imagen' => 'img/productos/manguera_frenos.svg',
+        'imagen' => 'img/productos/manguera_frenos.jpg',
         'precio' => '$285.00 MXN',
         'descripcion' => 'Manguera flexible de frenos con refuerzo interno de malla. Resistente a la presion y a los fluidos de freno DOT 3 y DOT 4.',
         'marca' => 'TRW',
@@ -99,7 +99,7 @@ return [
     8 => [
         'nombre' => 'Booster de Frenos',
         'icono' => 'fas fa-circle-notch',
-        'imagen' => 'img/productos/booster_frenos.svg',
+        'imagen' => 'img/productos/booster_frenos.jpg',
         'precio' => '$2,350.00 MXN',
         'descripcion' => 'Servofreno (booster) de vacio. Amplifica la fuerza de frenado para un pedal mas suave y una respuesta de frenado mas eficiente.',
         'marca' => 'Partech',
@@ -116,7 +116,7 @@ return [
     9 => [
         'nombre' => 'Amortiguador Delantero a Gas',
         'icono' => 'fas fa-arrows-alt-v',
-        'imagen' => 'img/productos/amortiguador.svg',
+        'imagen' => 'img/productos/amortiguador.jpg',
         'precio' => '$1,250.00 MXN',
         'descripcion' => 'Amortiguador delantero de gas presurizado para mayor estabilidad y control. Tecnologia de valvula sensible a la velocidad para un manejo superior.',
         'marca' => 'Monroe',
@@ -129,7 +129,7 @@ return [
     10 => [
         'nombre' => 'Amortiguador Trasero Hidraulico',
         'icono' => 'fas fa-arrows-alt-v',
-        'imagen' => 'img/productos/amortiguador.svg',
+        'imagen' => 'img/productos/amortiguador.jpg',
         'precio' => '$890.00 MXN',
         'descripcion' => 'Amortiguador trasero hidraulico de doble accion. Proporciona un viaje suave y confortable absorbiendo las irregularidades del camino.',
         'marca' => 'Boge',
@@ -142,7 +142,7 @@ return [
     11 => [
         'nombre' => 'Base de Amortiguador Delantera',
         'icono' => 'fas fa-dot-circle',
-        'imagen' => 'img/productos/base_amortiguador.svg',
+        'imagen' => 'img/productos/base_amortiguador.jpg',
         'precio' => '$450.00 MXN',
         'descripcion' => 'Base de montaje para amortiguador delantero con balero incluido. Reduce vibraciones y ruidos transmitidos a la carroceria del vehiculo.',
         'marca' => 'Master Ride',
@@ -155,7 +155,7 @@ return [
     12 => [
         'nombre' => 'Terminal de Direccion Exterior',
         'icono' => 'fas fa-link',
-        'imagen' => 'img/productos/terminal_direccion.svg',
+        'imagen' => 'img/productos/terminal_direccion.jpg',
         'precio' => '$320.00 MXN',
         'descripcion' => 'Terminal de direccion (rotula exterior) con junta esferica sellada. Fabricada en acero forjado para maxima resistencia y durabilidad.',
         'marca' => 'SYD',
@@ -168,7 +168,7 @@ return [
     13 => [
         'nombre' => 'Horquilla de Suspension Inferior',
         'icono' => 'fas fa-code-branch',
-        'imagen' => 'img/productos/horquilla.svg',
+        'imagen' => 'img/productos/horquilla.jpg',
         'precio' => '$1,680.00 MXN',
         'descripcion' => 'Brazo de control inferior (horquilla) con bujes y rotula premontados. Estructura de aluminio forjado ligera y resistente.',
         'marca' => 'TRW',
@@ -181,7 +181,7 @@ return [
     14 => [
         'nombre' => 'Cremallera de Direccion',
         'icono' => 'fas fa-steering-wheel',
-        'imagen' => 'img/productos/cremallera.svg',
+        'imagen' => 'img/productos/cremallera.jpg',
         'precio' => '$4,500.00 MXN',
         'descripcion' => 'Cremallera de direccion hidraulica reconstruida. Incluye terminales interiores y sellos nuevos. Prueba de presion y estanqueidad garantizada.',
         'marca' => 'GROB',
@@ -194,7 +194,7 @@ return [
     15 => [
         'nombre' => 'Maza de Rueda Delantera',
         'icono' => 'fas fa-circle',
-        'imagen' => 'img/productos/maza_rueda.svg',
+        'imagen' => 'img/productos/maza_rueda.jpg',
         'precio' => '$1,350.00 MXN',
         'descripcion' => 'Conjunto de maza y balero de rueda delantera con sensor ABS integrado. Instalacion directa sin necesidad de prensado.',
         'marca' => 'SYD',
@@ -207,7 +207,7 @@ return [
     16 => [
         'nombre' => 'Rotula de Suspension Superior',
         'icono' => 'fas fa-dot-circle',
-        'imagen' => 'img/productos/rotula.svg',
+        'imagen' => 'img/productos/rotula.jpg',
         'precio' => '$380.00 MXN',
         'descripcion' => 'Rotula de suspension superior con guardapolvo integrado. Junta esferica de precision para un manejo seguro y alineacion correcta.',
         'marca' => 'Master Ride',
@@ -220,7 +220,7 @@ return [
     17 => [
         'nombre' => 'Resorte de Suspension Delantero',
         'icono' => 'fas fa-compress-alt',
-        'imagen' => 'img/productos/resorte.svg',
+        'imagen' => 'img/productos/resorte.jpg',
         'precio' => '$750.00 MXN',
         'descripcion' => 'Resorte helicoidal de suspension delantera. Fabricado en acero de alta resistencia con recubrimiento epoxico anticorrosion.',
         'marca' => 'Monroe',
@@ -233,7 +233,7 @@ return [
     18 => [
         'nombre' => 'Bieleta Estabilizadora',
         'icono' => 'fas fa-link',
-        'imagen' => 'img/productos/bieleta.svg',
+        'imagen' => 'img/productos/bieleta.jpg',
         'precio' => '$190.00 MXN',
         'descripcion' => 'Bieleta (tirante) de barra estabilizadora con rotulas en ambos extremos. Elimina ruidos y mejora la estabilidad en curvas.',
         'marca' => 'SYD',
@@ -246,7 +246,7 @@ return [
     19 => [
         'nombre' => 'Bomba de Direccion Hidraulica',
         'icono' => 'fas fa-tachometer-alt',
-        'imagen' => 'img/productos/bomba_direccion.svg',
+        'imagen' => 'img/productos/bomba_direccion.jpg',
         'precio' => '$2,800.00 MXN',
         'descripcion' => 'Bomba de direccion hidraulica de paletas con deposito incluido. Proporciona asistencia de direccion suave y consistente a todas las velocidades.',
         'marca' => 'TRW',
@@ -263,7 +263,7 @@ return [
     20 => [
         'nombre' => 'Faro Delantero Derecho',
         'icono' => 'fas fa-lightbulb',
-        'imagen' => 'img/productos/faro_delantero.svg',
+        'imagen' => 'img/productos/faro_delantero.jpg',
         'precio' => '$1,890.00 MXN',
         'descripcion' => 'Faro delantero lado pasajero con lente transparente. Compatible con focos halogenos H4. Incluye base, arneses y ajustadores.',
         'marca' => 'TYC',
@@ -276,7 +276,7 @@ return [
     21 => [
         'nombre' => 'Faro Delantero Izquierdo',
         'icono' => 'fas fa-lightbulb',
-        'imagen' => 'img/productos/faro_delantero.svg',
+        'imagen' => 'img/productos/faro_delantero.jpg',
         'precio' => '$1,890.00 MXN',
         'descripcion' => 'Faro delantero lado conductor con lente transparente. Ajuste directo, misma calidad que equipo original. Incluye sistema de ajuste de altura.',
         'marca' => 'TYC',
@@ -289,7 +289,7 @@ return [
     22 => [
         'nombre' => 'Calavera Trasera LED',
         'icono' => 'fas fa-sun',
-        'imagen' => 'img/productos/calavera_led.svg',
+        'imagen' => 'img/productos/calavera_led.jpg',
         'precio' => '$2,350.00 MXN',
         'descripcion' => 'Calavera trasera con tecnologia LED integrada. Mayor visibilidad y menor consumo energetico. Diseño tipo ahumado deportivo.',
         'marca' => 'DEPO',
@@ -302,7 +302,7 @@ return [
     23 => [
         'nombre' => 'Faro para Niebla Delantero',
         'icono' => 'fas fa-cloud-sun',
-        'imagen' => 'img/productos/faro_niebla.svg',
+        'imagen' => 'img/productos/faro_niebla.jpg',
         'precio' => '$780.00 MXN',
         'descripcion' => 'Faro auxiliar antiniebla con lente transparente y reflector cromado. Patron de haz ancho y bajo para mejorar visibilidad en condiciones adversas.',
         'marca' => 'TYC',
@@ -315,7 +315,7 @@ return [
     24 => [
         'nombre' => 'Kit de Focos LED H7',
         'icono' => 'fas fa-bolt',
-        'imagen' => 'img/productos/kit_led.svg',
+        'imagen' => 'img/productos/kit_led.jpg',
         'precio' => '$950.00 MXN',
         'descripcion' => 'Par de focos LED H7 de 6000K (luz blanca). 12,000 lumenes por par con ventilador de enfriamiento integrado. Plug and play sin modificaciones.',
         'marca' => 'DEPO',
@@ -328,7 +328,7 @@ return [
     25 => [
         'nombre' => 'Barra LED 120W 22 Pulgadas',
         'icono' => 'fas fa-grip-horizontal',
-        'imagen' => 'img/productos/barra_led.svg',
+        'imagen' => 'img/productos/barra_led.jpg',
         'precio' => '$3,200.00 MXN',
         'descripcion' => 'Barra de luz LED de alto rendimiento con 40 LEDs CREE. Combinacion de haz spot y flood para iluminacion de largo y corto alcance. IP68.',
         'marca' => 'TYC',
@@ -341,7 +341,7 @@ return [
     26 => [
         'nombre' => 'Foco Halogeno H4 60/55W',
         'icono' => 'fas fa-lightbulb',
-        'imagen' => 'img/productos/foco_halogeno.svg',
+        'imagen' => 'img/productos/foco_halogeno.jpg',
         'precio' => '$120.00 MXN',
         'descripcion' => 'Foco halogeno estandar H4 de doble filamento para luz alta y baja. Luz amarilla calida 3200K. Larga vida util de 500 horas.',
         'marca' => 'TYC',
@@ -354,7 +354,7 @@ return [
     27 => [
         'nombre' => 'Cuarto Lateral Ambar',
         'icono' => 'fas fa-square',
-        'imagen' => 'img/productos/cuarto_lateral.svg',
+        'imagen' => 'img/productos/cuarto_lateral.jpg',
         'precio' => '$180.00 MXN',
         'descripcion' => 'Luz de cuarto lateral color ambar. Indica la posicion del vehiculo a otros conductores. Incluye base y foco.',
         'marca' => 'DEPO',
@@ -371,7 +371,7 @@ return [
     28 => [
         'nombre' => 'Defensa Delantera Completa',
         'icono' => 'fas fa-car',
-        'imagen' => 'img/productos/defensa.svg',
+        'imagen' => 'img/productos/defensa.jpg',
         'precio' => '$3,630.00 MXN',
         'descripcion' => 'Fascia delantera de plastico ABS inyectado. Acabado en color negro liso para pintar. Incluye refuerzos internos y puntos de montaje.',
         'marca' => 'Generica',
@@ -384,7 +384,7 @@ return [
     29 => [
         'nombre' => 'Espejo Electrico con Desempañante',
         'icono' => 'fas fa-clone',
-        'imagen' => 'img/productos/espejo.svg',
+        'imagen' => 'img/productos/espejo.jpg',
         'precio' => '$1,326.00 MXN',
         'descripcion' => 'Espejo retrovisor electrico con funcion de desempañante y luz de cortesia. Acabado para pintar. Lado conductor.',
         'marca' => 'Generica',
@@ -397,7 +397,7 @@ return [
     30 => [
         'nombre' => 'Cofre (Capo) Delantero',
         'icono' => 'fas fa-car-side',
-        'imagen' => 'img/productos/cofre.svg',
+        'imagen' => 'img/productos/cofre.jpg',
         'precio' => '$4,200.00 MXN',
         'descripcion' => 'Cofre delantero de lamina de acero calibre 20. Incluye refuerzos estructurales y puntos de bisagra. Acabado en primer gris.',
         'marca' => 'Generica',
@@ -410,7 +410,7 @@ return [
     31 => [
         'nombre' => 'Parrilla Frontal Cromada',
         'icono' => 'fas fa-th',
-        'imagen' => 'img/productos/parrilla.svg',
+        'imagen' => 'img/productos/parrilla.jpg',
         'precio' => '$1,450.00 MXN',
         'descripcion' => 'Parrilla frontal con acabado cromado y detalle en negro brillante. Diseño OEM para ajuste perfecto. Incluye emblema y accesorios de montaje.',
         'marca' => 'Generica',
@@ -423,7 +423,7 @@ return [
     32 => [
         'nombre' => 'Tolva Salpicadera Delantera',
         'icono' => 'fas fa-shield-alt',
-        'imagen' => 'img/productos/tolva.svg',
+        'imagen' => 'img/productos/tolva.jpg',
         'precio' => '$380.00 MXN',
         'descripcion' => 'Tolva guardabarros interna de plastico. Protege los componentes del motor contra agua, lodo y piedras. Instalacion con grapas y tornillos.',
         'marca' => 'Generica',
@@ -436,7 +436,7 @@ return [
     33 => [
         'nombre' => 'Salpicadera Delantera Derecha',
         'icono' => 'fas fa-shield-alt',
-        'imagen' => 'img/productos/salpicadera.svg',
+        'imagen' => 'img/productos/salpicadera.jpg',
         'precio' => '$1,950.00 MXN',
         'descripcion' => 'Salpicadera delantera lado pasajero de lamina de acero. Incluye soporte de faro y arco de rueda. Acabado en primer anticorrosivo.',
         'marca' => 'Generica',
@@ -449,7 +449,7 @@ return [
     34 => [
         'nombre' => 'Manija Puerta Exterior Cromada',
         'icono' => 'fas fa-door-open',
-        'imagen' => 'img/productos/manija.svg',
+        'imagen' => 'img/productos/manija.jpg',
         'precio' => '$350.00 MXN',
         'descripcion' => 'Manija exterior para puerta delantera con acabado cromado. Mecanismo de apertura resistente, incluye cilindro para llave.',
         'marca' => 'Generica',
@@ -462,7 +462,7 @@ return [
     35 => [
         'nombre' => 'Plumas Limpiaparabrisas (Par)',
         'icono' => 'fas fa-wind',
-        'imagen' => 'img/productos/plumas.svg',
+        'imagen' => 'img/productos/plumas.jpg',
         'precio' => '$425.00 MXN',
         'descripcion' => 'Par de plumas limpiaparabrisas tipo bayoneta con hule de silicone. Limpieza silenciosa y eficiente. Diseño aerodinamico de perfil bajo.',
         'marca' => 'Gonher',
@@ -475,7 +475,7 @@ return [
     36 => [
         'nombre' => 'Spoiler Trasero de Cajuela',
         'icono' => 'fas fa-angle-up',
-        'imagen' => 'img/productos/spoiler.svg',
+        'imagen' => 'img/productos/spoiler.jpg',
         'precio' => '$1,200.00 MXN',
         'descripcion' => 'Aleron trasero tipo lip de plastico ABS. Se adhiere con cinta 3M y tornillos de refuerzo. Acabado en primer listo para pintar.',
         'marca' => 'Generica',
@@ -492,7 +492,7 @@ return [
     37 => [
         'nombre' => 'Llanta 185/65 R15 All Season',
         'icono' => 'fas fa-circle-notch',
-        'imagen' => 'img/productos/llanta.svg',
+        'imagen' => 'img/productos/llanta.jpg',
         'precio' => '$1,450.00 MXN',
         'descripcion' => 'Llanta para auto sedan toda temporada. Compuesto de hule con silice para mejor agarre en mojado. Diseño de banda de rodamiento optimizado.',
         'marca' => 'Goodyear',
@@ -505,7 +505,7 @@ return [
     38 => [
         'nombre' => 'Llanta 205/55 R16 Performance',
         'icono' => 'fas fa-circle-notch',
-        'imagen' => 'img/productos/llanta.svg',
+        'imagen' => 'img/productos/llanta.jpg',
         'precio' => '$2,100.00 MXN',
         'descripcion' => 'Llanta de alto rendimiento con perfil bajo para vehiculos deportivos y sedanes premium. Excelente traccion lateral en curvas.',
         'marca' => 'Continental',
@@ -518,7 +518,7 @@ return [
     39 => [
         'nombre' => 'Llanta 235/75 R15 Todo Terreno',
         'icono' => 'fas fa-circle-notch',
-        'imagen' => 'img/productos/llanta.svg',
+        'imagen' => 'img/productos/llanta.jpg',
         'precio' => '$2,800.00 MXN',
         'descripcion' => 'Llanta todo terreno AT con diseño de taco agresivo. Refuerzo lateral contra impactos. Ideal para camionetas de trabajo y aventura.',
         'marca' => 'Cooper',
@@ -531,7 +531,7 @@ return [
     40 => [
         'nombre' => 'Llanta 265/70 R17 Highway',
         'icono' => 'fas fa-circle-notch',
-        'imagen' => 'img/productos/llanta.svg',
+        'imagen' => 'img/productos/llanta.jpg',
         'precio' => '$3,400.00 MXN',
         'descripcion' => 'Llanta para camioneta SUV de uso en carretera. Rodamiento silencioso con alto kilometraje. Canales de evacuacion de agua amplios.',
         'marca' => 'Yokohama',
@@ -544,7 +544,7 @@ return [
     41 => [
         'nombre' => 'Llanta 175/70 R13 Economica',
         'icono' => 'fas fa-circle-notch',
-        'imagen' => 'img/productos/llanta.svg',
+        'imagen' => 'img/productos/llanta.jpg',
         'precio' => '$850.00 MXN',
         'descripcion' => 'Llanta economica para autos compactos. Baja resistencia al rodamiento para ahorro de combustible. Buena duracion en uso urbano.',
         'marca' => 'Tornel',
@@ -557,7 +557,7 @@ return [
     42 => [
         'nombre' => 'Llanta 225/45 R18 UHP',
         'icono' => 'fas fa-circle-notch',
-        'imagen' => 'img/productos/llanta.svg',
+        'imagen' => 'img/productos/llanta.jpg',
         'precio' => '$3,950.00 MXN',
         'descripcion' => 'Llanta ultra alto rendimiento para vehiculos deportivos. Compuesto de carrera para maximo agarre. Clasificacion de velocidad W (270 km/h).',
         'marca' => 'Nexen',
@@ -574,7 +574,7 @@ return [
     43 => [
         'nombre' => 'Kit de Afinacion Completo',
         'icono' => 'fas fa-wrench',
-        'imagen' => 'img/productos/kit_afinacion.svg',
+        'imagen' => 'img/productos/kit_afinacion.jpg',
         'precio' => '$1,850.00 MXN',
         'descripcion' => 'Kit de afinacion mayor que incluye: filtro de aceite, filtro de aire, filtro de gasolina, bujias de platino y aceite sintetico 5W-30 (5 litros).',
         'marca' => 'Gonher / Motorcraft',
@@ -587,7 +587,7 @@ return [
     44 => [
         'nombre' => 'Kit de Aceite y Filtro de Motor',
         'icono' => 'fas fa-oil-can',
-        'imagen' => 'img/productos/aceite_motor.svg',
+        'imagen' => 'img/productos/aceite_motor.jpg',
         'precio' => '$890.00 MXN',
         'descripcion' => 'Kit de cambio de aceite que incluye: 4 litros de aceite sintetico 5W-30 y filtro de aceite premium. Todo lo necesario para un cambio rapido.',
         'marca' => 'Mobil / Gonher',
@@ -600,7 +600,7 @@ return [
     45 => [
         'nombre' => 'Kit de Filtros (Aire + Aceite + Gasolina)',
         'icono' => 'fas fa-filter',
-        'imagen' => 'img/productos/kit_filtros.svg',
+        'imagen' => 'img/productos/kit_filtros.jpg',
         'precio' => '$520.00 MXN',
         'descripcion' => 'Set de 3 filtros para afinacion: filtro de aire del motor, filtro de aceite y filtro de combustible. Materiales filtrantes de alta eficiencia.',
         'marca' => 'Gonher',
@@ -613,7 +613,7 @@ return [
     46 => [
         'nombre' => 'Kit de Filtros y Bujias',
         'icono' => 'fas fa-plug',
-        'imagen' => 'img/productos/kit_afinacion.svg',
+        'imagen' => 'img/productos/kit_afinacion.jpg',
         'precio' => '$780.00 MXN',
         'descripcion' => 'Incluye filtro de aire, filtro de aceite, 4 bujias de iridio y junta de tapon de carter. Ideal para afinaciones economicas sin aceite.',
         'marca' => 'NGK / Gonher',
@@ -626,7 +626,7 @@ return [
     47 => [
         'nombre' => 'Aceite de Motor Sintetico 5W-30 (5L)',
         'icono' => 'fas fa-oil-can',
-        'imagen' => 'img/productos/aceite_motor.svg',
+        'imagen' => 'img/productos/aceite_motor.jpg',
         'precio' => '$650.00 MXN',
         'descripcion' => 'Aceite sintetico completo 5W-30 de 5 litros. Proteccion superior del motor contra el desgaste, depositos y lodos. Cumple normas API SP.',
         'marca' => 'Mobil',
@@ -639,7 +639,7 @@ return [
     48 => [
         'nombre' => 'Bujia de Encendido Iridio',
         'icono' => 'fas fa-bolt',
-        'imagen' => 'img/productos/bujia.svg',
+        'imagen' => 'img/productos/bujia.jpg',
         'precio' => '$185.00 MXN',
         'descripcion' => 'Bujia de encendido con electrodo central de iridio fino (0.6mm). Encendido mas rapido, combustion mas completa y mayor vida util (100,000 km).',
         'marca' => 'NGK',
@@ -656,7 +656,7 @@ return [
     49 => [
         'nombre' => 'Sensor de Oxigeno (Lambda)',
         'icono' => 'fas fa-microchip',
-        'imagen' => 'img/productos/sensor_oxigeno.svg',
+        'imagen' => 'img/productos/sensor_oxigeno.jpg',
         'precio' => '$680.00 MXN',
         'descripcion' => 'Sensor de oxigeno de banda ancha para control de mezcla aire-combustible. Conector OEM de 4 cables. Tiempo de respuesta rapido.',
         'marca' => 'NTK',
@@ -669,7 +669,7 @@ return [
     50 => [
         'nombre' => 'Sensor de Posicion del Cigüeñal (CKP)',
         'icono' => 'fas fa-satellite-dish',
-        'imagen' => 'img/productos/sensor_ckp.svg',
+        'imagen' => 'img/productos/sensor_ckp.jpg',
         'precio' => '$520.00 MXN',
         'descripcion' => 'Sensor CKP de efecto Hall para señal de RPM y posicion del cigüeñal. Esencial para el encendido y la inyeccion de combustible.',
         'marca' => 'NTK',
@@ -682,7 +682,7 @@ return [
     51 => [
         'nombre' => 'Sensor MAF (Flujo de Aire)',
         'icono' => 'fas fa-wind',
-        'imagen' => 'img/productos/sensor_maf.svg',
+        'imagen' => 'img/productos/sensor_maf.jpg',
         'precio' => '$1,250.00 MXN',
         'descripcion' => 'Sensor de masa de flujo de aire con elemento sensor de hilo caliente. Medicion precisa del volumen de aire que ingresa al motor.',
         'marca' => 'Bosch',
@@ -695,7 +695,7 @@ return [
     52 => [
         'nombre' => 'Alternador Remanufacturado 120A',
         'icono' => 'fas fa-car-battery',
-        'imagen' => 'img/productos/alternador.svg',
+        'imagen' => 'img/productos/alternador.jpg',
         'precio' => '$2,400.00 MXN',
         'descripcion' => 'Alternador reconstruido con regulador de voltaje y escobillas nuevos. Potencia de 120 Amperes. Probado en banco para garantizar rendimiento.',
         'marca' => 'Bosch',
@@ -708,7 +708,7 @@ return [
     53 => [
         'nombre' => 'Marcha (Motor de Arranque)',
         'icono' => 'fas fa-play-circle',
-        'imagen' => 'img/productos/marcha.svg',
+        'imagen' => 'img/productos/marcha.jpg',
         'precio' => '$1,950.00 MXN',
         'descripcion' => 'Motor de arranque remanufacturado con solenoide y bendix nuevos. Giro suave y potente para arranque confiable en frio.',
         'marca' => 'Bosch',
@@ -721,7 +721,7 @@ return [
     54 => [
         'nombre' => 'Sensor de Temperatura del Refrigerante',
         'icono' => 'fas fa-thermometer-half',
-        'imagen' => 'img/productos/sensor_temp.svg',
+        'imagen' => 'img/productos/sensor_temp.jpg',
         'precio' => '$220.00 MXN',
         'descripcion' => 'Sensor ECT de tipo termistor NTC. Envia señal de temperatura del motor a la computadora para control de inyeccion y ventilador.',
         'marca' => 'NTK',
@@ -734,7 +734,7 @@ return [
     55 => [
         'nombre' => 'Bobina de Encendido',
         'icono' => 'fas fa-bolt',
-        'imagen' => 'img/productos/bobina.svg',
+        'imagen' => 'img/productos/bobina.jpg',
         'precio' => '$480.00 MXN',
         'descripcion' => 'Bobina de encendido tipo lapiz (COP) con modulo de potencia integrado. Genera chispa de alto voltaje para combustion eficiente.',
         'marca' => 'Bosch',
@@ -747,7 +747,7 @@ return [
     56 => [
         'nombre' => 'Sensor de Velocidad (VSS)',
         'icono' => 'fas fa-tachometer-alt',
-        'imagen' => 'img/productos/sensor_vss.svg',
+        'imagen' => 'img/productos/sensor_vss.jpg',
         'precio' => '$350.00 MXN',
         'descripcion' => 'Sensor de velocidad del vehiculo tipo magnetoresistivo. Señal digital precisa para velocimetro, ABS y control de transmision.',
         'marca' => 'NTK',
@@ -764,7 +764,7 @@ return [
     57 => [
         'nombre' => 'Aceite de Motor Sintetico 0W-20 (4L)',
         'icono' => 'fas fa-oil-can',
-        'imagen' => 'img/productos/aceite_sintetico.svg',
+        'imagen' => 'img/productos/aceite_sintetico.jpg',
         'precio' => '$720.00 MXN',
         'descripcion' => 'Aceite sintetico de baja viscosidad 0W-20 para motores modernos. Ahorro de combustible y proteccion desde el arranque en frio. API SP.',
         'marca' => 'Castrol',
@@ -777,7 +777,7 @@ return [
     58 => [
         'nombre' => 'Aceite de Transmision Automatica ATF',
         'icono' => 'fas fa-tint',
-        'imagen' => 'img/productos/aceite_transmision.svg',
+        'imagen' => 'img/productos/aceite_transmision.jpg',
         'precio' => '$280.00 MXN',
         'descripcion' => 'Fluido para transmision automatica multiusos. Compatible con la mayoria de transmisiones de 4, 5 y 6 velocidades. Proteccion antidesgaste.',
         'marca' => 'Mobil',
@@ -790,7 +790,7 @@ return [
     59 => [
         'nombre' => 'Refrigerante Anticongelante (4L)',
         'icono' => 'fas fa-snowflake',
-        'imagen' => 'img/productos/refrigerante.svg',
+        'imagen' => 'img/productos/refrigerante.jpg',
         'precio' => '$250.00 MXN',
         'descripcion' => 'Refrigerante de larga vida 50/50 premezclado. Proteccion contra congelamiento hasta -37 grados C y ebullicion hasta 129 grados C. Compatible con todos los metales.',
         'marca' => 'Peak',
@@ -803,7 +803,7 @@ return [
     60 => [
         'nombre' => 'Liquido de Frenos DOT 4 (500ml)',
         'icono' => 'fas fa-flask',
-        'imagen' => 'img/productos/liquido_frenos.svg',
+        'imagen' => 'img/productos/liquido_frenos.jpg',
         'precio' => '$120.00 MXN',
         'descripcion' => 'Fluido de frenos DOT 4 de alto punto de ebullicion (230 grados C seco). Compatible con sistemas ABS. No mezclar con DOT 5 (base silicone).',
         'marca' => 'TRW',
@@ -816,7 +816,7 @@ return [
     61 => [
         'nombre' => 'Aceite de Direccion Hidraulica',
         'icono' => 'fas fa-tint',
-        'imagen' => 'img/productos/liquido_direccion.svg',
+        'imagen' => 'img/productos/liquido_direccion.jpg',
         'precio' => '$150.00 MXN',
         'descripcion' => 'Fluido ATF para sistemas de direccion hidraulica. Formulado con aditivos antidesgaste y antiespumante para una direccion suave.',
         'marca' => 'Bardahl',
@@ -829,7 +829,7 @@ return [
     62 => [
         'nombre' => 'Aditivo Limpia Inyectores',
         'icono' => 'fas fa-spray-can',
-        'imagen' => 'img/productos/aditivo.svg',
+        'imagen' => 'img/productos/aditivo.jpg',
         'precio' => '$180.00 MXN',
         'descripcion' => 'Aditivo concentrado para limpieza del sistema de inyeccion de combustible. Elimina depositos de carbon y restaura el patron de rocio.',
         'marca' => 'Bardahl',

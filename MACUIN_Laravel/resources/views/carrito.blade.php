@@ -89,9 +89,7 @@
                 tr.innerHTML = `
                     <td>
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <div style="width:40px; height:40px; background:linear-gradient(135deg,#fce4e4,#f8d7d7); border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                                <i class="${item.icono}" style="color:#e57373;"></i>
-                            </div>
+                            <img src="${item.imagen}" alt="${item.nombre}" style="width:50px; height:50px; object-fit:cover; border-radius:8px;">
                             <div>
                                 <strong>${item.nombre}</strong>
                                 <br><small style="color:#888;">${item.marca}</small>
