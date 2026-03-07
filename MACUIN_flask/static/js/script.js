@@ -183,8 +183,13 @@ function descargarPDF() {
     const elemento = document.getElementById('panel-ventas');
     if (!elemento) return;
     
-    const botones = document.querySelectorAll('.row-actions, .toolbar button');
-    botones.forEach(btn => btn.style.display = 'none'); 
+    // Ocultar toolbar y columna de acciones
+    const ocultarPDF = document.querySelectorAll('.row-actions, .toolbar, .col-acciones');
+    ocultarPDF.forEach(el => el.style.display = 'none'); 
+
+    // Mostrar título del PDF
+    const tituloPDF = document.getElementById('titulo-pdf');
+    if (tituloPDF) tituloPDF.style.display = 'block';
 
     const opciones = {
         margin: 10,
@@ -196,11 +201,13 @@ function descargarPDF() {
 
     if (typeof html2pdf !== 'undefined') {
         html2pdf().set(opciones).from(elemento).save().then(() => {
-            botones.forEach(btn => btn.style.display = ''); 
+            ocultarPDF.forEach(el => el.style.display = ''); 
+            if (tituloPDF) tituloPDF.style.display = 'none';
         });
     } else {
         alert("Librería PDF no disponible.");
-        botones.forEach(btn => btn.style.display = '');
+        ocultarPDF.forEach(el => el.style.display = '');
+        if (tituloPDF) tituloPDF.style.display = 'none';
     }
 }
 
