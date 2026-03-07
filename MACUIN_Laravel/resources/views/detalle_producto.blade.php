@@ -61,13 +61,57 @@
                         </div>
 
                         <div class="form-actions" style="margin-top: 25px;">
-                            <a href="{{ route('carrito') }}" class="btn-login" style="width: auto; margin-top: 0; padding: 15px 30px;">Agregar al Carrito</a>
-                            <a href="{{ route('catalogo') }}" class="btn-secondary">Volver al Catálogo</a>
+                            @if($producto['disponible'])
+                                <button onclick="agregarAlCarrito()" class="btn-login" style="width: auto; margin-top: 0; padding: 15px 30px; cursor: pointer;">
+                                    <i class="fas fa-cart-plus"></i> Agregar al Carrito
+                                </button>
+                            @else
+                                <button class="btn-login" style="width: auto; margin-top: 0; padding: 15px 30px; background-color: #ccc; cursor: not-allowed;" disabled>
+                                    <i class="fas fa-ban"></i> Producto Agotado
+                                </button>
+                            @endif
+                            <a href="{{ route('catalogo') }}" class="btn-secondary">Volver al Catalogo</a>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+
+    <!-- Alerta de producto agregado -->
+    <div id="alerta-carrito" style="display:none; position:fixed; top:20px; right:20px; background:#28a745; color:white; padding:15px 25px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:9999; font-size:0.95rem;">
+        <i class="fas fa-check-circle"></i> Producto agregado al carrito
+    </div>
+
+    <script>
+        function agregarAlCarrito() {
+            const producto = {
+                id: {{ $id }},
+                nombre: "{{ addslashes($producto['nombre']) }}",
+                precio: "{{ $producto['precio'] }}",
+                precioNum: {{ (float) str_replace(['$', ',', ' MXN'], '', $producto['precio']) }},
+                icono: "{{ $producto['icono'] }}",
+                marca: "{{ addslashes($producto['marca']) }}",
+                cantidad: 1
+            };
+
+            let carrito = JSON.parse(localStorage.getItem('macuin_carrito') || '[]');
+
+            // Si ya existe, incrementar cantidad
+            const idx = carrito.findIndex(p => p.id === producto.id);
+            if (idx >= 0) {
+                carrito[idx].cantidad++;
+            } else {
+                carrito.push(producto);
+            }
+
+            localStorage.setItem('macuin_carrito', JSON.stringify(carrito));
+
+            // Mostrar alerta
+            const alerta = document.getElementById('alerta-carrito');
+            alerta.style.display = 'block';
+            setTimeout(() => { alerta.style.display = 'none'; }, 2500);
+        }
+    </script>
 </body>
 </html>
