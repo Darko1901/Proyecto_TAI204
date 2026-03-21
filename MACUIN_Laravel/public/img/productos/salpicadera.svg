@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+    <linearGradient id="panel" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#555"/><stop offset="100%" style="stop-color:#333"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Salpicadera / Fender panel -->
+  <path d="M80,300 L80,150 Q80,120 110,115 L280,100 Q310,100 315,130 L320,250 Q320,300 290,305 L300,300 Q250,330 130,330 Q90,325 80,300 Z" fill="url(#panel)" stroke="#222" stroke-width="2"/>
+  <!-- Arco de rueda -->
+  <path d="M100,310 Q130,260 200,250 Q270,260 300,310" fill="url(#bg)" stroke="#222" stroke-width="2"/>
+  <!-- Línea de carácter -->
+  <path d="M90,180 L310,160" fill="none" stroke="#444" stroke-width="2"/>
+  <!-- Moldura -->
+  <path d="M105,305 Q130,270 200,260 Q270,270 295,305" fill="none" stroke="#666" stroke-width="3"/>
+  <!-- Orificio indicador -->
+  <ellipse cx="270" cy="200" rx="15" ry="10" fill="#555" stroke="#666" stroke-width="1.5"/>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Motor de arranque / Starter motor -->
+  <!-- Cuerpo principal cilíndrico -->
+  <rect x="100" y="155" width="160" height="90" rx="45" fill="#555" stroke="#444" stroke-width="2"/>
+  <!-- Solenoide -->
+  <rect x="240" y="140" width="70" height="65" rx="8" fill="#666" stroke="#555" stroke-width="2"/>
+  <!-- Terminal del solenoide -->
+  <circle cx="265" cy="135" r="8" fill="#cc8800" stroke="#aa6600" stroke-width="2"/>
+  <circle cx="290" cy="135" r="8" fill="#cc8800" stroke="#aa6600" stroke-width="2"/>
+  <!-- Piñón de ataque (bendix) -->
+  <circle cx="95" cy="200" r="20" fill="#888" stroke="#777" stroke-width="2"/>
+  <!-- Dientes del piñón -->
+  <rect x="72" y="190" width="8" height="6" fill="#999"/>
+  <rect x="72" y="200" width="8" height="6" fill="#999"/>
+  <rect x="78" y="183" width="6" height="6" fill="#999"/>
+  <rect x="78" y="209" width="6" height="6" fill="#999"/>
+  <circle cx="95" cy="200" r="8" fill="#999" stroke="#888" stroke-width="1"/>
+  <!-- Brida de montaje -->
+  <rect x="190" y="245" width="60" height="15" rx="3" fill="#666"/>
+  <circle cx="200" cy="252" r="5" fill="#888" stroke="#777" stroke-width="1"/>
+  <circle cx="240" cy="252" r="5" fill="#888" stroke="#777" stroke-width="1"/>
+  <!-- Bandas del motor -->
+  <line x1="120" y1="158" x2="240" y2="143" stroke="#444" stroke-width="1.5"/>
+  <line x1="120" y1="242" x2="240" y2="202" stroke="#444" stroke-width="1.5"/>
+  <!-- Cable -->
+  <path d="M265,135 L265,110 Q265,95 280,95 L330,95" fill="none" stroke="#333" stroke-width="3"/>
+</svg>

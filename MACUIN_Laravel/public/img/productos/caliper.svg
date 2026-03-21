@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fce4e4"/>
+      <stop offset="100%" style="stop-color:#f8d7d7"/>
+    </linearGradient>
+    <linearGradient id="caliper" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#cc3333"/>
+      <stop offset="100%" style="stop-color:#991111"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Caliper body -->
+  <path d="M130,120 L270,120 Q290,120 290,140 L290,260 Q290,280 270,280 L130,280 Q110,280 110,260 L110,140 Q110,120 130,120 Z" fill="url(#caliper)" stroke="#880000" stroke-width="2"/>
+  <!-- Ventanilla -->
+  <rect x="140" y="150" width="120" height="40" rx="5" fill="#aa2222"/>
+  <!-- Pistones -->
+  <rect x="150" y="210" width="30" height="50" rx="4" fill="#881111" stroke="#660000" stroke-width="1"/>
+  <rect x="220" y="210" width="30" height="50" rx="4" fill="#881111" stroke="#660000" stroke-width="1"/>
+  <!-- Soporte montaje -->
+  <rect x="120" y="280" width="40" height="30" rx="3" fill="#880000"/>
+  <rect x="240" y="280" width="40" height="30" rx="3" fill="#880000"/>
+  <!-- Tornillos -->
+  <circle cx="140" cy="295" r="6" fill="#555"/>
+  <circle cx="260" cy="295" r="6" fill="#555"/>
+  <!-- Manguera -->
+  <path d="M290,170 C320,170 340,150 340,120" fill="none" stroke="#333" stroke-width="5"/>
+  <circle cx="340" cy="115" r="6" fill="#444"/>
+  <!-- Logo Brembo style -->
+  <text x="200" y="178" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold" font-size="18">BREMBO</text>
+</svg>

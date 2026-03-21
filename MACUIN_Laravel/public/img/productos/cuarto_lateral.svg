@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Cuarto lateral / side marker -->
+  <rect x="130" y="120" width="140" height="70" rx="15" fill="#ff9900" stroke="#cc7700" stroke-width="2"/>
+  <!-- Lens texture -->
+  <line x1="145" y1="125" x2="145" y2="185" stroke="#ffaa33" stroke-width="3"/>
+  <line x1="165" y1="125" x2="165" y2="185" stroke="#ffaa33" stroke-width="3"/>
+  <line x1="185" y1="125" x2="185" y2="185" stroke="#ffaa33" stroke-width="3"/>
+  <line x1="205" y1="125" x2="205" y2="185" stroke="#ffaa33" stroke-width="3"/>
+  <line x1="225" y1="125" x2="225" y2="185" stroke="#ffaa33" stroke-width="3"/>
+  <line x1="245" y1="125" x2="245" y2="185" stroke="#ffaa33" stroke-width="3"/>
+  <!-- Chrome border -->
+  <rect x="130" y="120" width="140" height="70" rx="15" fill="none" stroke="#bbb" stroke-width="3"/>
+  <!-- Bulb inside -->
+  <circle cx="200" cy="155" r="12" fill="#ffdd66" opacity="0.6"/>
+  <!-- Base/housing -->
+  <rect x="145" y="190" width="110" height="20" rx="4" fill="#555" stroke="#444" stroke-width="1.5"/>
+  <!-- Conector -->
+  <rect x="180" y="210" width="40" height="15" rx="3" fill="#666"/>
+  <rect x="190" y="225" width="5" height="15" rx="1" fill="#888"/>
+  <rect x="205" y="225" width="5" height="15" rx="1" fill="#888"/>
+  <!-- Label -->
+  <text x="200" y="290" font-family="Arial,sans-serif" font-size="14" fill="#999" text-anchor="middle">CUARTO LATERAL</text>
+</svg>

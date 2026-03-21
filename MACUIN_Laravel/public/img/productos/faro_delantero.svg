@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+    <linearGradient id="lens" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ddd"/><stop offset="50%" style="stop-color:#fff"/><stop offset="100%" style="stop-color:#ccc"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Carcasa faro -->
+  <path d="M80,140 Q200,100 320,140 L330,280 Q200,310 70,280 Z" fill="#222" stroke="#111" stroke-width="2"/>
+  <!-- Lente transparente -->
+  <path d="M95,150 Q200,115 305,150 L312,270 Q200,295 88,270 Z" fill="url(#lens)" opacity="0.7"/>
+  <!-- Reflector -->
+  <ellipse cx="200" cy="200" rx="70" ry="55" fill="#ddd" stroke="#bbb" stroke-width="1"/>
+  <ellipse cx="200" cy="200" rx="55" ry="42" fill="#eee"/>
+  <!-- Foco -->
+  <circle cx="200" cy="200" r="20" fill="#ffffcc" stroke="#ffcc00" stroke-width="2"/>
+  <circle cx="200" cy="200" r="10" fill="#fff9c4"/>
+  <!-- Direccional -->
+  <path d="M100,260 Q150,250 200,260" fill="#ff8800" opacity="0.6" stroke="#cc6600" stroke-width="1"/>
+  <!-- Ranuras lente -->
+  <line x1="120" y1="170" x2="120" y2="255" stroke="#ccc" stroke-width="0.5" opacity="0.5"/>
+  <line x1="160" y1="155" x2="160" y2="265" stroke="#ccc" stroke-width="0.5" opacity="0.5"/>
+  <line x1="240" y1="155" x2="240" y2="265" stroke="#ccc" stroke-width="0.5" opacity="0.5"/>
+  <line x1="280" y1="170" x2="280" y2="255" stroke="#ccc" stroke-width="0.5" opacity="0.5"/>
+</svg>

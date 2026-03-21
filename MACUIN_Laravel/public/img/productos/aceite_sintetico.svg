@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+    <linearGradient id="oil" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#4caf50"/><stop offset="100%" style="stop-color:#2e7d32"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Aceite sintético 0W-20 -->
+  <rect x="130" y="160" width="100" height="150" rx="8" fill="url(#oil)" stroke="#1b5e20" stroke-width="2"/>
+  <rect x="160" y="130" width="40" height="35" rx="5" fill="url(#oil)" stroke="#1b5e20" stroke-width="2"/>
+  <rect x="165" y="115" width="30" height="20" rx="4" fill="#1b5e20" stroke="#0d3b0d" stroke-width="1.5"/>
+  <!-- Manija -->
+  <path d="M230,170 Q260,170 260,200 L260,240 Q260,250 250,250 L230,250" fill="none" stroke="#1b5e20" stroke-width="6"/>
+  <!-- Etiqueta -->
+  <rect x="140" y="210" width="80" height="65" rx="4" fill="white" opacity="0.9"/>
+  <text x="180" y="233" font-family="Arial,sans-serif" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">FULL</text>
+  <text x="180" y="247" font-family="Arial,sans-serif" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">SYNTHETIC</text>
+  <text x="180" y="265" font-family="Arial,sans-serif" font-size="16" font-weight="bold" fill="#2e7d32" text-anchor="middle">0W-20</text>
+  <!-- API badge -->
+  <circle cx="275" cy="165" r="18" fill="white" stroke="#2e7d32" stroke-width="2"/>
+  <text x="275" y="162" font-family="Arial,sans-serif" font-size="8" font-weight="bold" fill="#2e7d32" text-anchor="middle">API</text>
+  <text x="275" y="173" font-family="Arial,sans-serif" font-size="7" fill="#2e7d32" text-anchor="middle">SP</text>
+</svg>

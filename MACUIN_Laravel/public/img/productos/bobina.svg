@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Bobina de encendido / Ignition coil -->
+  <!-- Cuerpo principal -->
+  <rect x="155" y="100" width="90" height="180" rx="8" fill="#333" stroke="#222" stroke-width="2"/>
+  <!-- Conector superior -->
+  <rect x="170" y="75" width="60" height="30" rx="5" fill="#444" stroke="#333" stroke-width="1.5"/>
+  <!-- Pines -->
+  <rect x="182" y="65" width="5" height="15" rx="1" fill="#888"/>
+  <rect x="195" y="65" width="5" height="15" rx="1" fill="#888"/>
+  <rect x="208" y="65" width="5" height="15" rx="1" fill="#888"/>
+  <!-- Etiqueta -->
+  <rect x="165" y="140" width="70" height="40" rx="3" fill="#444"/>
+  <text x="200" y="160" font-family="Arial,sans-serif" font-size="10" font-weight="bold" fill="#aaa" text-anchor="middle">IGNITION</text>
+  <text x="200" y="175" font-family="Arial,sans-serif" font-size="10" font-weight="bold" fill="#aaa" text-anchor="middle">COIL</text>
+  <!-- Bota de goma (parte inferior) -->
+  <rect x="175" y="280" width="50" height="60" rx="6" fill="#222" stroke="#111" stroke-width="1.5"/>
+  <!-- Anillos de la bota -->
+  <line x1="175" y1="295" x2="225" y2="295" stroke="#333" stroke-width="1"/>
+  <line x1="175" y1="310" x2="225" y2="310" stroke="#333" stroke-width="1"/>
+  <line x1="175" y1="325" x2="225" y2="325" stroke="#333" stroke-width="1"/>
+  <!-- Resorte de contacto -->
+  <rect x="193" y="340" width="14" height="12" rx="2" fill="#999"/>
+  <!-- Símbolo eléctrico -->
+  <path d="M165,220 L175,210 L185,230 L195,210 L205,230 L215,210 L225,220" fill="none" stroke="#ffcc00" stroke-width="2"/>
+</svg>

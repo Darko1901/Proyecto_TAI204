@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo - Autopartes MACUIN</title>
+    <title>Catalogo - Autopartes MACUIN</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
@@ -18,27 +18,60 @@
         </header>
         
         <main class="dashboard-content">
-            <h2>Catálogo de Productos</h2>
-            
-            <div class="dashboard-cards">
-                <a href="{{ route('detalle_producto', 1) }}" class="card-link">
-                    <div class="card">
-                        <img src="{{ asset('img/amortiguador.png') }}" alt="Amortiguador" style="width:100%; height:180px; object-fit:contain; margin-bottom:10px;">
-                        <h3>Amortiguador Delantero</h3>
-                        <p>Amortiguador de alta resistencia para suspensión delantera.</p>
-                        <p><strong>$1,250.00 MXN</strong></p>
-                    </div>
-                </a>
-                <a href="{{ route('detalle_producto', 2) }}" class="card-link">
-                    <div class="card">
-                        <img src="{{ asset('img/frenos.png') }}" alt="Frenos" style="width:100%; height:180px; object-fit:contain; margin-bottom:10px;">
-                        <h3>Kit de Frenos</h3>
-                        <p>Kit completo de pastillas y discos de freno.</p>
-                        <p><strong>$890.00 MXN</strong></p>
-                    </div>
-                </a>
+            <h2>Catalogo de Productos</h2>
+
+            <!-- Filtro rapido por categorias -->
+            <div class="catalogo-filtros">
+                <a href="#todas" class="filtro-btn active" onclick="filtrarCategoria('todas', this)">Todas</a>
+                @foreach($categorias as $nombreCat => $prods)
+                    <a href="#{{ Str::slug($nombreCat) }}" class="filtro-btn" onclick="filtrarCategoria('{{ Str::slug($nombreCat) }}', this)">{{ $nombreCat }}</a>
+                @endforeach
             </div>
+
+            @foreach($categorias as $nombreCat => $prods)
+                <div class="categoria-section" data-categoria="{{ Str::slug($nombreCat) }}">
+                    <h3 class="categoria-titulo">
+                        <i class="fas fa-chevron-right"></i> {{ $nombreCat }}
+                        <span class="categoria-count">({{ count($prods) }} productos)</span>
+                    </h3>
+                    <div class="dashboard-cards">
+                        @foreach($prods as $id => $prod)
+                            <a href="{{ route('detalle_producto', $id) }}" class="card-link">
+                                <div class="card producto-card">
+                                    <div class="producto-imagen">
+                                        <img src="{{ asset($prod['imagen']) }}" alt="{{ $prod['nombre'] }}" loading="lazy">
+                                    </div>
+                                    <h3>{{ $prod['nombre'] }}</h3>
+                                    <p class="producto-marca"><i class="fas fa-tag"></i> {{ $prod['marca'] }}</p>
+                                    <p class="producto-compat"><i class="fas fa-car"></i> {{ Str::limit($prod['compatibilidad'], 40) }}</p>
+                                    <p class="producto-precio">{{ $prod['precio'] }}</p>
+                                    @if(!$prod['disponible'])
+                                        <span class="badge-agotado">Agotado</span>
+                                    @endif
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @endforeach
         </main>
     </div>
+
+    <script>
+        function filtrarCategoria(slug, btn) {
+            // Activar boton
+            document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Mostrar/ocultar secciones
+            document.querySelectorAll('.categoria-section').forEach(sec => {
+                if (slug === 'todas') {
+                    sec.style.display = 'block';
+                } else {
+                    sec.style.display = sec.dataset.categoria === slug ? 'block' : 'none';
+                }
+            });
+        }
+    </script>
 </body>
 </html>
