@@ -7,17 +7,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body style="background-color: #f4f6f9; margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+<body class="{% if session.get('rol') == 1 %}theme-dark{% endif %}" style="background-color: #f4f6f9; margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; display: flex; flex-direction: column;">
     
-    <header style="background-color: #df6c6c; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center;">
-        <h1 style="margin: 0; font-size: 1.2rem;"><i class="fas fa-user-circle"></i> Configuración de Cuenta</h1>
+    <div class="dashboard-container" style="min-height: 100vh; display: flex; flex-direction: column;">
+    <header style="background-color: {% if session.get('rol') == 1 %}#1a2226{% else %}#df6c6c{% endif %}; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="margin: 0; font-size: 1.2rem;"><i class="fas fa-user-circle"></i> Configuración de Cuenta: {{ session.get('nombre', 'Usuario') }}</h1>
         <div style="display: flex; gap: 15px;">
-            <a href="{{ url_for('dashboard') }}" style="background: white; color: #df6c6c; padding: 6px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.85rem;"><i class="fas fa-arrow-left"></i> Volver al Menú</a>
-            <a href="{{ url_for('logout') }}" style="background: white; color: #df6c6c; padding: 6px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.85rem;"><i class="fas fa-sign-out-alt"></i> Salir</a>
+            <a href="{% if session.get('rol') == 1 %}{{ url_for('views.superadmin') }}{% else %}{{ url_for('views.dashboard') }}{% endif %}" style="background: white; color: #df6c6c; padding: 6px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.85rem;"><i class="fas fa-arrow-left"></i> Volver al Menú</a>
+            <a href="{{ url_for('auth.logout') }}" style="background: white; color: #df6c6c; padding: 6px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.85rem;"><i class="fas fa-sign-out-alt"></i> Salir</a>
         </div>
     </header>
 
-    <main style="display: flex; justify-content: center; padding: 40px 20px;">
+    <main style="display: flex; justify-content: center; padding: 40px 20px; flex: 1;">
         <div style="background: white; width: 100%; max-width: 500px; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid #1abc9c;">
             
             <div style="text-align: center; margin-bottom: 30px;">
@@ -28,9 +29,25 @@
                 <span style="background: #d4edda; color: #155724; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">Cuenta Activa</span>
             </div>
 
-            <form id="formPerfil">
+            <form id="formPerfil" method="POST" action="{{ url_for('views.perfil_actualizar') }}">
                 <h4 style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; color: #555;"><i class="fas fa-id-card"></i> Datos Personales</h4>
                 
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #555; font-size: 0.9rem;">Nombre(s)</label>
+                    <input type="text" name="nombre" value="{{ session.get('nombre', '') }}" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px; color: #555; font-size: 0.9rem;">Apellido Paterno</label>
+                        <input type="text" name="apellido_paterno" placeholder="..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px; color: #555; font-size: 0.9rem;">Apellido Materno</label>
+                        <input type="text" name="apellido_materno" placeholder="..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                    </div>
+                </div>
+
                 <div style="margin-bottom: 25px;">
                     <label style="display: block; margin-bottom: 5px; color: #555; font-size: 0.9rem;">Correo Electrónico Corporativo</label>
                     <input type="email" id="perfil-email" value="{{ session.get('usuario', '') }}" readonly style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background-color: #f9f9f9; color: #666;">
@@ -43,25 +60,22 @@
                     <input type="password" id="pass-actual" placeholder="••••••••" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
                 </div>
                 
-                <div style="display: flex; gap: 15px; margin-bottom: 25px;">
-                    <div style="flex: 1;">
-                        <label style="display: block; margin-bottom: 5px; color: #555; font-size: 0.9rem;">Nueva Contraseña</label>
-                        <input type="password" id="pass-nueva" placeholder="Mínimo 8 caracteres" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="display: block; margin-bottom: 5px; color: #555; font-size: 0.9rem;">Confirmar Contraseña</label>
-                        <input type="password" id="pass-confirmar" placeholder="Repite la contraseña" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                    </div>
-                </div>
-
-                <button type="button" onclick="actualizarCredenciales()" style="width: 100%; background: #1abc9c; color: white; padding: 12px; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; font-weight: bold;">
-                    <i class="fas fa-lock"></i> Actualizar Credenciales
+                <button type="submit" style="width: 100%; background: #1abc9c; color: white; padding: 12px; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; font-weight: bold;">
+                    <i class="fas fa-save"></i> Guardar Cambios del Perfil
                 </button>
             </form>
         </div>
     </main>
 
+    {% include 'components/footer.html' %}
+    </div>
+
+    <script>
+        window.usuariosGlobales = {{ usuariosGlobales|tojson|safe if usuariosGlobales else 'null' }};
+    </script>
+    {% include 'components/accessibility.html' %}
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% include 'components/accessibility.html' %}
 </body>
 </html>
 

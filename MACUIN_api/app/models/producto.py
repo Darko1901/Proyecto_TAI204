@@ -60,5 +60,7 @@ class ProductoResponse(BaseModel):
     compatibilidad: Optional[str]
     garantia: Optional[str]
     id_categoria: int
+    stock: int = 0
+    stock_minimo: int = 0
 
     model_config = {"from_attributes": True}

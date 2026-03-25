@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Form, File, UploadFile
+import shutil
+import os
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.data.database import get_db
@@ -34,7 +36,17 @@ async def obtener_autopartes(categoria: Optional[int] = None, db: Session = Depe
     query = db.query(Producto)
     if categoria:
         query = query.filter(Producto.id_categoria == categoria)
-    return query.all()
+    
+    productos = query.all()
+    
+    # Calcular stock para cada producto
+    for p in productos:
+        total_qty = sum(inv.cantidad for inv in p.inventarios)
+        min_qty = max((inv.stock_minimo for inv in p.inventarios), default=0)
+        p.stock = total_qty
+        p.stock_minimo = min_qty
+        
+    return productos
 
 @router.get("/{id_producto}", response_model=ProductoResponse)
 async def obtener_autoparte(id_producto: int, db: Session = Depends(get_db)):
@@ -45,11 +57,55 @@ async def obtener_autoparte(id_producto: int, db: Session = Depends(get_db)):
     return producto
 
 @router.post("/", response_model=ProductoResponse, status_code=status.HTTP_201_CREATED)
-async def crear_autoparte(datos: ProductoCreate, db: Session = Depends(get_db), usuario_actual: Usuario = Depends(verificar_token)):
-    nuevo = Producto(**datos.model_dump())
+async def crear_autoparte(
+    nombre_producto: str = Form(...),
+    precio: float = Form(...),
+    id_categoria: int = Form(...),
+    descripcion: Optional[str] = Form(None),
+    marca: Optional[str] = Form(None),
+    modelo: Optional[str] = Form(None),
+    compatibilidad: Optional[str] = Form(None),
+    garantia: Optional[str] = Form(None),
+    cantidad_inicial: int = Form(0),
+    imagen: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    usuario_actual: Usuario = Depends(verificar_token)
+):
+    # Guardar imagen si existe
+    ruta_imagen = None
+    if imagen:
+        directorio = "app/static/uploads"
+        os.makedirs(directorio, exist_ok=True)
+        nombre_archivo = f"{int(os.times().elapsed * 1000)}_{imagen.filename}"
+        ruta_archivo = os.path.join(directorio, nombre_archivo)
+        with open(ruta_archivo, "wb") as buffer:
+            shutil.copyfileobj(imagen.file, buffer)
+        ruta_imagen = f"/static/uploads/{nombre_archivo}"
+
+    nuevo = Producto(
+        nombre_producto=nombre_producto,
+        precio=precio,
+        id_categoria=id_categoria,
+        descripcion=descripcion,
+        marca=marca,
+        modelo=modelo,
+        compatibilidad=compatibilidad,
+        garantia=garantia,
+        imagen=ruta_imagen
+    )
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
+    
+    # Crear registro inicial de inventario
+    inv_inicial = Inventario(id_producto=nuevo.id_producto, id_almacen=1, cantidad=cantidad_inicial, stock_minimo=5)
+    db.add(inv_inicial)
+    db.commit()
+    
+    # Adjuntar stock para la respuesta
+    nuevo.stock = cantidad_inicial
+    nuevo.stock_minimo = 5
+    
     return nuevo
 
 @router.patch("/{id_producto}", response_model=ProductoResponse)
@@ -96,3 +152,21 @@ async def actualizar_inventario(id_producto: int, id_inventario: int, datos: Inv
     db.commit()
     db.refresh(inv)
     return inv
+
+# --- Endpoint de Ajuste Rápido ---
+
+@router.post("/{id_producto}/ajustar_stock")
+async def ajustar_stock_rapido(id_producto: int, cantidad: int, db: Session = Depends(get_db), usuario_actual: Usuario = Depends(verificar_token)):
+    """Incrementa o decrementa el stock del primer almacén que encuentre para este producto."""
+    inv = db.query(Inventario).filter(Inventario.id_producto == id_producto).first()
+    if not inv:
+        # Si no hay inventario, crear uno
+        inv = Inventario(id_producto=id_producto, id_almacen=1, cantidad=0, stock_minimo=5)
+        db.add(inv)
+        db.commit()
+        db.refresh(inv)
+        
+    inv.cantidad = max(0, inv.cantidad + cantidad)
+    db.commit()
+    db.refresh(inv)
+    return {"id_producto": id_producto, "nueva_cantidad": inv.cantidad, "status": "success"}

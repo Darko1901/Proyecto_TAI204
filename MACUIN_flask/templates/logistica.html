@@ -6,34 +6,34 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-    <div class="dashboard-container">
+<body class="{% if session.get('rol') == 1 %}theme-dark{% endif %}">
+    <div class="dashboard-container" style="min-height: 100vh; display: flex; flex-direction: column;">
         <header class="dashboard-header">
             <h1><i class="fas fa-truck-moving"></i> Centro de Control Logístico</h1>
             <div class="user-info">
-                <a href="{{ url_for('dashboard') }}" class="btn-logout" style="margin-right: 10px;">
+                <a href="{% if session.get('rol') == 1 %}{{ url_for('views.superadmin') }}{% else %}{{ url_for('views.dashboard') }}{% endif %}" class="btn-logout" style="margin-right: 10px;">
                     <i class="fas fa-arrow-left"></i> Volver
                 </a>
-                <a href="{{ url_for('logout') }}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</a>
             </div>
         </header>
 
-        <main class="dashboard-content">
+        <main class="dashboard-content" style="flex: 1;">
             <div class="stats-container">
                 <div class="stat-card" style="border-left: 5px solid #3498db;">
-                    <div class="stat-info"><h4>En Tránsito</h4><span id="kpi-transito">0</span></div>
+                    <div class="stat-info"><h4>En Tránsito</h4><span id="kpi-transito">{{ kpis.en_transito if kpis else "0" }}</span></div>
                     <i class="fas fa-shipping-fast stat-icon"></i>
                 </div>
                 <div class="stat-card" style="border-left: 5px solid #f1c40f;">
-                    <div class="stat-info"><h4>Pendientes</h4><span id="kpi-despacho">0</span></div>
+                    <div class="stat-info"><h4>Pendientes</h4><span id="kpi-despacho">{{ kpis.pendientes_envio if kpis else "0" }}</span></div>
                     <i class="fas fa-box-open stat-icon"></i>
                 </div>
                 <div class="stat-card" style="border-left: 5px solid #2ecc71;">
-                    <div class="stat-info"><h4>Entregados</h4><span id="kpi-entregados">0</span></div>
+                    <div class="stat-info"><h4>Entregados</h4><span id="kpi-entregados">{{ kpis.pedidos_completados if kpis else "0" }}</span></div>
                     <i class="fas fa-check-double stat-icon"></i>
                 </div>
                 <div class="stat-card" style="border-left: 5px solid #e74c3c;">
-                    <div class="stat-info"><h4>Retrasos</h4><span id="kpi-error">0</span></div>
+                    <div class="stat-info"><h4>Errores/Canc.</h4><span id="kpi-error">{{ kpis.retrasos_errores if kpis else "0" }}</span></div>
                     <i class="fas fa-clock stat-icon"></i>
                 </div>
             </div>
@@ -97,8 +97,10 @@
                 </form>
             </div>
         </div>
+        {% include 'components/footer.html' %}
     </div>
 
+    {% include 'components/accessibility.html' %}
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <script>window.onload = renderLogistica;</script>
 </body>

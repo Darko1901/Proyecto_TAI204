@@ -7,43 +7,43 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-    <div class="dashboard-container">
+<body class="{% if session.get('rol') == 1 %}theme-dark{% endif %}">
+    <div class="dashboard-container" style="min-height: 100vh; display: flex; flex-direction: column;">
         
         <header class="dashboard-header">
             <h1><i class="fas fa-warehouse"></i> Gestión de Almacén e Inventario</h1>
             <div class="user-info">
-                <span><i class="fas fa-user-shield"></i> {{ session.get('usuario', 'Admin') }}</span>
-                <a href="{{ url_for('dashboard') }}" class="btn-logout" style="margin-right: 10px;">
+                <span><i class="fas fa-user-shield"></i> {{ session.get('nombre', session.get('usuario', 'Admin')) }}</span>
+                <a href="{% if session.get('rol') == 1 %}{{ url_for('views.superadmin') }}{% else %}{{ url_for('views.dashboard') }}{% endif %}" class="btn-logout" style="margin-right: 10px;">
                     <i class="fas fa-arrow-left"></i> Volver
                 </a>
-                <a href="{{ url_for('logout') }}" class="btn-logout">
+                <a href="{{ url_for('auth.logout') }}" class="btn-logout">
                     <i class="fas fa-sign-out-alt"></i> Salir
                 </a>
             </div>
         </header>
 
-        <main class="dashboard-content">
+        <main class="dashboard-content" style="flex: 1;">
             
             <div class="stats-container">
                 <div class="stat-card" style="border-left: 5px solid #3498db;">
                     <div class="stat-info">
                         <h4>Total de Artículos</h4>
-                        <span id="kpi-total-piezas">0</span>
+                        <span id="kpi-total-piezas">{{ kpis.total_articulos if kpis else "0" }}</span>
                     </div>
                     <i class="fas fa-boxes stat-icon" style="color: #3498db;"></i>
                 </div>
                 <div class="stat-card" style="border-left: 5px solid #e74c3c;">
                     <div class="stat-info">
                         <h4>Alertas de Stock Bajo</h4>
-                        <span id="kpi-stock-bajo" style="color: #e74c3c;">0</span>
+                        <span id="kpi-stock-bajo" style="color: #e74c3c;">{{ kpis.stock_bajo if kpis else "0" }}</span>
                     </div>
                     <i class="fas fa-exclamation-triangle stat-icon" style="color: #e74c3c;"></i>
                 </div>
                 <div class="stat-card" style="border-left: 5px solid #2ecc71;">
                     <div class="stat-info">
                         <h4>Valor del Inventario</h4>
-                        <span id="kpi-valor-total">$0.00</span>
+                        <span id="kpi-valor-total">${{ "{:,.2f}".format(kpis.valor_inventario) if kpis else "0.00" }}</span>
                     </div>
                     <i class="fas fa-hand-holding-usd stat-icon" style="color: #2ecc71;"></i>
                 </div>
@@ -86,8 +86,70 @@
                 </table>
             </div>
         </main>
+        {% include 'components/footer.html' %}
     </div>
 
+    <!-- Modal Almacen -->
+    <div class="modal-overlay" id="modalAlmacen" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-boxes"></i> Nueva Pieza de Almacén</h3>
+                <button class="btn-close" onclick="document.getElementById('modalAlmacen').style.display='none'">&times;</button>
+            </div>
+            <form method="POST" action="{{ url_for('views.nueva_pieza') }}" enctype="multipart/form-data">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Nombre de la Pieza</label>
+                        <input type="text" name="nombre" placeholder="Ej: Alternador Bosch" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select name="categoria" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <option value="1">Motor / Mecánica</option>
+                            <option value="2">Sistema Eléctrico</option>
+                            <option value="3">Frenado y Suspensión</option>
+                            <option value="4">Limpieza y Fluidos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Marca</label>
+                        <input type="text" name="marca" placeholder="Ej: Bosch" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Modelo / No. Parte</label>
+                        <input type="text" name="modelo" placeholder="Ej: X-200" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Precio Unitario ($)</label>
+                        <input type="number" step="0.01" name="precio" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Stock Inicial (Unidades)</label>
+                        <input type="number" name="stock" value="0" min="0" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Descripción / Compatibilidad</label>
+                    <textarea name="descripcion" rows="2" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; resize: none;"></textarea>
+                </div>
+
+                <div class="form-group" style="margin-top: 15px;">
+                    <label><i class="fas fa-image"></i> Imagen del Producto</label>
+                    <input type="file" name="imagen" accept="image/*" style="width: 100%; padding: 8px; border: 1px dashed #3498db; border-radius: 4px; background: #f7f9fc;">
+                </div>
+
+                <button type="submit" style="width: 100%; margin-top: 20px; padding: 12px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1rem;">
+                    <i class="fas fa-save"></i> Registrar Entrada en Inventario
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        window.inventarioData = {{ inventarioData|tojson|safe if inventarioData else '[]' }};
+        window.kpisData = {{ kpis|tojson|safe if kpis else '{}' }};
+    </script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <script>
         
@@ -99,6 +161,7 @@
             }
         };
     </script>
+    {% include 'components/accessibility.html' %}
 </body>
 </html>
 

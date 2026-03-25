@@ -409,7 +409,59 @@ body {
    ========================================= */
 .login-wrapper { display: flex; height: 100vh; overflow: hidden; }
 .login-left { flex: 1; background-color: #ffffff; display: flex; flex-direction: column; justify-content: center; padding: 0 15%; }
-.login-right { flex: 1; background-color: #df6c6c; }
+.login-right { 
+    flex: 1.2; 
+    background-color: #df6c6c; 
+    position: relative; 
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+#bg-video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: 0;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+}
+
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(223, 108, 108, 0.8) 0%, rgba(0, 0, 0, 0.4) 100%);
+    z-index: 1;
+}
+
+.right-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 40px;
+}
+
+.right-content h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.right-content p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    letter-spacing: 1px;
+}
 .brand-title { font-size: 2rem; color: #333; margin-bottom: 40px; line-height: 1.1; }
 .brand-title span { font-weight: 300; }
 .menu-options { margin-bottom: 30px; color: #333; font-size: 1rem; line-height: 1.6; }
@@ -456,3 +508,163 @@ body {
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
 
 
+/* =========================================
+   DARK THEME (Superadmin Style)
+   ========================================= */
+
+.theme-dark {
+    background-color: #1a2226 !important;
+}
+
+.theme-dark .dashboard-header {
+    background-color: #1a2226;
+    border-bottom: 1px solid #34495e;
+}
+
+.theme-dark .dashboard-content {
+    background-color: #1a2226;
+}
+
+.theme-dark .dashboard-content h2, 
+.theme-dark .section-title {
+    color: #ecf0f1 !important;
+}
+
+.theme-dark .card,
+.theme-dark .stat-card,
+.theme-dark .table-container {
+    background-color: #222d32 !important;
+    border: 1px solid #34495e;
+    color: #cbd5e0;
+}
+
+.theme-dark .stat-card {
+    border-left-width: 5px;
+}
+
+.theme-dark .stat-info h4 {
+    color: #94a3b8;
+}
+
+.theme-dark .stat-info span {
+    color: #f8fafc;
+}
+
+.theme-dark .macuin-table th {
+    background-color: #2c3b41;
+    color: #ecf0f1;
+    border-bottom: 1px solid #34495e;
+}
+
+.theme-dark .macuin-table td {
+    color: #cbd5e0;
+    border-bottom: 1px solid #2c3b41;
+}
+
+.theme-dark .macuin-table tr:hover {
+    background-color: #2c3b41;
+}
+
+.theme-dark .toolbar {
+    border-bottom: 1px solid #34495e;
+}
+
+.theme-dark .search-box {
+    background: #2c3b41;
+    border-color: #34495e;
+}
+
+.theme-dark .search-box input {
+    color: white;
+}
+
+.theme-dark .btn-logout {
+    background-color: #2c3b41;
+    color: #3498db;
+    border: 1px solid #34495e;
+}
+
+.theme-dark .btn-logout:hover {
+    background-color: #34495e;
+}
+
+.theme-dark .btn-add {
+    background-color: #3498db;
+}
+
+.theme-dark .btn-add:hover {
+    background-color: #2980b9;
+}
+
+/* =========================================
+   BUBBLE REPEL ON CARDS
+   ========================================= */
+
+.card-bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(223,108,108,0.6), rgba(223,108,108,0.1));
+    pointer-events: none;
+    z-index: 50;
+    transform: translate(-50%, -50%);
+    animation: bubbleRepel 0.85s ease-out forwards;
+}
+
+@keyframes bubbleRepel {
+    0%   { transform: translate(-50%, -50%) translate(0, 0); opacity: 0.7; }
+    100% { transform: translate(-50%, -50%) translate(var(--tx), var(--ty)); opacity: 0; }
+}
+
+/* =========================================
+   CARD ENTRANCE ANIMATIONS
+   ========================================= */
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95) translateY(16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Stat cards (Ventas, Almacén, Logística) */
+.stat-card { animation: fadeInUp 0.5s ease both; }
+.stats-container .stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stats-container .stat-card:nth-child(2) { animation-delay: 0.13s; }
+.stats-container .stat-card:nth-child(3) { animation-delay: 0.21s; }
+.stats-container .stat-card:nth-child(4) { animation-delay: 0.29s; }
+
+/* Dashboard premium cards */
+.card-premium { animation: fadeInScale 0.5s ease both; }
+.card-premium:nth-child(1) { animation-delay: 0.10s; }
+.card-premium:nth-child(2) { animation-delay: 0.20s; }
+.card-premium:nth-child(3) { animation-delay: 0.30s; }
+.card-premium:nth-child(4) { animation-delay: 0.40s; }
+
+/* Generic cards (table panels) */
+.card { animation: fadeInUp 0.55s ease both; animation-delay: 0.2s; }
+
+/* KPI cards (superadmin) */
+.kpi-card { animation: fadeInUp 0.5s ease both; }
+.kpi-grid .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+.kpi-grid .kpi-card:nth-child(2) { animation-delay: 0.13s; }
+.kpi-grid .kpi-card:nth-child(3) { animation-delay: 0.21s; }
+.kpi-grid .kpi-card:nth-child(4) { animation-delay: 0.29s; }
+
+/* Module cards (superadmin) */
+.module-card { animation: fadeInScale 0.5s ease both; }
+.module-grid .module-card:nth-child(1) { animation-delay: 0.08s; }
+.module-grid .module-card:nth-child(2) { animation-delay: 0.16s; }
+.module-grid .module-card:nth-child(3) { animation-delay: 0.24s; }
+.module-grid .module-card:nth-child(4) { animation-delay: 0.32s; }
+.module-grid .module-card:nth-child(5) { animation-delay: 0.40s; }
+.module-grid .module-card:nth-child(6) { animation-delay: 0.48s; }
+
+/* Header entrance */
+header.premium-header,
+header.master-header,
+header.dashboard-header {
+    animation: fadeInUp 0.4s ease both;
+}

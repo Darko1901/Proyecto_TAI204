@@ -6,6 +6,7 @@ from app.data.database import get_db
 from app.models.pedido import Pedido, PedidoCreate, PedidoResponse, PedidoDetalladoResponse, PedidoEstadoUpdate
 from app.models.detalle_pedido import DetallePedido
 from app.models.envio import Envio, EnvioResponse
+from app.models.inventario import Inventario
 from app.security.auth import verificar_token
 from app.models.usuario import Usuario
 
@@ -26,6 +27,17 @@ async def crear_pedido(datos: PedidoCreate, db: Session = Depends(get_db), usuar
     db.flush()  # Obtenemos el id_pedido sin hacer commit aún
 
     for detalle in datos.detalles:
+        # 1. Reducir Stock
+        inv = db.query(Inventario).filter(Inventario.id_producto == detalle.id_producto).first()
+        if not inv or inv.cantidad < detalle.cantidad:
+            db.rollback()
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Stock insuficiente para el producto ID {detalle.id_producto}"
+            )
+        inv.cantidad -= detalle.cantidad
+
+        # 2. Agregar Detalle
         db.add(DetallePedido(
             id_pedido=nuevo_pedido.id_pedido,
             id_producto=detalle.id_producto,
@@ -107,3 +119,10 @@ async def cambiar_estado(id_pedido: int, datos: PedidoEstadoUpdate, db: Session 
     db.commit()
     db.refresh(pedido)
     return pedido
+
+# --- Logística / Envíos ---
+
+@router.get("/envios/todos", response_model=List[EnvioResponse])
+async def obtener_todos_los_envios(db: Session = Depends(get_db), usuario_actual: Usuario = Depends(verificar_token)):
+    """Retorna todos los registros de envío para el módulo de logística."""
+    return db.query(Envio).all()
