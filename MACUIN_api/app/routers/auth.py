@@ -17,7 +17,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credenciales incorrectas"
         )
-    token = crear_token({"sub": usuario.correo, "rol": usuario.id_rol})
+    token = crear_token({"sub": usuario.correo, "rol": usuario.id_rol, "nombre": usuario.nombre, "id_usuario": usuario.id_usuario})
     return {"access_token": token, "token_type": "bearer"}
 
 

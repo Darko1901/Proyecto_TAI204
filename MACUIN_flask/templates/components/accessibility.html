@@ -1,0 +1,315 @@
+<!-- Widget de Accesibilidad Global - Edición Premium Ultra -->
+<style>
+    :root {
+        --font-scale: 1;
+        /* Night Palette (Midnight Blue/Slate) */
+        --acc-night-bg: #0f172a;
+        --acc-night-surface: #1e293b;
+        --acc-night-border: rgba(255,255,255,0.05);
+        --acc-night-text: #f1f5f9;
+        --acc-night-accent: #f87171; /* Muted Coral */
+        
+        /* Reading Palette (Soft Paper/Warm) */
+        --acc-read-bg: #fdf6e3;
+        --acc-read-surface: #f4ece1;
+        --acc-read-text: #2d2d2d;
+        --acc-read-border: rgba(0,0,0,0.08);
+    }
+
+    /* Base Font Scale */
+    html { font-size: calc(16px * var(--font-scale)); }
+    body { transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease; }
+
+    /* --- ULTRA PREMIUM NIGHT MODE --- */
+    body.night-mode {
+        background-color: var(--acc-night-bg) !important;
+        color: var(--acc-night-text) !important;
+    }
+    body.night-mode .card, 
+    body.night-mode .card-premium, 
+    body.night-mode .hero-welcome,
+    body.night-mode .kpi-card,
+    body.night-mode .stat-card,
+    body.night-mode .table-container,
+    body.night-mode .macuin-table,
+    body.night-mode .modal-content,
+    body.night-mode main {
+        background-color: var(--acc-night-surface) !important;
+        color: var(--acc-night-text) !important;
+        border: 1px solid var(--acc-night-border) !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
+        border-radius: 16px !important;
+    }
+    body.night-mode header {
+        background: #020617 !important;
+        border-bottom: 1px solid var(--acc-night-border) !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+    }
+    body.night-mode .premium-header {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+    }
+    body.night-mode h1, body.night-mode h2, body.night-mode h3, body.night-mode h4, body.night-mode label {
+        color: #f8fafc !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    body.night-mode input, body.night-mode select, body.night-mode textarea {
+        background-color: #0f172a !important;
+        color: #fff !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px;
+    }
+    body.night-mode .card-icon {
+        background: rgba(248, 113, 113, 0.1) !important;
+        color: var(--acc-night-accent) !important;
+    }
+
+    /* --- ULTRA PREMIUM READING MODE --- */
+    body.reading-mode {
+        background-color: var(--acc-read-bg) !important;
+        color: var(--acc-read-text) !important;
+    }
+    body.reading-mode *:not(.acc-toggle):not(.acc-btn):not(.fas) {
+        background-color: var(--acc-read-bg) !important;
+        color: var(--acc-read-text) !important;
+        border-color: var(--acc-read-border) !important;
+    }
+    body.reading-mode .card, body.reading-mode .card-premium, body.reading-mode .hero-welcome {
+        background-color: var(--acc-read-surface) !important;
+        box-shadow: 0 8px 25px rgba(212, 163, 115, 0.1) !important;
+        border-radius: 16px !important;
+    }
+    body.reading-mode header {
+        background: #f4ece1 !important;
+        border-bottom: 2px solid #e0d5c1 !important;
+    }
+    body.reading-mode input, body.reading-mode select {
+        background-color: #fdf6e3 !important;
+        border: 1px solid #dcd3bd !important;
+    }
+
+    /* Accessibility Overlays */
+    body.high-contrast { background: #000 !important; color: #fff !important; }
+    body.high-contrast * { background: #000 !important; color: #fff !important; border-color: #fff !important; }
+    body.grayscale { filter: grayscale(1); }
+    body.readable-font { font-family: 'Open Sans', Arial, sans-serif !important; }
+
+    /* UI Widget */
+    #accessibility-widget {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 200000;
+        font-family: 'Inter', sans-serif;
+    }
+    .acc-toggle {
+        width: 65px;
+        height: 65px;
+        background: #df6c6c;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        cursor: pointer;
+        box-shadow: 0 10px 25px rgba(223, 108, 108, 0.4);
+        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: none;
+    }
+    .acc-toggle:hover { transform: scale(1.1) rotate(10deg); background: #c95b5b; }
+
+    .acc-menu {
+        position: absolute;
+        bottom: 80px;
+        right: 0;
+        background: rgba(255, 255, 255, 0.98);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        width: 320px;
+        border-radius: 24px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        padding: 28px;
+        display: none;
+        flex-direction: column;
+        gap: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        color: #1a202c;
+    }
+    .acc-menu.active { display: flex; animation: fadeUp 0.4s easeOutQuad; }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(30px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .acc-section-title {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #94a3b8;
+        font-weight: 800;
+        margin-bottom: 12px;
+    }
+
+    .acc-btn-group { display: flex; gap: 10px; }
+    
+    .acc-btn {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 10px 14px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.85rem;
+        transition: 0.2s;
+        color: #64748b;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .acc-btn:hover { background: #f1f5f9; border-color: #cbd5e0; color: #1e293b; }
+    .acc-btn.active { background: #df6c6c; color: white; border-color: #df6c6c; box-shadow: 0 4px 12px rgba(223, 108, 108, 0.3); }
+
+    .btn-reset-pro {
+        margin-top: 10px;
+        background: #1e293b;
+        color: white;
+        border: none;
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .btn-reset-pro:hover { background: #000; letter-spacing: 1px; }
+</style>
+
+<!-- Theme Auto-Loader -->
+<script>
+    (function() {
+        const mode = localStorage.getItem('macuin_visual_mode');
+        if (mode === 'night') document.body.classList.add('night-mode');
+        if (mode === 'read') document.body.classList.add('reading-mode');
+        
+        ['high-contrast', 'grayscale', 'highlight-links', 'readable-font'].forEach(cls => {
+            if (localStorage.getItem('macuin_' + cls) === 'true') document.body.classList.add(cls);
+        });
+
+        const scale = localStorage.getItem('macuin_font_scale');
+        if (scale) document.documentElement.style.setProperty('--font-scale', scale);
+    })();
+</script>
+
+<div id="accessibility-widget">
+    <button class="acc-toggle" onclick="toggleAccMenu()">
+        <i class="fas fa-magic" style="font-size: 1.4rem;"></i>
+    </button>
+    
+    <div class="acc-menu" id="accMenu">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <span style="font-weight: 900; font-size: 1.2rem; letter-spacing: -0.5px;">Visual Studio</span>
+            <i class="fas fa-circle" style="color: #df6c6c; font-size: 0.6rem;"></i>
+        </div>
+
+        <div>
+            <div class="acc-section-title">Temas Premium</div>
+            <div class="acc-btn-group">
+                <button class="acc-btn" id="btnDay" onclick="setVisualMode('day')">
+                    <i class="fas fa-sun"></i> Día
+                </button>
+                <button class="acc-btn" id="btnNight" onclick="setVisualMode('night')">
+                    <i class="fas fa-moon"></i> Noche
+                </button>
+                <button class="acc-btn" id="btnRead" onclick="setVisualMode('read')">
+                    <i class="fas fa-feather"></i> Soft
+                </button>
+            </div>
+        </div>
+
+        <div>
+            <div class="acc-section-title">Tipografía y Escala</div>
+            <div style="display: flex; gap: 10px;">
+                <button class="acc-btn" onclick="changeFontSize(0.1)"><i class="fas fa-plus"></i></button>
+                <button class="acc-btn" onclick="changeFontSize(-0.1)"><i class="fas fa-minus"></i></button>
+                <button class="acc-btn" id="btnFont" onclick="toggleAcc('readable-font', 'btnFont')">Legible</button>
+            </div>
+        </div>
+
+        <div>
+            <div class="acc-section-title">Herramientas Especiales</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="acc-btn" id="btnContrast" onclick="toggleAcc('high-contrast', 'btnContrast')">Contraste</button>
+                <button class="acc-btn" id="btnGray" onclick="toggleAcc('grayscale', 'btnGray')">Gris</button>
+            </div>
+        </div>
+
+        <button class="btn-reset-pro" onclick="resetAcc()">
+            <i class="fas fa-sync-alt"></i> Restablecer Todo
+        </button>
+    </div>
+</div>
+
+<script>
+    let fontScalePro = parseFloat(localStorage.getItem('macuin_font_scale')) || 1;
+
+    function toggleAccMenu() {
+        document.getElementById('accMenu').classList.toggle('active');
+    }
+
+    function changeFontSize(delta) {
+        fontScalePro += delta;
+        if (fontScalePro < 0.75) fontScalePro = 0.75;
+        if (fontScalePro > 1.6) fontScalePro = 1.6;
+        document.documentElement.style.setProperty('--font-scale', fontScalePro);
+        localStorage.setItem('macuin_font_scale', fontScalePro);
+    }
+
+    function toggleAcc(className, btnId) {
+        let isNowActive = document.body.classList.toggle(className);
+        let btn = document.getElementById(btnId);
+        if (btn) btn.classList.toggle('active', isNowActive);
+        localStorage.setItem('macuin_' + className, isNowActive);
+    }
+
+    function setVisualMode(mode) {
+        document.body.classList.remove('night-mode', 'reading-mode');
+        document.querySelectorAll('.acc-btn').forEach(b => b.classList.remove('active'));
+
+        if (mode === 'night') {
+            document.body.classList.add('night-mode');
+            document.getElementById('btnNight').classList.add('active');
+        } else if (mode === 'read') {
+            document.body.classList.add('reading-mode');
+            document.getElementById('btnRead').classList.add('active');
+        } else {
+            document.getElementById('btnDay').classList.add('active');
+        }
+        localStorage.setItem('macuin_visual_mode', mode);
+    }
+
+    function resetAcc() {
+        localStorage.clear();
+        location.reload();
+    }
+
+    window.addEventListener('load', () => {
+        const mode = localStorage.getItem('macuin_visual_mode') || 'day';
+        setVisualMode(mode);
+
+        const map = {
+            'high-contrast': 'btnContrast',
+            'grayscale': 'btnGray',
+            'readable-font': 'btnFont'
+        };
+        
+        Object.keys(map).forEach(cls => {
+            if (localStorage.getItem('macuin_' + cls) === 'true') {
+                let b = document.getElementById(map[cls]);
+                if (b) b.classList.add('active');
+            }
+        });
+    });
+</script>

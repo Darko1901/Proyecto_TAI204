@@ -3,54 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - MACUIN Interno</title>
+    <title>Dashboard - MACUIN Enterprise</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-coral: #df6c6c;
+            --primary-coral-dark: #c95b5b;
+            --bg-light: #f0f2f5;
+            --text-dark: #1a202c;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+        .dashboard-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Premium - Restored Branding */
+        header.premium-header {
+            background: linear-gradient(135deg, var(--primary-coral) 0%, var(--primary-coral-dark) 100%);
+            color: white;
+            padding: 20px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .user-info-area {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .btn-logout-premium {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .btn-logout-premium:hover {
+            background: white;
+            color: var(--primary-coral);
+        }
+
+        main.premium-main {
+            flex: 1;
+            padding: 40px 60px;
+        }
+
+        .hero-welcome {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+            border-left: 6px solid var(--primary-coral);
+        }
+
+        .card-premium {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid #edf2f7;
+        }
+        .card-premium:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            border-color: var(--primary-coral);
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: #fff5f5;
+            color: var(--primary-coral);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
         
-        <header class="dashboard-header">
-            <h1>Autopartes MACUIN - Panel Interno</h1>
-            <div class="user-info">
-                <span><i class="fas fa-user-circle"></i> Hola, {{ session.get('usuario', 'Usuario') }}</span>
-                <a href="{{ url_for('logout') }}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</a>
+        <!-- Header con Identidad Restaurada -->
+        <header class="premium-header">
+            <div>
+                <h1 style="margin: 0; font-size: 1.6rem; font-weight: 700;">MACUIN <span style="font-weight: 300; opacity: 0.9;">Enterprise</span></h1>
+                <p style="margin: 0; font-size: 0.75rem; opacity: 0.8; text-transform: uppercase;">Gestión Profesional de Autopartes</p>
+            </div>
+            <div class="user-info-area">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 42px; height: 42px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.3);">
+                        <i class="fas fa-user-circle" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 0.9rem; font-weight: 600;">{{ session.get('nombre', 'Usuario') }}</span>
+                        <span style="display: block; font-size: 0.7rem; opacity: 0.8;">Panel Interno</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="btn-logout-premium">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
             </div>
         </header>
 
-        <main class="dashboard-content">
-            <h2>Módulos del Sistema</h2>
+        <main class="premium-main">
+            <!-- Hero Welcome con Color de Marca -->
+            <section class="hero-welcome">
+                <div style="position: relative; z-index: 2;">
+                    <h2 style="font-size: 2.2rem; margin: 0 0 10px 0; color: #2d3748;">¡Bienvenido de nuevo, {{ session.get('nombre', 'Usuario') }}!</h2>
+                    <p style="color: #718096; max-width: 600px; margin-bottom: 0;">Gestiona tus módulos operativos con las herramientas de la empresa.</p>
+                </div>
+                <div style="position: absolute; right: -40px; top: -40px; width: 180px; height: 180px; background: rgba(223, 108, 108, 0.05); border-radius: 50%;"></div>
+            </section>
+
+            <h3 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 1.5px; color: #a0aec0; margin-bottom: 25px; font-weight: 700;">Módulos del Sistema</h3>
             
-            <div class="dashboard-cards">
-                <a href="{{ url_for('ventas') }}" class="card">
-                    <h3><i class="fas fa-shopping-cart"></i> Ventas</h3>
-                    <p>Gestión de pedidos, cotizaciones y atención a clientes.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                <a href="{{ url_for('views.ventas') }}" class="card-premium">
+                    <div class="card-icon"><i class="fas fa-chart-line"></i></div>
+                    <h4 style="margin: 0 0 10px 0;">Ventas</h4>
+                    <p style="font-size: 0.85rem; color: #718096; line-height: 1.5;">Cotizaciones, pedidos y facturación rápida.</p>
                 </a>
 
-              <a href="{{ url_for('almacen') }}" class="card">
-                    <h3><i class="fas fa-boxes"></i> Almacén</h3>
-                    <p>Control de inventario, registro de piezas y stock.</p>
-              </a>
-                
-               <a href="{{ url_for('logistica') }}" class="card">
-                    <h3><i class="fas fa-truck"></i> Logística</h3>
-                    <p>Seguimiento de envíos, rutas y estatus de entregas.</p>
+                <a href="{{ url_for('views.almacen') }}" class="card-premium">
+                    <div class="card-icon"><i class="fas fa-cubes"></i></div>
+                    <h4 style="margin: 0 0 10px 0;">Almacén</h4>
+                    <p style="font-size: 0.85rem; color: #718096; line-height: 1.5;">Control de stock e inventario de piezas.</p>
                 </a>
                 
-                <a href="{{ url_for('usuarios') }}" class="card">
-                     <h3><i class="fas fa-users"></i> Usuario</h3>
-                     <p>Datos del usuario.</p>
+                <a href="{{ url_for('views.logistica') }}" class="card-premium">
+                    <div class="card-icon"><i class="fas fa-route"></i></div>
+                    <h4 style="margin: 0 0 10px 0;">Logística</h4>
+                    <p style="font-size: 0.85rem; color: #718096; line-height: 1.5;">Guías de rastreo y coordinación de envíos.</p>
                 </a>
+                
+                <a href="{{ url_for('views.usuarios') }}" class="card-premium">
+                    <div class="card-icon"><i class="fas fa-user-cog"></i></div>
+                    <h4 style="margin: 0 0 10px 0;">Mi Perfil</h4>
+                    <p style="font-size: 0.85rem; color: #718096; line-height: 1.5;">Configuración de cuenta y datos personales.</p>
+                </a>
+            </div>
 
-             </div>
+            <!-- Resumen Operativo -->
+            <section style="margin-top: 50px;">
+                <h3 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 1.5px; color: #a0aec0; margin-bottom: 25px; font-weight: 700;">Resumen Operativo</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px;">
+                    <div style="background: white; padding: 25px; border-radius: 16px; border: 1px solid #edf2f7; display: flex; align-items: center; gap: 20px;">
+                        <div style="width: 45px; height: 45px; background: #fff5f5; color: var(--primary-coral); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div>
+                            <span style="display: block; font-size: 0.75rem; font-weight: 700; color: #a0aec0; text-transform: uppercase;">Avisos</span>
+                            <p style="margin: 0; font-size: 0.95rem; font-weight: 600;">3 Pedidos en espera</p>
+                        </div>
+                    </div>
+                    <div style="background: white; padding: 25px; border-radius: 16px; border: 1px solid #edf2f7; display: flex; align-items: center; gap: 20px;">
+                         <div style="width: 45px; height: 45px; background: #fff5f5; color: #ed8936; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <span style="display: block; font-size: 0.75rem; font-weight: 700; color: #a0aec0; text-transform: uppercase;">Alerta</span>
+                            <p style="margin: 0; font-size: 0.95rem; font-weight: 600;">5 Piezas en stock bajo</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
-
+        
+        {% include 'components/footer.html' %}
     </div>
 
+    {% include 'components/accessibility.html' %}
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
-
-
-
-

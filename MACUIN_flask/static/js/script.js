@@ -34,12 +34,7 @@ function getFechaLocal() {
 
 // Datos iniciales simulados
 let modoEdicion = false;
-let ventasData = [
-    { id: "V-1024", cliente: "Taller Mecánico Los Hermanos", piezas: "Balatas Delanteras (BAL-001)", fecha: getFechaLocal(), total: 1250.00, estatus: "Completado" },
-    { id: "V-1025", cliente: "Refaccionaria El Pistón", piezas: "Amortiguadores (AMORT-02)", fecha: getFechaLocal(), total: 3400.00, estatus: "Procesando" },
-    { id: "V-1026", cliente: "Juan Pérez", piezas: "Filtro de Aceite (FIL-09)", fecha: "2026-02-25", total: 450.00, estatus: "Cancelado" },
-    { id: "V-1027", cliente: "Frenos del Norte", piezas: "Discos de Freno (DIS-04)", fecha: "2026-02-02", total: 5200.00, estatus: "Completado" }
-];
+let ventasData = window.ventasData || [];
 
 // Dibuja la tabla de ventas en el HTML
 function renderTabla() {
@@ -216,7 +211,7 @@ function descargarPDF() {
 // MÓDULO DE ALMACÉN (Inventario Inteligente)
 // ================================================================
 
-let inventarioData = [
+let inventarioData = window.inventarioData || [
     { id: "SKU-9901", pieza: "Alternador Bosch", categoria: "Eléctrico", pasillo: "A-1", stock: 5, min: 10, precio: 2400 },
     { id: "SKU-5520", pieza: "Bomba de Agua", categoria: "Motor", pasillo: "B-3", stock: 25, min: 15, precio: 850 },
     { id: "SKU-1122", pieza: "Aceite Sintético 5W30", categoria: "Lubricantes", pasillo: "C-2", stock: 100, min: 20, precio: 180 },
@@ -228,9 +223,11 @@ function renderAlmacen() {
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    inventarioData.forEach(item => {
+    if (!window.inventarioData) return;
+
+    window.inventarioData.forEach(item => {
         let stockStatus = item.stock <= item.min ? 'badge-danger' : 'badge-success';
-        let stockIcon = item.stock <= item.min ? '<i class="fas fa-exclamation-triangle"></i> ' : '';
+        let stockIcon = item.stock <= item.min ? '<i class="fas fa-exclamation-triangle"></i> stock bajo: ' : '';
 
         tbody.innerHTML += `
             <tr>
@@ -239,11 +236,11 @@ function renderAlmacen() {
                 <td><span class="tag-categoria">${item.categoria}</span></td>
                 <td><i class="fas fa-map-marker-alt"></i> ${item.pasillo}</td>
                 <td><span class="badge ${stockStatus}">${stockIcon}${item.stock} unidades</span></td>
-                <td>$${item.precio.toLocaleString()}</td>
+                <td>$${item.precio.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                 <td class="row-actions">
-                    <button class="icon-edit" onclick="ajustarStock('${item.id}', 1)" title="Entrada"><i class="fas fa-plus-circle"></i></button>
-                    <button class="icon-delete" onclick="ajustarStock('${item.id}', -1)" title="Salida"><i class="fas fa-minus-circle"></i></button>
-                    <button class="icon-view" onclick="editarPieza('${item.id}')"><i class="fas fa-cog"></i></button>
+                    <button class="icon-edit" onclick="ajustarStock('${item.id}', 1)" title="Entrada de Stock"><i class="fas fa-plus-circle"></i></button>
+                    <button class="icon-delete" onclick="ajustarStock('${item.id}', -1)" title="Salida de Stock"><i class="fas fa-minus-circle"></i></button>
+                    <button class="icon-view" onclick="editarPieza('${item.id}')" title="Configurar Producto"><i class="fas fa-cog"></i></button>
                 </td>
             </tr>
         `;
@@ -252,22 +249,39 @@ function renderAlmacen() {
 }
 
 function actualizarKPIsAlmacen() {
-    if (!document.getElementById("kpi-total-piezas")) return;
+    if (!document.getElementById("kpi-total-piezas") || !window.inventarioData) return;
     
-    let totalPiezas = inventarioData.reduce((acc, item) => acc + item.stock, 0);
-    let valorInventario = inventarioData.reduce((acc, item) => acc + (item.stock * item.precio), 0);
-    let stockBajo = inventarioData.filter(item => item.stock <= item.min).length;
+    let totalPiezas = window.inventarioData.reduce((acc, item) => acc + (item.stock || 0), 0);
+    let valorInventario = window.inventarioData.reduce((acc, item) => acc + ((item.stock || 0) * (item.precio || 0)), 0);
+    let stockBajo = window.inventarioData.filter(item => item.stock <= item.min).length;
 
     document.getElementById("kpi-total-piezas").innerText = totalPiezas;
-    document.getElementById("kpi-valor-total").innerText = `$${valorInventario.toLocaleString()}`;
+    document.getElementById("kpi-valor-total").innerText = `$${valorInventario.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
     document.getElementById("kpi-stock-bajo").innerText = stockBajo;
 }
 
-function ajustarStock(id, cantidad) {
-    const item = inventarioData.find(i => i.id === id);
-    if(item.stock + cantidad < 0) return alert("No hay suficiente stock para esta salida.");
-    item.stock += cantidad;
-    renderAlmacen();
+async function ajustarStock(id, cantidad) {
+    const item = window.inventarioData.find(i => i.id === id);
+    if (!item) return;
+
+    if (item.stock + cantidad < 0) return alert("Error: No puedes tener stock negativo.");
+
+    const idPuro = item.id_puro;
+
+    try {
+        const response = await fetch(`/almacen/ajustar/${idPuro}/${cantidad}`, { method: 'POST' });
+        const result = await response.json();
+        
+        if (result.status === "success") {
+            item.stock = result.data.nueva_cantidad;
+            renderAlmacen();
+        } else {
+            alert("Error al procesar el ajuste en el servidor.");
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Error de conexión al intentar ajustar el stock.");
+    }
 }
 
 function filtrarAlmacen() {
@@ -283,18 +297,41 @@ function filtrarAlmacen() {
 }
 
 function editarPieza(id) {
-    const item = inventarioData.find(i => i.id === id);
-    let nuevoPrecio = prompt(`Editando ${item.pieza}.\nIngrese el nuevo precio unitario:`, item.price || item.precio);
+    const item = window.inventarioData.find(i => i.id === id);
+    const idPuro = item.id_puro;
+
+    let nuevoPrecio = prompt(`Editando ${item.pieza}.\nIngrese el nuevo precio unitario:`, item.precio);
     
     if (nuevoPrecio !== null && !isNaN(nuevoPrecio)) {
-        item.precio = parseFloat(nuevoPrecio);
-        renderAlmacen(); 
-        alert("Actualización exitosa.");
+        // Usar un formulario dinámico para enviar la actualización y que Flask maneje el redirect/flash
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/almacen/editar/${idPuro}`;
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'precio';
+        input.value = nuevoPrecio;
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 
 function abrirModalAlmacen() {
-    alert("Abriendo Formulario de Recepción de Mercancía...\n(Aquí conectaremos con la API de Proveedores pronto)");
+    const modal = document.getElementById("modalPieza");
+    if(modal) modal.style.display = "flex";
+}
+
+function abrirModalAlmacen() {
+    const modal = document.getElementById("modalAlmacen");
+    if(modal) modal.style.display = "flex";
+}
+
+function cerrarModalAlmacen() {
+    const modal = document.getElementById("modalAlmacen");
+    if(modal) modal.style.display = "none";
 }
 
 
@@ -302,11 +339,7 @@ function abrirModalAlmacen() {
 // LÓGICA DE LOGÍSTICA (Envío y Rastreo - MACUIN Enterprise)
 // ================================================================
 
-let enviosData = [
-    { guia: "TRK-7721", cliente: "Autozone Querétaro", courier: "FedEx", status: "En Tránsito", progreso: 65, fecha: "2026-03-02" },
-    { guia: "TRK-1104", cliente: "Refaccionaria Mendoza", courier: "DHL", status: "Entregado", progreso: 100, fecha: "2026-02-28" },
-    { guia: "TRK-8840", cliente: "Taller Hermanos", courier: "Interno", status: "Preparando", progreso: 10, fecha: "2026-03-05" }
-];
+let enviosData = window.logisticaData || [];
 
 function renderLogistica() {
     const tbody = document.getElementById("tabla-logistica-body");
@@ -315,26 +348,37 @@ function renderLogistica() {
 
     enviosData.forEach(envio => {
         let statusClass = "";
-        switch(envio.status) {
-            case "Entregado": statusClass = "badge-success"; break;
-            case "En Tránsito": statusClass = "badge-warning"; break;
-            case "Preparando": statusClass = "badge-info"; break;
-            case "Retrasado": statusClass = "badge-danger"; break;
+        const statusLower = (envio.estado || "").toLowerCase();
+        
+        switch(statusLower) {
+            case "entregado": statusClass = "badge-success"; break;
+            case "enviado": 
+            case "en tránsito": statusClass = "badge-warning"; break;
+            case "preparando": 
+            case "pendiente": statusClass = "badge-info"; break;
+            case "cancelado": 
+            case "retrasado": statusClass = "badge-danger"; break;
             default: statusClass = "badge-info";
         }
+        
+        // Calcular progreso simulado basado en estado si no existe
+        let autoProgreso = 10;
+        if (statusLower === "entregado") autoProgreso = 100;
+        else if (statusLower === "enviado" || statusLower === "en tránsito") autoProgreso = 60;
+        else if (statusLower === "surtido") autoProgreso = 30;
 
         tbody.innerHTML += `
             <tr>
                 <td><strong>#${envio.guia}</strong></td>
-                <td>${envio.cliente}</td>
+                <td>${envio.destino || envio.cliente}</td>
                 <td><i class="fas fa-shipping-fast"></i> ${envio.courier}</td>
                 <td style="width: 180px;">
                     <div style="background:#eee; border-radius:10px; height:8px; overflow:hidden; margin-bottom: 4px;">
-                        <div style="background:#3498db; height:100%; width:${envio.progreso}%; transition: width 0.5s ease;"></div>
+                        <div style="background:#3498db; height:100%; width:${envio.progreso || autoProgreso}%; transition: width 0.5s ease;"></div>
                     </div>
-                    <small style="font-weight: bold; color: #555;">${envio.progreso}% completado</small>
+                    <small style="font-weight: bold; color: #555;">${envio.progreso || autoProgreso}% completado</small>
                 </td>
-                <td><span class="badge ${statusClass}">${envio.status}</span></td>
+                <td><span class="badge ${statusClass}">${envio.estado || envio.status}</span></td>
                 <td>${envio.fecha}</td>
                 <td class="row-actions">
                     <button class="icon-view" onclick="rastrearPaquete('${envio.guia}')" title="Rastrear Ubicación">
@@ -508,7 +552,7 @@ function filtrarEmpresas() {
 // =========================================
 let empresasActivas = ["Público General", "MACUIN Central", "Refaccionaria Mendoza", "Taller Los Hermanos"];
 
-let usuariosGlobales = [
+let usuariosGlobales = window.usuariosGlobales || [
     { id: "USR-001", nombre: "Carlos Mendoza", origen: "Refaccionaria Mendoza", rol: "Empresa", estado: "Activo" },
     { id: "USR-002", nombre: "Ana López", origen: "MACUIN Central", rol: "Trabajador", estado: "Activo" },
     { id: "USR-003", nombre: "Luis Rayo", origen: "Público General", rol: "Cliente", estado: "Suspendido" },
@@ -661,23 +705,6 @@ function suspenderUsuario(id) {
 function abrirModalEmpresa() { document.getElementById('modalEmpresa').style.display = 'flex'; }
 function cerrarModalEmpresa() { document.getElementById('modalEmpresa').style.display = 'none'; }
 
-function guardarEmpresa() {
-    const nombre = document.getElementById('nueva-empresa-nombre').value;
-    if(nombre) {
-        solicitudesEmpresas.push({
-            id: "REQ-" + Math.floor(Math.random() * 900 + 100),
-            nombre: nombre,
-            contacto: "pendiente@porasignar.com",
-            estado: "Pendiente"
-        });
-        
-        document.getElementById('nueva-empresa-nombre').value = '';
-        cerrarModalEmpresa();
-        renderTablas();
-        alert(`¡Listo! La empresa "${nombre}" se ha enviado a la tabla de solicitudes.`);
-    }
-}
-
 function aceptarSolicitud(id) {
     const index = solicitudesEmpresas.findIndex(s => s.id === id);
     if(index !== -1) {
@@ -715,4 +742,63 @@ window.onload = function() {
     if (document.getElementById("tabla-body") && typeof renderTablas === 'function') {
         renderTablas();
     }
+    // ── Init bubble repel on cards ──
+    initBubbleCards();
 };
+
+// ================================================================
+// BUBBLE REPEL CARD EFFECT
+// ================================================================
+function spawnBubble(card, x, y) {
+    const b = document.createElement('span');
+    b.classList.add('card-bubble');
+
+    // Random size 4–10px
+    const size = Math.random() * 6 + 4;
+    b.style.width  = size + 'px';
+    b.style.height = size + 'px';
+
+    // Position relative to the card
+    const rect = card.getBoundingClientRect();
+    b.style.left = (x - rect.left) + 'px';
+    b.style.top  = (y - rect.top)  + 'px';
+
+    // Direction away from cursor (random arc, mostly outward)
+    const angle  = Math.random() * 2 * Math.PI;
+    const dist   = Math.random() * 60 + 30;
+    const tx     = Math.cos(angle) * dist;
+    const ty     = Math.sin(angle) * dist;
+
+    b.style.setProperty('--tx', tx + 'px');
+    b.style.setProperty('--ty', ty + 'px');
+
+    card.appendChild(b);
+
+    // Remove after animation completes
+    setTimeout(() => b.remove(), 900);
+}
+
+function initBubbleCards() {
+    const selectors = [
+        '.stat-card', '.card-premium', '.kpi-card',
+        '.module-card', '.card'
+    ];
+
+    selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(card => {
+            // Ensure card has position relative for bubbles
+            if (getComputedStyle(card).position === 'static') {
+                card.style.position = 'relative';
+            }
+            card.style.overflow = 'hidden';
+
+            let throttle = false;
+            card.addEventListener('mousemove', (e) => {
+                if (throttle) return;
+                throttle = true;
+                spawnBubble(card, e.clientX, e.clientY);
+                setTimeout(() => { throttle = false; }, 80);
+            });
+        });
+    });
+}

@@ -8,6 +8,7 @@ from app.models.pedido import Pedido
 from app.models.usuario import Usuario
 from app.models.detalle_pedido import DetallePedido
 from app.models.producto import Producto
+from app.models.inventario import Inventario
 from app.security.auth import verificar_token
 
 router = APIRouter(prefix="/v1/reportes", tags=["Reportes"])
@@ -169,3 +170,48 @@ async def reporte_pedidos_docx(db: Session = Depends(get_db), usuario_actual: Us
     return StreamingResponse(buffer,
                              media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                              headers={"Content-Disposition": "attachment; filename=reporte_pedidos.docx"})
+
+# --- Dashboard KPIs ---
+
+@router.get("/dashboard")
+async def obtener_kpis_dashboard(db: Session = Depends(get_db), usuario_actual: Usuario = Depends(verificar_token)):
+    from datetime import date
+    today = date.today()
+    start_of_month = date(today.year, today.month, 1)
+
+    # Ventas
+    ventas_hoy = db.query(func.sum(Pedido.total)).filter(func.cast(Pedido.fecha_pedido, date) == today).scalar() or 0.0
+    ventas_mes = db.query(func.sum(Pedido.total)).filter(func.cast(Pedido.fecha_pedido, date) >= start_of_month).scalar() or 0.0
+    
+    # Estados de Pedidos
+    completados = db.query(func.count(Pedido.id_pedido)).filter(Pedido.id_estado == 4).scalar() or 0
+    pendientes = db.query(func.count(Pedido.id_pedido)).filter(Pedido.id_estado < 3).scalar() or 0
+    transit = db.query(func.count(Pedido.id_pedido)).filter(Pedido.id_estado == 3).scalar() or 0
+    errors = db.query(func.count(Pedido.id_pedido)).filter(Pedido.id_estado == 5).scalar() or 0 # Cancelados/Errores
+
+    # Inventario
+    total_articulos = db.query(func.count(Producto.id_producto)).scalar() or 0
+    
+    # Stock Bajo (donde sum(inventarios.cantidad) <= inventarios.stock_minimo)
+    # Para simplicidad, calculamos stock por producto primero
+    stock_bajo_count = 0
+    valor_total = 0.0
+    productos = db.query(Producto).all()
+    for p in productos:
+        p_stock = sum(inv.cantidad for inv in p.inventarios)
+        p_min = max((inv.stock_minimo for inv in p.inventarios), default=0)
+        if p_stock <= p_min:
+            stock_bajo_count += 1
+        valor_total += float(p_stock * p.precio)
+
+    return {
+        "ventas_dia": float(ventas_hoy),
+        "ventas_mes": float(ventas_mes),
+        "pedidos_completados": completados,
+        "pendientes_envio": pendientes,
+        "en_transito": transit,
+        "retrasos_errores": errors,
+        "total_articulos": total_articulos,
+        "stock_bajo": stock_bajo_count,
+        "valor_inventario": valor_total
+    }

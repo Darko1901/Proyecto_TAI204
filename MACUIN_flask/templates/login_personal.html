@@ -30,7 +30,7 @@
                 {% endif %}
             {% endwith %}
 
-            <form action="{{ url_for('login_personal_interno') }}" method="POST">
+            <form action="{{ url_for('auth.login_personal_interno') }}" method="POST">
                 <div class="form-group-login">
                     <label>Usuario</label>
                     <input type="email" name="usuario" placeholder="usuario@macuin.com" required>
@@ -42,19 +42,164 @@
                         <input type="password" id="input-pass" name="contrasena" placeholder="••••••••" required>
                         <i class="fas fa-eye-slash" id="icon-eye" onclick="togglePassword()"></i>
                     </div>
-                    <a href="{{ url_for('recuperar') }}" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                    <a href="{{ url_for('auth.recuperar') }}" class="forgot-password">¿Olvidaste tu contraseña?</a>
                 </div>
 
                 <button type="submit" class="btn-submit-login">Iniciar sesión</button>
             </form>
         </div>
 
-        <div class="login-right"></div>
+        <!-- Animated Automotive Scene -->
+        <div class="login-right">
+            <div class="anim-scene">
+                <!-- Light sweep -->
+                <div class="light-sweep"></div>
+                <!-- Grid overlay -->
+                <div class="grid-overlay"></div>
+                <!-- Gears -->
+                <div class="gear gear-1">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M43.3,0H56.7L59,12.2C62.6,13.2,66,14.8,69,17L81,11.7L90.3,21L85,33C87.2,36,88.8,39.4,89.8,43L102,45.3V58.7L89.8,61C88.8,64.6,87.2,68,85,71L90.3,83L81,92.3L69,87C66,89.2,62.6,90.8,59,91.8L56.7,104H43.3L41,91.8C37.4,90.8,34,89.2,31,87L19,92.3L9.7,83L15,71C12.8,68,11.2,64.6,10.2,61L-2,58.7V45.3L10.2,43C11.2,39.4,12.8,36,15,33L9.7,21L19,11.7L31,17C34,14.8,37.4,13.2,41,12.2L43.3,0ZM50,35A15,15,0,1,0,65,50A15,15,0,0,0,50,35Z" fill="rgba(255,255,255,0.07)"/>
+                    </svg>
+                </div>
+                <div class="gear gear-2">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M43.3,0H56.7L59,12.2C62.6,13.2,66,14.8,69,17L81,11.7L90.3,21L85,33C87.2,36,88.8,39.4,89.8,43L102,45.3V58.7L89.8,61C88.8,64.6,87.2,68,85,71L90.3,83L81,92.3L69,87C66,89.2,62.6,90.8,59,91.8L56.7,104H43.3L41,91.8C37.4,90.8,34,89.2,31,87L19,92.3L9.7,83L15,71C12.8,68,11.2,64.6,10.2,61L-2,58.7V45.3L10.2,43C11.2,39.4,12.8,36,15,33L9.7,21L19,11.7L31,17C34,14.8,37.4,13.2,41,12.2L43.3,0ZM50,35A15,15,0,1,0,65,50A15,15,0,0,0,50,35Z" fill="rgba(255,255,255,0.04)"/>
+                    </svg>
+                </div>
+                <div class="gear gear-3">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M43.3,0H56.7L59,12.2C62.6,13.2,66,14.8,69,17L81,11.7L90.3,21L85,33C87.2,36,88.8,39.4,89.8,43L102,45.3V58.7L89.8,61C88.8,64.6,87.2,68,85,71L90.3,83L81,92.3L69,87C66,89.2,62.6,90.8,59,91.8L56.7,104H43.3L41,91.8C37.4,90.8,34,89.2,31,87L19,92.3L9.7,83L15,71C12.8,68,11.2,64.6,10.2,61L-2,58.7V45.3L10.2,43C11.2,39.4,12.8,36,15,33L9.7,21L19,11.7L31,17C34,14.8,37.4,13.2,41,12.2L43.3,0ZM50,35A15,15,0,1,0,65,50A15,15,0,0,0,50,35Z" fill="rgba(255,255,255,0.05)"/>
+                    </svg>
+                </div>
+                <!-- Particles -->
+                <div class="particle p1"></div><div class="particle p2"></div>
+                <div class="particle p3"></div><div class="particle p4"></div>
+                <div class="particle p5"></div><div class="particle p6"></div>
+                <div class="particle p7"></div><div class="particle p8"></div>
+                <!-- Wrench icon -->
+                <div class="icon-wrench"><i class="fas fa-wrench"></i></div>
+                <!-- Text -->
+                <div class="right-content">
+                    <div class="brand-badge"><i class="fas fa-cog"></i> MACUIN</div>
+                    <h2>Excelencia en<br>Autopartes</h2>
+                    <p>Innovación y Calidad en cada pieza.</p>
+                </div>
+            </div>
+
+            <style>
+                .login-right {
+                    flex: 1.2;
+                    position: relative;
+                    overflow: hidden;
+                    background: linear-gradient(135deg, #1a0a0a 0%, #2d1515 40%, #df6c6c 100%);
+                }
+                .anim-scene {
+                    position: absolute;
+                    inset: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .grid-overlay {
+                    position: absolute;
+                    inset: 0;
+                    background-image: 
+                        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+                    background-size: 40px 40px;
+                    animation: gridMove 8s linear infinite;
+                }
+                @keyframes gridMove {
+                    from { transform: translateY(0); }
+                    to { transform: translateY(40px); }
+                }
+                .light-sweep {
+                    position: absolute;
+                    inset: 0;
+                    background: linear-gradient(135deg, transparent 30%, rgba(255,200,180,0.08) 50%, transparent 70%);
+                    animation: sweep 4s ease-in-out infinite;
+                }
+                @keyframes sweep {
+                    0%   { transform: translateX(-100%); }
+                    100% { transform: translateX(200%); }
+                }
+                .gear { position: absolute; animation: spinGear linear infinite; }
+                .gear-1 { width: 340px; height: 340px; top: -80px; right: -80px; animation-duration: 20s; }
+                .gear-2 { width: 200px; height: 200px; bottom: -50px; left: -30px; animation-duration: 14s; animation-direction: reverse; }
+                .gear-3 { width: 140px; height: 140px; bottom: 120px; right: 40px; animation-duration: 10s; }
+                @keyframes spinGear {
+                    from { transform: rotate(0deg); }
+                    to   { transform: rotate(360deg); }
+                }
+                .icon-wrench {
+                    position: absolute;
+                    top: 60px;
+                    left: 40px;
+                    font-size: 4rem;
+                    color: rgba(255,255,255,0.06);
+                    animation: floatWrench 5s ease-in-out infinite;
+                }
+                @keyframes floatWrench {
+                    0%, 100% { transform: translateY(0) rotate(-15deg); }
+                    50% { transform: translateY(-20px) rotate(5deg); }
+                }
+                .particle {
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(255,200,180,0.5);
+                    animation: rise linear infinite;
+                }
+                .p1 { width:4px; height:4px; left:15%; animation-duration:6s; animation-delay:0s; bottom:-10px; }
+                .p2 { width:3px; height:3px; left:30%; animation-duration:8s; animation-delay:1s; bottom:-10px; }
+                .p3 { width:5px; height:5px; left:50%; animation-duration:5s; animation-delay:2s; bottom:-10px; }
+                .p4 { width:2px; height:2px; left:65%; animation-duration:7s; animation-delay:0.5s; bottom:-10px; }
+                .p5 { width:4px; height:4px; left:80%; animation-duration:9s; animation-delay:3s; bottom:-10px; }
+                .p6 { width:3px; height:3px; left:25%; animation-duration:6.5s; animation-delay:4s; bottom:-10px; }
+                .p7 { width:6px; height:6px; left:70%; animation-duration:11s; animation-delay:1.5s; bottom:-10px; }
+                .p8 { width:2px; height:2px; left:45%; animation-duration:7.5s; animation-delay:2.5s; bottom:-10px; }
+                @keyframes rise {
+                    0%   { transform: translateY(0) scale(1); opacity: 0.8; }
+                    100% { transform: translateY(-110vh) scale(0.3); opacity: 0; }
+                }
+                .right-content {
+                    position: relative;
+                    z-index: 10;
+                    text-align: center;
+                    color: white;
+                    padding: 40px;
+                }
+                .brand-badge {
+                    display: inline-block;
+                    background: rgba(255,255,255,0.1);
+                    border: 1px solid rgba(255,255,255,0.2);
+                    padding: 6px 18px;
+                    border-radius: 20px;
+                    font-size: 0.85rem;
+                    letter-spacing: 3px;
+                    text-transform: uppercase;
+                    margin-bottom: 24px;
+                    -webkit-backdrop-filter: blur(4px);
+                    backdrop-filter: blur(4px);
+                }
+                .right-content h2 {
+                    font-size: 3rem;
+                    font-weight: 900;
+                    line-height: 1.1;
+                    margin-bottom: 16px;
+                    text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+                    letter-spacing: -1px;
+                }
+                .right-content p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    letter-spacing: 2px;
+                    text-transform: uppercase;
+                }
+            </style>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
-
-
-
