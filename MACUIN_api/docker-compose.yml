@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+
+  api:
+    build: .
+    container_name: macuin_api
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://admin:macuin123@postgres:5432/macuin_db
+      SECRET_KEY: macuin_clave_secreta_204
+
+  postgres:
+    image: postgres:15
+    container_name: macuin_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: macuin123
+      POSTGRES_DB: macuin_db
+    ports:
+      - "5431:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d macuin_db"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
+volumes:
+  postgres_data:
