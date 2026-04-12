@@ -4,10 +4,31 @@
     box-sizing: border-box;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary: #e57373;      /* Red MACUIN (Original) */
+    --primary-hover: #ef5350;
+    --slate: #333333;        /* Standard Dark (Original) */
+    --slate-light: #666666;
+    --background: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-main: #333333;
+    --text-sub: #666666;
+    --border: #dddddd;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 2px 8px rgba(0,0,0,0.1);
+    --shadow-lg: 0 4px 12px rgba(0,0,0,0.15);
+    --transition: 0.3s ease;
+}
+
 body {
-    font-family: 'Arial', sans-serif;
-    height: 100vh;
-    overflow: hidden;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    background-color: var(--background);
+    color: var(--text-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
 
 .container {
@@ -172,25 +193,93 @@ body {
     border: 1px solid #f5c6cb;
 }
 
-/* Dashboard Styles */
-.dashboard-container {
-    min-height: 100vh;
-    background-color: #f8f9fa;
-}
-
+/* Dashboard Styles (Top Menu) */
 .dashboard-header {
-    background-color: #e57373;
+    background-color: var(--primary); /* Red #e57373 */
     color: white;
-    padding: 20px 40px;
+    padding: 0 50px;
+    height: 80px;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; 
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 .dashboard-header h1 {
-    font-size: 1.8rem;
-    font-weight: 400;
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0;
+    color: white;
+}
+
+.top-nav {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.nav-item {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-item i {
+    font-size: 1rem;
+}
+
+.nav-item:hover, .nav-item.active {
+    color: white;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.nav-item.cart-icon {
+    position: relative;
+    background: rgba(255, 255, 255, 0.2);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+}
+
+.dashboard-content {
+    padding: 40px 50px;
+}
+
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #f1f5f9;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+}
+
+.card h3 {
+    margin-bottom: 10px;
+    color: var(--slate);
+}
+
+.card p {
+    color: var(--text-sub);
+    font-size: 0.9rem;
 }
 
 .user-info {
@@ -201,16 +290,20 @@ body {
 
 .btn-logout {
     background-color: white;
-    color: #e57373;
-    padding: 8px 20px;
-    border-radius: 4px;
+    color: var(--slate);
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
     text-decoration: none;
-    font-size: 0.9rem;
-    transition: background-color 0.3s;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    transition: var(--transition);
 }
 
 .btn-logout:hover {
-    background-color: #f5f5f5;
+    background-color: #f1f5f9;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 .dashboard-content {
@@ -231,27 +324,92 @@ body {
     margin-top: 30px;
 }
 
-.card {
+/* Cards de Productos Originales */
+.producto-card {
     background: white;
-    padding: 30px;
+    padding: 25px 20px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     transition: transform 0.3s, box-shadow 0.3s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: none;
 }
 
-.card:hover {
+.producto-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-.card h3 {
-    color: #e57373;
-    margin-bottom: 10px;
+.producto-imagen {
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    background-color: #f5f5f5;
 }
 
-.card p {
-    color: #666;
-    font-size: 0.9rem;
+.producto-imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.producto-card:hover .producto-imagen img {
+    transform: scale(1.05);
+}
+
+.card-body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.producto-nombre {
+    font-size: 1rem;
+    color: #333;
+    margin: 0 0 8px 0;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.producto-marca {
+    color: #888 !important;
+    font-size: 0.8rem !important;
+    margin-bottom: 4px;
+    display: block;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.producto-precio {
+    font-size: 1.1rem !important;
+    font-weight: bold;
+    color: var(--primary) !important;
+    margin-top: auto;
+    padding-top: 0;
+    border-top: none;
+}
+
+.badge-agotado {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: #dc3545;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 /* Responsive */
@@ -882,4 +1040,32 @@ body {
     .table td {
         padding: 8px 10px;
     }
+}
+
+/* Animaciones para Productos */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.producto-animado {
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+/* Footer Fixes */
+.footer {
+    position: relative;
+    z-index: 10;
+}
+
+.dashboard-content {
+    height: auto !important;
+    min-height: calc(100vh - 80px);
+    overflow-y: visible !important;
 }

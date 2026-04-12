@@ -65,7 +65,7 @@ async def mis_pedidos(db: Session = Depends(get_db), usuario_actual: Usuario = D
     return db.query(Pedido).filter(Pedido.id_usuario == usuario_actual.id_usuario).all()
 
 
-@router.get("/", response_model=List[PedidoResponse])
+@router.get("/", response_model=List[PedidoDetalladoResponse])
 async def todos_los_pedidos(db: Session = Depends(get_db), usuario_actual: Usuario = Depends(verificar_token)):
     """Visualización global de pedidos — para personal interno."""
     return db.query(Pedido).all()
@@ -119,6 +119,49 @@ async def cambiar_estado(id_pedido: int, datos: PedidoEstadoUpdate, db: Session 
     db.commit()
     db.refresh(pedido)
     return pedido
+
+@router.delete("/{id_pedido}", status_code=status.HTTP_204_NO_CONTENT)
+async def eliminar_pedido(id_pedido: int, db: Session = Depends(get_db), usuario_actual: Usuario = Depends(verificar_token)):
+    """Elimina un pedido y restaura el stock al inventario."""
+    pedido = db.query(Pedido).filter(Pedido.id_pedido == id_pedido).first()
+    if not pedido:
+        raise HTTPException(status_code=404, detail="Pedido no encontrado")
+    
+    # 1. Restaurar Stock
+    for detalle in pedido.detalles:
+        inv = db.query(Inventario).filter(Inventario.id_producto == detalle.id_producto).first()
+        if inv:
+            inv.cantidad += detalle.cantidad
+    
+    # 2. Eliminar Envio (si existe)
+    if pedido.envio:
+        db.delete(pedido.envio)
+    
+    # 3. Eliminar Detalles
+    for d in pedido.detalles:
+        db.delete(d)
+        
+    # 4. Eliminar Pedido
+    db.delete(pedido)
+    db.commit()
+    return None
+
+
+@router.patch("/{id_pedido}/envio", response_model=EnvioResponse)
+async def actualizar_envio(id_pedido: int, datos: dict, db: Session = Depends(get_db), usuario_actual: Usuario = Depends(verificar_token)):
+    """Actualiza la dirección y datos de contacto de un pedido."""
+    envio = db.query(Envio).filter(Envio.id_pedido == id_pedido).first()
+    if not envio:
+        raise HTTPException(status_code=404, detail="Envío no encontrado")
+    
+    for key, value in datos.items():
+        if hasattr(envio, key) and value not in [None, ""]:
+            setattr(envio, key, value)
+            
+    db.commit()
+    db.refresh(envio)
+    return envio
+
 
 # --- Logística / Envíos ---
 

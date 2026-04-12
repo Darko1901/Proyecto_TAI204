@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Alternador / Alternator -->
+  <!-- Cuerpo principal -->
+  <circle cx="200" cy="200" r="90" fill="#666" stroke="#555" stroke-width="3"/>
+  <!-- Carcasa trasera -->
+  <circle cx="200" cy="200" r="80" fill="#777" stroke="#666" stroke-width="2"/>
+  <!-- Aletas de ventilación -->
+  <line x1="200" y1="125" x2="200" y2="145" stroke="#888" stroke-width="3"/>
+  <line x1="240" y1="133" x2="230" y2="150" stroke="#888" stroke-width="3"/>
+  <line x1="268" y1="160" x2="255" y2="172" stroke="#888" stroke-width="3"/>
+  <line x1="275" y1="200" x2="258" y2="200" stroke="#888" stroke-width="3"/>
+  <line x1="268" y1="240" x2="255" y2="228" stroke="#888" stroke-width="3"/>
+  <line x1="240" y1="267" x2="230" y2="250" stroke="#888" stroke-width="3"/>
+  <line x1="200" y1="275" x2="200" y2="255" stroke="#888" stroke-width="3"/>
+  <line x1="160" y1="267" x2="170" y2="250" stroke="#888" stroke-width="3"/>
+  <line x1="132" y1="240" x2="145" y2="228" stroke="#888" stroke-width="3"/>
+  <line x1="125" y1="200" x2="142" y2="200" stroke="#888" stroke-width="3"/>
+  <line x1="132" y1="160" x2="145" y2="172" stroke="#888" stroke-width="3"/>
+  <line x1="160" y1="133" x2="170" y2="150" stroke="#888" stroke-width="3"/>
+  <!-- Centro / polea -->
+  <circle cx="200" cy="200" r="30" fill="#888" stroke="#777" stroke-width="2"/>
+  <circle cx="200" cy="200" r="18" fill="#999" stroke="#888" stroke-width="1.5"/>
+  <!-- Eje -->
+  <circle cx="200" cy="200" r="8" fill="#aaa" stroke="#999" stroke-width="1"/>
+  <!-- Soporte -->
+  <rect x="145" y="290" width="30" height="20" rx="3" fill="#666" stroke="#555" stroke-width="1.5"/>
+  <rect x="225" y="290" width="30" height="20" rx="3" fill="#666" stroke="#555" stroke-width="1.5"/>
+  <!-- Conector eléctrico -->
+  <rect x="265" y="140" width="35" height="20" rx="4" fill="#444" stroke="#333" stroke-width="1.5"/>
+  <rect x="300" y="143" width="6" height="5" rx="1" fill="#888"/>
+  <rect x="300" y="152" width="6" height="5" rx="1" fill="#888"/>
+</svg>

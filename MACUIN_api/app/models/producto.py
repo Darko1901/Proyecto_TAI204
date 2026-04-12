@@ -20,6 +20,7 @@ class Producto(Base):
     compatibilidad = Column(Text, nullable=True)
     garantia = Column(String(100), nullable=True)
     id_categoria = Column(Integer, ForeignKey("categorias.id_categoria"), nullable=False)
+    activo = Column(Integer, default=1) # 1 for True, 0 for False (standard for some DBs)
 
     categoria = relationship("Categoria", back_populates="productos")
     inventarios = relationship("Inventario", back_populates="producto")
@@ -37,6 +38,7 @@ class ProductoCreate(BaseModel):
     compatibilidad: Optional[str] = None
     garantia: Optional[str] = Field(None, max_length=100)
     id_categoria: int
+    activo: Optional[bool] = True
 
 class ProductoUpdate(BaseModel):
     nombre_producto: Optional[str] = Field(None, min_length=2, max_length=100)
@@ -48,6 +50,7 @@ class ProductoUpdate(BaseModel):
     compatibilidad: Optional[str] = None
     garantia: Optional[str] = None
     id_categoria: Optional[int] = None
+    activo: Optional[bool] = None
 
 class ProductoResponse(BaseModel):
     id_producto: int
@@ -60,6 +63,7 @@ class ProductoResponse(BaseModel):
     compatibilidad: Optional[str]
     garantia: Optional[str]
     id_categoria: int
+    activo: bool = True
     stock: int = 0
     stock_minimo: int = 0
 

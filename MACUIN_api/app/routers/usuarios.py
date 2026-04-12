@@ -8,6 +8,11 @@ from app.security.auth import verificar_token, hashear_password
 router = APIRouter(prefix="/v1/usuarios", tags=["Usuarios Internos"])
 
 
+@router.get("/me", response_model=UsuarioResponse)
+async def obtener_perfil_actual(usuario_actual: Usuario = Depends(verificar_token)):
+    return usuario_actual
+
+
 @router.get("/", response_model=List[UsuarioResponse])
 async def obtener_usuarios(db: Session = Depends(get_db), usuario_actual: Usuario = Depends(verificar_token)):
     return db.query(Usuario).all()
@@ -59,3 +64,19 @@ async def eliminar_usuario(id_usuario: int, db: Session = Depends(get_db), usuar
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     db.delete(usuario)
     db.commit()
+
+
+@router.post("/{id_usuario}/toggle-active", response_model=UsuarioResponse)
+async def toggle_usuario_activo(id_usuario: int, db: Session = Depends(get_db), usuario_actual: Usuario = Depends(verificar_token)):
+    """Invierten el estado 'activo' del usuario."""
+    if usuario_actual.id_rol != 1:
+        raise HTTPException(status_code=403, detail="No tienes permisos para realizar esta acción")
+    
+    usuario = db.query(Usuario).filter(Usuario.id_usuario == id_usuario).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+    usuario.activo = not usuario.activo
+    db.commit()
+    db.refresh(usuario)
+    return usuario

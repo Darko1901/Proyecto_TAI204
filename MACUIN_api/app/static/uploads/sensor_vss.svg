@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Sensor VSS / Vehicle Speed Sensor -->
+  <!-- Conector -->
+  <rect x="175" y="85" width="50" height="28" rx="5" fill="#444" stroke="#333" stroke-width="1.5"/>
+  <rect x="185" y="75" width="6" height="15" rx="1" fill="#888"/>
+  <rect x="198" y="75" width="6" height="15" rx="1" fill="#888"/>
+  <rect x="211" y="75" width="6" height="15" rx="1" fill="#888"/>
+  <!-- Cuerpo cilíndrico -->
+  <rect x="178" y="113" width="44" height="80" rx="22" fill="#555" stroke="#444" stroke-width="2"/>
+  <!-- Brida -->
+  <rect x="165" y="190" width="70" height="15" rx="3" fill="#777" stroke="#666" stroke-width="1.5"/>
+  <circle cx="175" cy="197" r="4" fill="#999" stroke="#888" stroke-width="1"/>
+  <circle cx="225" cy="197" r="4" fill="#999" stroke="#888" stroke-width="1"/>
+  <!-- Engrane/piñón del sensor -->
+  <circle cx="200" cy="235" r="22" fill="#888" stroke="#777" stroke-width="2"/>
+  <!-- Dientes del engrane -->
+  <rect x="196" y="210" width="8" height="6" fill="#999"/>
+  <rect x="196" y="254" width="8" height="6" fill="#999"/>
+  <rect x="175" y="231" width="6" height="8" fill="#999"/>
+  <rect x="219" y="231" width="6" height="8" fill="#999"/>
+  <rect x="179" y="216" width="6" height="7" fill="#999" transform="rotate(-45 182 219)"/>
+  <rect x="215" y="216" width="6" height="7" fill="#999" transform="rotate(45 218 219)"/>
+  <rect x="179" y="247" width="6" height="7" fill="#999" transform="rotate(45 182 250)"/>
+  <rect x="215" y="247" width="6" height="7" fill="#999" transform="rotate(-45 218 250)"/>
+  <circle cx="200" cy="235" r="10" fill="#999" stroke="#888" stroke-width="1"/>
+  <circle cx="200" cy="235" r="4" fill="#aaa"/>
+  <!-- Label -->
+  <text x="200" y="310" font-family="Arial,sans-serif" font-size="12" fill="#999" text-anchor="middle">VSS</text>
+</svg>

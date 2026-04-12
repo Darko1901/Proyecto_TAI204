@@ -3,171 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autopartes MACUIN - Detalle del Pedido</title>
+    <title>Detalle Pedido #{{ $pedido['id_pedido'] }} - MACUIN</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
 <body>
-    <div class="dashboard-container">
-        <header class="dashboard-header">
-            <h1>Autopartes MACUIN</h1>
-            <div class="user-info">
-                <span>Detalle del Pedido</span>
-                <a href="{{ route('carrito') }}" class="btn-logout" title="Mi Carrito"><i class="fas fa-shopping-cart"></i></a>
-                <a href="{{ route('pedidos') }}" class="btn-logout">Volver a Mis Pedidos</a>
-            </div>
-        </header>
-        
-        <main class="dashboard-content">
-            <h2>Pedido #00001</h2>
-            
-            <div class="pedido-detalle-container">
-                <!-- Información del Pedido -->
-                <div class="card">
-                    <h3>Información del Pedido</h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <strong>Número de Pedido:</strong>
-                            <span>#00001</span>
-                        </div>
-                        <div class="info-item">
-                            <strong>Fecha de Pedido:</strong>
-                            <span>15 de febrero de 2026</span>
-                        </div>
-                        <div class="info-item">
-                            <strong>Estado:</strong>
-                            <span class="status-badge status-enviado">Enviado</span>
-                        </div>
-                        <div class="info-item">
-                            <strong>Fecha Estimada de Entrega:</strong>
-                            <span>28 de febrero de 2026</span>
-                        </div>
+    <header class="dashboard-header">
+        <div class="header-left">
+            <h1>MACUIN</h1>
+        </div>
+        <nav class="top-nav">
+            <a href="{{ route('home') }}" class="nav-item"><i class="fas fa-home"></i> Inicio</a>
+            <a href="{{ route('dashboard') }}" class="nav-item"><i class="fas fa-th-large"></i> Panel</a>
+            <a href="{{ route('catalogo') }}" class="nav-item"><i class="fas fa-store"></i> Catálogo</a>
+            <a href="{{ route('pedidos') }}" class="nav-item active"><i class="fas fa-box"></i> Pedidos</a>
+            <a href="{{ route('perfil') }}" class="nav-item"><i class="fas fa-user-circle"></i> Mi Perfil</a>
+            <a href="{{ route('carrito') }}" class="nav-item cart-icon"><i class="fas fa-shopping-cart"></i></a>
+            <form action="{{ route('logout') }}" method="POST" style="display:inline; margin-left:10px;">
+                @csrf
+                <button type="submit" class="nav-item logout-btn" style="background:rgba(255,255,255,0.1); border:none; cursor:pointer; padding:8px 15px; border-radius:8px; color:white;">Salir</button>
+            </form>
+        </nav>
+    </header>
+    
+    <main class="dashboard-content">
+        <div style="margin-bottom:20px;">
+            <a href="javascript:history.back()" style="text-decoration:none; color:#64748b; font-weight:700; display:flex; align-items:center; gap:8px; transition:0.3s; width:fit-content;" onmouseover="this.style.color='#b71c1c'" onmouseout="this.style.color='#64748b'">
+                <i class="fas fa-arrow-left"></i> REGRESAR
+            </a>
+        </div>
+        <div class="detalle-wrapper" style="max-width:1200px; margin:0 auto;">
+            <div class="card" style="padding:40px; border-radius:20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #f0f0f0; padding-bottom:20px; margin-bottom:30px;">
+                    <div>
+                        <h2 style="font-size:1.8rem; font-weight:800; color:#333; margin:0;">Pedido #{{ str_pad($pedido['id_pedido'], 5, '0', STR_PAD_LEFT) }}</h2>
+                        <p style="color:#666; margin-top:5px;">Fecha: {{ \Carbon\Carbon::parse($pedido['fecha_pedido'])->format('d/m/Y - H:i') }}</p>
+                    </div>
+                    <div style="text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
+                        <span class="status-badge" style="background:#e8f5e9; color:#2e7d32; padding:10px 25px; border-radius:30px; font-weight:800; text-transform:uppercase;">{{ [1 => 'Recibido', 2 => 'Surtido', 3 => 'Enviado', 4 => 'Entregado', 5 => 'Cancelado'][$pedido['id_estado']] }}</span>
+                        <a href="{{ route('pedido.factura', $id) }}" class="btn-login" style="background:#fff; color:#b71c1c; border:1px solid #ffcdd2; padding:8px 15px; font-size:0.85rem; width:auto; font-weight:700;">
+                            <i class="fas fa-file-invoice-dollar"></i> Descargar Factura PDF
+                        </a>
                     </div>
                 </div>
 
-                <!-- Productos del Pedido -->
-                <div class="card">
-                    <h3>Productos</h3>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th>Cantidad</th>
-                                <th>Precio Unitario</th>
-                                <th>Subtotal</th>
-                                <th>Disponibilidad</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Frenos</td>
-                                <td>2</td>
-                                <td>$1,200.00</td>
-                                <td>$2,400.00</td>
-                                <td><span class="disponible">En Stock</span></td>
-                            </tr>
-                            <tr>
-                                <td>Amortiguadores</td>
-                                <td>1</td>
-                                <td>$2,300.00</td>
-                                <td>$2,300.00</td>
-                                <td><span class="disponible">En Stock</span></td>
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="3"><strong>Total:</strong></td>
-                                <td colspan="2"><strong>$4,700.00</strong></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-
-                <!-- Información de Entrega -->
-                <div class="card">
-                    <h3>Información de Entrega</h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <strong>Dirección:</strong>
-                            <span>Av. Principal #123, Col. Centro</span>
-                        </div>
-                        <div class="info-item">
-                            <strong>Ciudad:</strong>
-                            <span>Querétaro</span>
-                        </div>
-                        <div class="info-item">
-                            <strong>Código Postal:</strong>
-                            <span>76000</span>
-                        </div>
-                        <div class="info-item">
-                            <strong>Teléfono:</strong>
-                            <span>442-123-4567</span>
-                        </div>
-                        <div class="info-item full-width">
-                            <strong>Notas:</strong>
-                            <span>Entregar en horario de oficina (9:00 AM - 6:00 PM)</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Seguimiento del Pedido -->
-                <div class="card">
-                    <h3>Seguimiento del Pedido</h3>
-                    <div class="timeline">
-                        <div class="timeline-item completed">
-                            <div class="timeline-marker"></div>
-                            <div class="timeline-content">
-                                <h4>Pedido Recibido</h4>
-                                <p>15 de febrero de 2026 - 10:30 AM</p>
-                                <p>Tu pedido ha sido recibido y está siendo procesado.</p>
-                            </div>
-                        </div>
-                        <div class="timeline-item completed">
-                            <div class="timeline-marker"></div>
-                            <div class="timeline-content">
-                                <h4>Pedido Surtido</h4>
-                                <p>16 de febrero de 2026 - 2:15 PM</p>
-                                <p>Los productos han sido preparados para envío.</p>
-                            </div>
-                        </div>
-                        <div class="timeline-item active">
-                            <div class="timeline-marker"></div>
-                            <div class="timeline-content">
-                                <h4>Pedido Enviado</h4>
-                                <p>18 de febrero de 2026 - 9:00 AM</p>
-                                <p>Tu pedido está en camino.</p>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker"></div>
-                            <div class="timeline-content">
-                                <h4>Pedido Entregado</h4>
-                                <p>Pendiente</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Acciones -->
-                <div class="card">
-                    <div class="pedido-actions">
-                        <!-- Solo mostrar si el pedido está en estado "Recibido" -->
-                        <!-- 
-                        <form method="POST" action="{{ route('pedido.cancelar', 1) }}" style="display: inline;">
-                            @csrf
-                            <button type="submit" class="btn-cancelar" onclick="return confirm('¿Estás seguro de que deseas cancelar este pedido?')">
-                                Cancelar Pedido
-                            </button>
-                        </form>
-                        -->
+                <!-- Timeline de Seguimiento -->
+                <div style="margin-bottom:50px; padding:20px 0;">
+                    <h4 style="margin-bottom:30px; color:#333; font-size:1.1rem; text-align:center;">Seguimiento de tu Pedido</h4>
+                    <div style="display:flex; justify-content:space-between; position:relative; max-width:800px; margin:0 auto;">
+                        <div style="position:absolute; top:20px; left:0; right:0; height:4px; background:#e2e8f0; z-index:1;"></div>
+                        <div style="position:absolute; top:20px; left:0; width:{{ ($pedido['id_estado']-1)*33.3 }}%; height:4px; background:#2e7d32; z-index:2; transition: width 1s ease;"></div>
                         
-                        <p class="nota-cancelacion">
-                            <strong>Nota:</strong> Los pedidos solo pueden cancelarse mientras estén en estado "Recibido".
-                        </p>
+                        @php
+                            $steps = [
+                                ['id' => 1, 'label' => 'Recibido', 'icon' => 'fa-check-circle'],
+                                ['id' => 2, 'label' => 'Surtido', 'icon' => 'fa-box'],
+                                ['id' => 3, 'label' => 'Enviado', 'icon' => 'fa-truck'],
+                                ['id' => 4, 'label' => 'Entregado', 'icon' => 'fa-home']
+                            ];
+                        @endphp
+
+                        @foreach($steps as $step)
+                            @php
+                                $isActive = $pedido['id_estado'] >= $step['id'];
+                                $isCurrent = $pedido['id_estado'] == $step['id'];
+                            @endphp
+                            <div style="text-align:center; position:relative; z-index:3; width:60px;">
+                                <div style="width:44px; height:44px; background:{{ $isActive ? '#2e7d32' : '#fff' }}; border:4px solid {{ $isActive ? '#2e7d32' : '#e2e8f0' }}; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto; color:{{ $isActive ? '#fff' : '#cbd5e1' }}; transition:0.3s; {{ $isCurrent ? 'box-shadow: 0 0 0 5px rgba(46, 125, 50, 0.2);' : '' }}">
+                                    <i class="fas {{ $step['icon'] }}"></i>
+                                </div>
+                                <span style="display:block; margin-top:10px; font-size:0.75rem; font-weight:{{ $isActive ? '800' : '600' }}; color:{{ $isActive ? '#1e293b' : '#94a3b8' }}; text-transform:uppercase;">{{ $step['label'] }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1.5fr 1fr; gap:40px;">
+                    <div>
+                        <h4 style="margin-bottom:20px; color:#333; font-size:1.2rem;">Productos en este pedido</h4>
+                        <table class="table">
+                            <thead>
+                                <tr><th>Producto</th><th>Cant.</th><th>P.U.</th><th>Subtotal</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach($pedido['detalles'] as $d)
+                                    <tr>
+                                        <td>{{ $d['producto']['nombre_producto'] ?? 'ID: ' . ($d['id_producto'] ?? 'N/A') }}</td>
+                                        <td>{{ $d['cantidad'] ?? 0 }}</td>
+                                        <td>${{ number_format($d['precio_unitario'] ?? 0, 2) }}</td>
+                                        <td style="font-weight:700;">${{ number_format($d['subtotal'] ?? 0, 2) }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" style="text-align:right; font-weight:700; padding:15px;">TOTAL:</td>
+                                    <td style="font-weight:900; color:#b71c1c; font-size:1.3rem;">${{ number_format($pedido['total'], 2) }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div>
+                        <div class="card" style="background:#f9f9f9; padding:25px; border:none; margin-bottom:20px;">
+                            <h4 style="margin-bottom:15px; color:#333;">Información de Envío</h4>
+                            <p style="font-size:0.9rem; color:#666; line-height:1.6;">
+                                <strong>Dirección:</strong><br>{{ $pedido['direccion_entrega'] ?? ($envio['direccion'] ?? 'No especificada') }}<br><br>
+                                <strong>Referencias:</strong><br>{{ $pedido['referencias'] ?? ($envio['referencias'] ?? 'Ninguna') }}<br><br>
+                                <strong>Pago:</strong><br>{{ $pedido['metodo_pago'] ?? 'Tarjeta' }}
+                            </p>
+                        </div>
+                        
+                        <div class="card" style="padding:20px; text-align:center; background:#fff8f8; border:1px solid #ffcdd2;">
+                            <i class="fas fa-headset fa-2x" style="color:var(--primary); margin-bottom:15px;"></i>
+                            <h5 style="margin:0;">¿Necesitas soporte?</h5>
+                            <p style="font-size:0.8rem; color:#666; margin:8px 0 15px;">Para dudas logísticas o aclaraciones, contáctanos vía WhatsApp.</p>
+                            <a href="https://wa.me/1234567890" class="btn-login" style="width:100%; border-radius:8px; padding:10px; font-size:0.85rem;">WHATSAPP SOPORTE</a>
+                        </div>
                     </div>
                 </div>
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
 </body>
 </html>

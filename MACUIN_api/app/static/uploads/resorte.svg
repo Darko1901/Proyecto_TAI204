@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Resorte helicoidal -->
+  <path d="M140,80 Q260,100 140,130 Q260,160 140,190 Q260,220 140,250 Q260,280 140,310 Q260,340 200,350" fill="none" stroke="#e57373" stroke-width="8" stroke-linecap="round"/>
+  <path d="M142,82 Q258,100 142,130 Q258,158 142,188 Q258,218 142,248 Q258,278 142,308" fill="none" stroke="#c44" stroke-width="3" stroke-dasharray="2,8"/>
+  <!-- Bases planas -->
+  <rect x="120" y="68" width="80" height="12" rx="3" fill="#888" stroke="#666" stroke-width="1.5"/>
+  <rect x="140" y="345" width="80" height="12" rx="3" fill="#888" stroke="#666" stroke-width="1.5"/>
+</svg>

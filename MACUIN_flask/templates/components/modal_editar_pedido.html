@@ -1,0 +1,79 @@
+<!-- Modal Editar Pedido Avanzado (Master Logic) -->
+<div class="modal-overlay" id="modalEditarPedido">
+    <div class="modal-content" style="background: white; color: #000;">
+        <div class="modal-header">
+            <h3><i class="fas fa-edit"></i> Editar Orden: <span id="edit-folio-title">-</span></h3>
+            <button class="btn-close" onclick="document.getElementById('modalEditarPedido').style.display='none'">&times;</button>
+        </div>
+        <form id="formEditarPedido">
+            <input type="hidden" id="edit-id-puro" name="id_puro">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group" style="grid-column: span 2;">
+                    <label style="color: #000; font-weight: 700;">Datos del Cliente</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <input type="text" id="edit-cliente-nombre" name="cliente_nombre" placeholder="Nombre completo" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="email" id="edit-cliente-correo" name="cliente_correo" placeholder="Correo electrónico" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label style="color: #000;">Dirección de Envío</label>
+                    <input type="text" id="edit-direccion" name="direccion" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <div class="form-group">
+                    <label style="color: #000;">Ciudad</label>
+                    <input type="text" id="edit-ciudad" name="ciudad" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <div class="form-group">
+                    <label style="color: #000;">Código Postal</label>
+                    <input type="text" id="edit-cp" name="codigo_postal" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <div class="form-group">
+                    <label style="color: #000;">Teléfono de Contacto</label>
+                    <input type="text" id="edit-telefono" name="telefono_contacto" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label style="color: #000; font-weight: 700;">Paquetería de Envío <span style="color: #e57373;">* Obligatorio para avanzar</span></label>
+                    <select id="edit-paqueteria" name="paqueteria" style="width: 100%; padding: 10px; border: 2px solid #e57373; border-radius: 8px; font-weight: 700; background: #fff5f5; color: #000;">
+                        <option value="">-- Seleccionar Paquetería --</option>
+                        <option value="DHL">DHL Express</option>
+                        <option value="FedEx">FedEx</option>
+                        <option value="Estafeta">Estafeta</option>
+                        <option value="UPS">UPS</option>
+                        <option value="Paquetexpress">Paquetexpress</option>
+                        <option value="MACUIN Fleet Management">MACUIN Fleet Management</option>
+                        <option value="Otro">Otro / Local</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 15px;">
+                <label style="color: #000; font-weight: 700;">Detalle de Productos</label>
+                <div id="edit-productos-container" style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; max-height: 120px; overflow-y: auto;">
+                    <!-- Se llena dinámicamente -->
+                    <p style="font-size: 0.8rem; color: #666; font-style: italic;">Cargando productos...</p>
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 15px;">
+                <label style="color: #000;">Notas de Entrega</label>
+                <textarea id="edit-notas" name="notas" rows="2" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; resize: none;"></textarea>
+            </div>
+            <div class="form-group" style="margin-top: 15px;">
+                <label style="color: #000;">Estado de la Orden (Flujo Maestro)</label>
+                <select id="edit-estado" name="id_estado" style="width: 100%; padding: 10px; border: 1px solid #e57373; border-radius: 4px; font-weight: bold;">
+                    <option value="1">1. Recibido - Pendiente</option>
+                    <option value="2">2. Surtido - Almacén</option>
+                    <option value="3">3. Enviado - Logística</option>
+                    <option value="4">4. Completado - Entregado</option>
+                    <option value="5">5. Cancelado</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: #e57373; color: white; font-weight: bold; cursor: pointer;">
+                    Guardar Cambios
+                </button>
+                <button type="button" onclick="gestionarEnvioLogistica()" style="background: #2c3e50; color: white; border: none; border-radius: 8px; padding: 0 15px; cursor: pointer;">
+                    <i class="fas fa-truck"></i> Despachar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

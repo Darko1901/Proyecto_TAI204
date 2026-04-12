@@ -1,0 +1,82 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: macuin_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: macuin123
+      POSTGRES_DB: macuin_db
+    ports:
+      - "5431:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d macuin_db"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+    networks:
+      - macuin_network
+
+  api:
+    build: 
+      context: ./MACUIN_api
+    container_name: macuin_api
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./MACUIN_api:/app
+      - macuin_uploads:/app/app/static/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://admin:macuin123@macuin_postgres:5432/macuin_db
+      SECRET_KEY: macuin_clave_secreta_204
+    networks:
+      - macuin_network
+
+  flask:
+    build:
+      context: ./MACUIN_flask
+    container_name: macuin_flask
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./MACUIN_flask:/app
+    environment:
+      API_BASE_URL: http://macuin_api:8080
+      FLASK_APP: app.py
+      FLASK_ENV: development
+    depends_on:
+      - api
+    networks:
+      - macuin_network
+
+  laravel:
+    build:
+      context: ./MACUIN_Laravel
+    container_name: macuin_laravel
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./MACUIN_Laravel:/app
+    environment:
+      APP_NAME: MACUIN_Laravel
+      APP_URL: http://localhost:8000
+      API_BASE_URL: http://macuin_api:8080
+    depends_on:
+      - api
+    networks:
+      - macuin_network
+
+volumes:
+  postgres_data:
+  macuin_uploads:
+
+networks:
+  macuin_network:
+    driver: bridge

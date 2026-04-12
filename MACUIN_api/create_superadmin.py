@@ -30,8 +30,8 @@ def create_superadmin():
             
         print(f"Using role ID: {superadmin_role_id}")
             
-        email = "alberto@gmail.com"
-        password_plano = "Luna0203@"
+        email = "albertolunaaa@gmail.com"
+        password_plano = "Luna0203fe@"
         hashed_pw = hashear_password(password_plano)
         
         existing = db.query(Usuario).filter(Usuario.correo == email).first()

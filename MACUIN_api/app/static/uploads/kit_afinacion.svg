@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Kit de afinación - caja con componentes -->
+  <!-- Caja -->
+  <rect x="70" y="140" width="260" height="180" rx="8" fill="#e8e8e8" stroke="#ccc" stroke-width="2"/>
+  <rect x="70" y="140" width="260" height="35" rx="8" fill="#d32f2f" stroke="#b71c1c" stroke-width="2"/>
+  <text x="200" y="163" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">KIT AFINACIÓN</text>
+  <!-- Filtro de aceite -->
+  <rect x="90" y="195" width="45" height="55" rx="5" fill="#1565c0" stroke="#0d47a1" stroke-width="1.5"/>
+  <text x="112" y="225" font-family="Arial,sans-serif" font-size="8" fill="white" text-anchor="middle">FILTRO</text>
+  <!-- Botella aceite -->
+  <rect x="150" y="200" width="35" height="50" rx="4" fill="#fdd835" stroke="#f9a825" stroke-width="1.5"/>
+  <rect x="157" y="190" width="20" height="15" rx="3" fill="#fdd835" stroke="#f9a825" stroke-width="1"/>
+  <text x="167" y="230" font-family="Arial,sans-serif" font-size="7" fill="#333" text-anchor="middle">5W-30</text>
+  <!-- Bujías -->
+  <rect x="200" y="210" width="8" height="40" rx="2" fill="#aaa"/>
+  <rect x="196" y="205" width="16" height="10" rx="2" fill="#888"/>
+  <rect x="215" y="210" width="8" height="40" rx="2" fill="#aaa"/>
+  <rect x="211" y="205" width="16" height="10" rx="2" fill="#888"/>
+  <!-- Filtro de aire -->
+  <rect x="245" y="195" width="65" height="25" rx="12" fill="#fff" stroke="#ccc" stroke-width="1.5"/>
+  <rect x="245" y="220" width="65" height="25" rx="12" fill="#eee" stroke="#ccc" stroke-width="1.5"/>
+  <text x="277" y="237" font-family="Arial,sans-serif" font-size="7" fill="#999" text-anchor="middle">AIRE</text>
+  <!-- Tapa de caja frontal -->
+  <rect x="70" y="290" width="260" height="30" rx="5" fill="#ddd" stroke="#ccc" stroke-width="1"/>
+</svg>

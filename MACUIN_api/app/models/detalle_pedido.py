@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, Numeric, ForeignKey
 from sqlalchemy.orm import relationship
 from pydantic import BaseModel, Field
 from decimal import Decimal
+from typing import Optional
 from app.data.database import Base
 
 
@@ -31,5 +32,15 @@ class DetallePedidoResponse(BaseModel):
     id_producto: int
     cantidad: int
     precio_unitario: Decimal
+    nombre_producto: Optional[str] = None
+    imagen: Optional[str] = None
+
+    @classmethod
+    def model_validate(cls, obj, **kwargs):
+        data = super().model_validate(obj, **kwargs)
+        if hasattr(obj, 'producto') and obj.producto:
+            data.nombre_producto = obj.producto.nombre_producto
+            data.imagen = obj.producto.imagen
+        return data
 
     model_config = {"from_attributes": True}

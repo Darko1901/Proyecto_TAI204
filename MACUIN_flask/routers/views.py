@@ -1,20 +1,47 @@
-from flask import Blueprint, render_template, redirect, url_for, session, request, flash
-from security.api_client import fetch_data, post_data, patch_data
+from flask import Blueprint, render_template, redirect, url_for, session, request, flash, jsonify, Response
+from security.api_client import fetch_data, post_data, patch_data, delete_data, fetch_raw
 
 views_bp = Blueprint('views', __name__)
+
+@views_bp.route('/reporte/excel')
+def reporte_excel_proxy():
+    if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
+    token = session.get('token')
+    api_response = fetch_raw("/v1/reportes/ventas/xlsx", token)
+    
+    if api_response and api_response.status_code == 200:
+        return Response(
+            api_response.content,
+            headers={
+                "Content-Type": api_response.headers.get("Content-Type"),
+                "Content-Disposition": "attachment; filename=Reporte_Ventas_MACUIN.xlsx"
+            }
+        )
+    flash("Error al generar el reporte Excel desde el servidor.", "error")
+    return redirect(url_for('views.ventas'))
 
 @views_bp.route('/dashboard')
 def dashboard():
     if 'usuario' not in session:
         return redirect(url_for('auth.login_personal_interno'))
-    return render_template('dashboard.html')
+    
+    token = session.get('token')
+    # Datos para la campanita de notificaciones
+    inventario_raw = fetch_data("/v1/autopartes/", token)
+    inventario = inventario_raw.get('items', []) if isinstance(inventario_raw, dict) else []
+    
+    pedidos_raw = fetch_data("/v1/pedidos/", token)
+    pedidos = pedidos_raw.get('items', []) if isinstance(pedidos_raw, dict) else (pedidos_raw if isinstance(pedidos_raw, list) else [])
+    
+    return render_template('dashboard.html', 
+                          inventarioData=inventario, 
+                          logisticaData=pedidos)
 
 @views_bp.route('/superadmin')
 def superadmin():
     if 'usuario' not in session:
         return redirect(url_for('auth.login_personal_interno'))
     
-    # Seguridad extra: Solo si es rol 1 (Superadmin)
     if session.get('rol') != 1:
         flash("Acceso denegado: Se requieren permisos de Superadmin.", "error")
         return redirect(url_for('views.dashboard'))
@@ -22,14 +49,23 @@ def superadmin():
     usuarios_data = fetch_data("/v1/usuarios/", session.get('token'))
     usuarios_list = []
     
-    for u in usuarios_data:
+    # usuarios_data puede ser Lista o Dict con 'items'
+    usuarios_raw = []
+    if isinstance(usuarios_data, list):
+        usuarios_raw = usuarios_data
+    elif isinstance(usuarios_data, dict):
+        usuarios_raw = usuarios_data.get('items', [])
+        
+    for u in usuarios_raw:
         rol_nombre = "Usuario"
         if u.get('id_rol') == 1: rol_nombre = "Superadmin"
         elif u.get('id_rol') == 2: rol_nombre = "Trabajador"
         elif u.get('id_rol') == 3: rol_nombre = "Empresa"
         elif u.get('id_rol') == 4: rol_nombre = "Ventas"
+        elif u.get('id_rol') == 5: rol_nombre = "Cliente"
 
         usuarios_list.append({
+            "id_puro": u.get('id_usuario'),
             "id": f"USR-{u.get('id_usuario', '')}",
             "nombre": f"{u.get('nombre', '')} {u.get('apellido_paterno', '')}",
             "origen": "MACUIN Central" if u.get('id_rol') != 3 else "Empresa Asociada",
@@ -43,89 +79,182 @@ def superadmin():
 def ventas():
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
     
-    # 1. Obtener KPIs para el dashboard
     kpis = fetch_data("/v1/reportes/dashboard", session.get('token'))
-    
-    # 2. Obtener lista de ventas (pedidos)
     pedidos_data = fetch_data("/v1/pedidos/", session.get('token'))
     ventas_list = []
     
-    for p in pedidos_data:
-        # Mapeo de estados
+    # pedidos_data puede ser Lista o Dict con 'items'
+    pedidos_raw = []
+    if isinstance(pedidos_data, list):
+        pedidos_raw = pedidos_data
+    elif isinstance(pedidos_data, dict):
+        pedidos_raw = pedidos_data.get('items', [])
+        
+    for p in pedidos_raw:
         estados_map = {1: "Recibido", 2: "Surtido", 3: "Enviado", 4: "Completado", 5: "Cancelado"}
         estatus = estados_map.get(p.get("id_estado"), "Procesando")
+        
+        u = p.get("usuario")
+        nombre_cliente = f"{u.get('nombre')} {u.get('apellido_paterno')}" if u else f"Cliente #{p.get('id_usuario', 'N/A')}"
         
         ventas_list.append({
             "id": f"V-{p.get('id_pedido', '')}",
             "id_puro": p.get('id_pedido'),
-            "cliente": f"Cliente #{p.get('id_usuario', 'N/A')}",
+            "cliente": nombre_cliente,
             "piezas": "Piezas del Pedido",
-            "fecha": p.get('fecha_pedido', '').split('T')[0],
+            "fecha": p.get('fecha_pedido', '').split('T')[0] if p.get('fecha_pedido') else 'N/A',
             "total": float(p.get('total', 0.0)),
             "estatus": estatus
         })
-    # 3. Obtener inventario para el select del modal
-    productos_all = fetch_data("/v1/autopartes/", session.get('token'))
+
+    # IMPORTANTE: /v1/autopartes/ devuelve un DICT {"items": [], "total": X}
+    response_autopartes = fetch_data("/v1/autopartes/", session.get('token'))
     inventario_global = []
+    
+    if isinstance(response_autopartes, dict):
+        productos_all = response_autopartes.get('items', [])
+    else:
+        productos_all = response_autopartes
+
     for p in productos_all:
         inventario_global.append({
             "id_puro": p.get('id_producto'),
             "id": f"SKU-{p.get('id_producto')}",
-            "pieza": p.get('nombre_producto')
+            "pieza": p.get('nombre_producto'),
+            "precio": float(p.get('precio', 0.0))
         })
 
-    return render_template('ventas.html', ventasData=ventas_list, kpis=kpis, inventarioGlobal=inventario_global)
+    # Agregación para Gráficas
+    status_counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+    total_acumulado = 0.0
+    for p in pedidos_raw:
+        id_est = p.get("id_estado", 1)
+        status_counts[id_est] = status_counts.get(id_est, 0) + 1
+        total_acumulado += float(p.get("total", 0.0))
 
-@views_bp.route('/ventas/nueva', methods=['POST'])
-def nueva_venta():
-    if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
-    
-    cliente = request.form.get('cliente', 'anonimo')
-    id_producto = request.form.get('id_producto')
-    cantidad = request.form.get('cantidad', '1')
-    total = request.form.get('total', '0') # Total manual o calculado?
-    
-    if not id_producto:
-        flash("Error: Debe seleccionar un producto.", "error")
-        return redirect(url_for('views.ventas'))
+    # Top Vendidos
+    top_v = fetch_data("/v1/reportes/top-productos", session.get('token'))
+    # Tendencia de Ventas (Real)
+    tendencia = fetch_data("/v1/reportes/ventas/tendencia", session.get('token'))
 
-    pedido_data = {
-        "direccion": "Mostrador",
-        "ciudad": "Local",
-        "codigo_postal": "00000",
-        "telefono_contacto": "0000000000",
-        "notas": f"Cliente: {cliente}",
-        "detalles": [
-            {
-                "id_producto": int(id_producto),
-                "cantidad": int(cantidad),
-                "precio_unitario": float(total) / int(cantidad) if int(cantidad) > 0 else 0.0
-            }
-        ]
+    chart_data = {
+        "status_labels": ["Recibido", "Surtido", "Enviado", "Completado", "Cancelado"],
+        "status_values": [status_counts[1], status_counts[2], status_counts[3], status_counts[4], status_counts[5]],
+        "total_revenue": total_acumulado,
+        "top_labels": [item.get('producto') for item in top_v] if isinstance(top_v, list) else [],
+        "top_values": [item.get('cantidad') for item in top_v] if isinstance(top_v, list) else [],
+        "trend_labels": [item.get('fecha') for item in tendencia] if isinstance(tendencia, list) else [],
+        "trend_revenue": [item.get('ingreso') for item in tendencia] if isinstance(tendencia, list) else [],
+        "trend_orders": [item.get('cantidad') for item in tendencia] if isinstance(tendencia, list) else []
+    }
+
+    return render_template('ventas.html', ventasData=ventas_list, chartData=chart_data, kpis=kpis, inventarioGlobal=inventario_global)
+
+@views_bp.route('/ventas/detalle/<int:id_pedido>')
+def obtener_detalle_venta(id_pedido):
+    if 'usuario' not in session: return jsonify({"error": "No autenticado"}), 401
+    detalle = fetch_data(f"/v1/pedidos/{id_pedido}", session.get('token'))
+    if detalle:
+        return jsonify(detalle)
+    return jsonify({"error": "No se encontró el detalle"}), 404
+
+@views_bp.route('/ventas/confirmar/<int:id_pedido>', methods=['POST'])
+def confirmar_pedido(id_pedido):
+    if 'usuario' not in session: return jsonify({"error": "No autenticado"}), 401
+    # Estado 2 = Surtido
+    response = patch_data(f"/v1/pedidos/{id_pedido}/estado", {"id_estado": 2}, session.get('token'))
+    if response and response.status_code == 200:
+        return jsonify({"status": "success", "message": "Pedido confirmado. Notificación enviada al cliente."})
+    return jsonify({"status": "error", "message": "Error al confirmar en la API"}), 400
+
+@views_bp.route('/ventas/eliminar/<int:id_pedido>', methods=['POST'])
+def eliminar_venta(id_pedido):
+    if 'usuario' not in session: return jsonify({"error": "No autenticado"}), 401
+    response = delete_data(f"/v1/pedidos/{id_pedido}", session.get('token'))
+    if response and response.status_code in [200, 204]:
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error", "message": "Error al eliminar en la API"}), 400
+
+@views_bp.route('/ventas/editar/<int:id_pedido>', methods=['POST'])
+def editar_pedido_completo(id_pedido):
+    if 'usuario' not in session: return jsonify({"error": "No autenticado"}), 401
+    
+    # 1. Actualizar Datos de Envío (Filtrar solo los que tienen contenido para evitar wipes)
+    datos_envio = {}
+    mapping = {
+        "direccion": "direccion",
+        "ciudad": "ciudad",
+        "codigo_postal": "codigo_postal",
+        "telefono_contacto": "telefono_contacto", # Corregido: antes buscaba 'telefono'
+        "notas": "notas",
+        "paqueteria": "paqueteria"
     }
     
-    response = post_data("/v1/pedidos/", pedido_data, session.get('token'))
-    if response and response.status_code == 201:
-        flash("Venta registrada exitosamente. El stock ha sido actualizado.", "success")
-    else:
-        error_detail = response.json().get('detail', 'Error desconocido') if response else "Sin respuesta del servidor"
-        flash(f"Error al registrar la venta: {error_detail}", "error")
+    for form_key, api_key in mapping.items():
+        val = request.form.get(form_key)
+        if val: # Solo si no es vacío/None
+            datos_envio[api_key] = val
+            
+    if datos_envio:
+        res_envio = patch_data(f"/v1/pedidos/{id_pedido}/envio", datos_envio, session.get('token'))
+        if not res_envio or res_envio.status_code != 200:
+            return jsonify({"status": "error", "message": "No se pudo actualizar la información de envío en el servidor."}), 400
+    
+    # 2. Actualizar Estado
+    id_estado_str = request.form.get('id_estado')
+    if id_estado_str:
+        id_estado = int(id_estado_str)
+        response = patch_data(f"/v1/pedidos/{id_pedido}/estado", {"id_estado": id_estado}, session.get('token'))
+        if not response or response.status_code != 200:
+            return jsonify({"status": "error", "message": "Error al actualizar el estado del pedido."}), 400
+    
+    return jsonify({"status": "success", "message": "Pedido actualizado correctamente."})
+    
+@views_bp.route('/logistica/asignar_paqueteria/<int:id_pedido>', methods=['POST'])
+def asignar_paqueteria_fast(id_pedido):
+    if 'usuario' not in session: return jsonify({"status": "error", "message": "No autenticado"}), 401
+    
+    data = request.get_json()
+    paqueteria = data.get('paqueteria') if data else None
+    
+    if not paqueteria:
+        return jsonify({"status": "error", "message": "Paquetería no proporcionada"}), 400
         
-    return redirect(url_for('views.ventas'))
+    res = patch_data(f"/v1/pedidos/{id_pedido}/envio", {"paqueteria": paqueteria}, session.get('token'))
+    
+    if res and res.status_code == 200:
+        return jsonify({"status": "success", "message": "Paquetería asignada correctamente."})
+        
+    return jsonify({"status": "error", "message": "Error al sincronizar con el servidor central."}), 400
+
 
 @views_bp.route('/almacen')
 def almacen():
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
     
-    productos_data = fetch_data("/v1/autopartes/", session.get('token'))
-    almacen_list = []
+    page = request.args.get('page', 1, type=int)
+    limit = 200
     
-    # Mapeo de categorías para mostrar nombres legibles
+    response_data = fetch_data(f"/v1/autopartes/?page={page}&limit={limit}", session.get('token'))
+    
+    if not isinstance(response_data, dict) or 'items' not in response_data:
+        flash("Error al obtener datos del inventario.", "error")
+        return render_template('almacen.html', inventarioData=[], kpis={})
+
+    productos_data = response_data['items']
+    total = response_data['total']
+    total_pages = response_data['total_pages']
+    
+    almacen_list = []
     categorias_map = {
-        1: "Motor / Mecánica",
-        2: "Sistema Eléctrico",
-        3: "Frenado y Suspensión",
-        4: "Limpieza y Fluidos"
+        1: "Frenos", 
+        2: "Suspension y Direccion", 
+        3: "Iluminacion", 
+        4: "Carroceria y Colision",
+        5: "Llantas",
+        6: "Kits de Afinacion",
+        7: "Sensores y Electrico",
+        8: "Aceites y Aditivos"
     }
     
     for p in productos_data:
@@ -135,21 +264,40 @@ def almacen():
             "id_puro": p.get('id_producto'),
             "pieza": p.get('nombre_producto', 'Pieza desconocida'),
             "categoria": categorias_map.get(id_cat, f"Cat-{id_cat}"),
-            "pasillo": "A-1", # Ubicación simulada o fija por ahora
+            "pasillo": "A-1", 
             "stock": p.get('stock', 0),
             "min": p.get('stock_minimo', 5),
-            "precio": float(p.get('precio', 0.0))
+            "precio": float(p.get('precio', 0.0)),
+            "marca": p.get('marca', 'N/A'),
+            "modelo": p.get('modelo', 'N/A'),
+            "descripcion": p.get('descripcion', ''),
+            "imagen_url": p.get('imagen_url') if p.get('imagen_url') else None
         })
-    # KPI Dashboard Inventario
-    kpis = fetch_data("/v1/reportes/dashboard", session.get('token'))
-    
-    return render_template('almacen.html', inventarioData=almacen_list, kpis=kpis)
+        
+    try:
+        kpis = fetch_data("/v1/reportes/dashboard", session.get('token'))
+    except:
+        kpis = {}
 
-@views_bp.route('/almacen/ajustar/<int:id_producto>/<int:cantidad>', methods=['POST'])
-def ajustar_stock(id_producto, cantidad):
-    if 'usuario' not in session: return "No autorizado", 401
+    start_page = max(1, page - 2)
+    end_page = min(total_pages, page + 2)
+    page_range = range(start_page, end_page + 1)
     
-    # Llamar a la API para ajustar el stock
+    return render_template('almacen.html', 
+                          inventarioData=almacen_list, 
+                          kpis=kpis, 
+                          total=total, 
+                          currentPage=page, 
+                          totalPages=total_pages,
+                          pageRange=page_range)
+
+@views_bp.route('/almacen/ajustar/<int:id_producto>/<string:cantidad>', methods=['POST'])
+def ajustar_stock(id_producto, cantidad):
+    try:
+        cant_int = int(cantidad)
+    except:
+        return {"status": "error", "message": "Invalid quantity"}, 400
+    if 'usuario' not in session: return "No autorizado", 401
     response = post_data(f"/v1/autopartes/{id_producto}/ajustar_stock?cantidad={cantidad}", {}, session.get('token'))
     if response and response.status_code == 200:
         return {"status": "success", "data": response.json()}
@@ -159,25 +307,41 @@ def ajustar_stock(id_producto, cantidad):
 def editar_pieza_api(id_producto):
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
     
-    nuevo_precio = request.form.get('precio')
-    
-    update_data = {
-        "precio": float(nuevo_precio) if nuevo_precio else 0.0
+    form_data = {
+        "nombre_producto": request.form.get('nombre'),
+        "precio": request.form.get('precio', '0.0'),
+        "id_categoria": request.form.get('categoria', '1'),
+        "descripcion": request.form.get('descripcion', ''),
+        "marca": request.form.get('marca', ''),
+        "modelo": request.form.get('modelo', ''),
+        "compatibilidad": request.form.get('descripcion', '')
     }
     
-    response = patch_data(f"/v1/autopartes/{id_producto}", update_data, session.get('token'))
-    if response and response.status_code == 200:
-        flash("Producto actualizado exitosamente.", "success")
-    else:
-        flash("Error al actualizar el producto.", "error")
-        
-    return redirect(url_for('views.almacen'))
+    files = {}
+    if 'imagen' in request.files:
+        file = request.files['imagen']
+        if file.filename != '':
+            files['imagen'] = (file.filename, file.read(), file.content_type)
+    
+    from security.api_client import patch_multipart
+    response = patch_multipart(f"/v1/autopartes/{id_producto}", form_data, files, session.get('token'))
+    
+    if response and response.status_code in [200, 201]:
+        return {"status": "success"}, 200
+    return {"status": "error"}, 500
+
+@views_bp.route('/almacen/eliminar/<int:id_producto>', methods=['POST'])
+def eliminar_pieza_api(id_producto):
+    if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
+    from security.api_client import delete_data
+    response = delete_data(f"/v1/autopartes/{id_producto}", session.get('token'))
+    if response and response.status_code in [200, 204]:
+        return {"status": "success"}, 200
+    return {"status": "error"}, 500
 
 @views_bp.route('/almacen/nueva', methods=['POST'])
 def nueva_pieza():
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
-    
-    # 1. Obtener datos del formulario
     form_data = {
         "nombre_producto": request.form.get('nombre'),
         "precio": request.form.get('precio', '0.0'),
@@ -186,59 +350,155 @@ def nueva_pieza():
         "marca": request.form.get('marca', ''),
         "modelo": request.form.get('modelo', ''),
         "cantidad_inicial": request.form.get('stock', '0'),
-        "compatibilidad": request.form.get('descripcion', ''), # Reusar descripcion si no hay mas
-        "garantia": "1 año" # Valor base
+        "compatibilidad": request.form.get('descripcion', ''),
+        "garantia": "1 año"
     }
-    
-    # 2. Manejar archivo de imagen
     files = {}
     if 'imagen' in request.files:
         file = request.files['imagen']
         if file.filename != '':
             files['imagen'] = (file.filename, file.read(), file.content_type)
     
-    # 3. Llamada Multipart a la API
     from security.api_client import post_multipart
     response = post_multipart("/v1/autopartes/", form_data, files, session.get('token'))
     
     if response and response.status_code == 201:
-        flash("Pieza y stock registrados exitosamente.", "success")
-    else:
-        flash("Error al registrar la pieza completa en la API.", "error")
-        
-    return redirect(url_for('views.almacen'))
+        return {"status": "success"}, 201
+    elif response:
+        try:
+            detail = response.json().get('detail', 'Error desconocido en el servidor')
+        except:
+            detail = f"Error del servidor (Status {response.status_code})"
+        return {"status": "error", "message": detail}, response.status_code
+    return {"status": "error", "message": "No se pudo conectar con la API"}, 500
 
 @views_bp.route('/logistica')
 def logistica():
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
-    
-    # 1. KPIs
     kpis = fetch_data("/v1/reportes/dashboard", session.get('token'))
-    
-    # 2. Envíos
-    envios_data = fetch_data("/v1/pedidos/envios/todos", session.get('token'))
+    # El equipo operativo ve TODO el flujo para recibir, enviar y entregar.
+    pedidos_data = fetch_data("/v1/pedidos/", session.get('token'))
     logistica_list = []
     
-    for e in envios_data:
-        logistica_list.append({
-            "guia": f"TRK-{e.get('id_envio', '')}",
-            "id_puro": e.get('id_envio'),
-            "destino": e.get('ciudad', 'Desconocido'),
-            "courier": "MACUIN Interno" if "static" in e.get('direccion', '').lower() else "Paquetería",
-            "estado": e.get('estado_envio', 'pendiente'),
-            "fecha": e.get('fecha_envio', 'Pendiente').split('T')[0] if e.get('fecha_envio') else "N/A"
-        })
+    pedidos_raw = []
+    if isinstance(pedidos_data, list):
+        pedidos_raw = pedidos_data
+    elif isinstance(pedidos_data, dict):
+        pedidos_raw = pedidos_data.get('items', [])
+
+    for p in pedidos_raw:
+        estados_map = {1: "Recibido", 2: "Surtido", 3: "Enviado", 4: "Completado", 5: "Cancelado"}
         
-    return render_template('logistica.html', logisticaData=logistica_list, kpis=kpis)
+        # Formatear cliente
+        u = p.get("usuario")
+        nombre_cliente = f"{u.get('nombre')} {u.get('apellido_paterno')}" if u else f"Cliente #{p.get('id_usuario', 'N/A')}"
+        
+        # Extraer paquetería (Phase 11 Expansion)
+        env = p.get("envio")
+        paqueteria_txt = env.get("paqueteria") if env else "MACUIN Fleet Management"
+
+        logistica_list.append({
+            "guia": f"TRK-{p.get('id_pedido', '')}",
+            "id_puro": p.get('id_pedido'), 
+            "id_pedido": p.get('id_pedido'),
+            "id_estado": p.get('id_estado'),
+            "destino": nombre_cliente,
+            "courier": paqueteria_txt,
+            "estado": estados_map.get(p.get("id_estado"), "Pendiente"),
+            "fecha": p.get('fecha_pedido', '').split('T')[0] if p.get('fecha_pedido') else "Pendiente"
+        })
+    # KPIs Operativos para Logística (Phase 8 Expansion)
+    op_kpis = {
+        "recibido": 0,    # Status 1
+        "surtido": 0,     # Status 2
+        "transito": 0,    # Status 3 (Enviado)
+        "completos": 0,   # Status 4
+        "cancelados": 0,  # Status 5
+        "total_entregados": 0,
+        "total_cancelados": 0
+    }
+    
+    for p in pedidos_raw:
+        st = p.get("id_estado")
+        if st == 1: op_kpis["recibido"] += 1
+        elif st == 2: op_kpis["surtido"] += 1
+        elif st == 3: op_kpis["transito"] += 1
+        elif st == 4: 
+            op_kpis["completos"] += 1
+            op_kpis["total_entregados"] += 1
+        elif st == 5: 
+            op_kpis["cancelados"] += 1
+            op_kpis["total_cancelados"] += 1
+
+    return render_template('logistica.html', logisticaData=logistica_list, kpis=op_kpis)
+
+@views_bp.route('/ventas/nueva', methods=['POST'])
+def nueva_venta():
+    if 'usuario' not in session: return "No autorizado", 401
+    
+    # Datos crudos del formulario (Phase 10 Persistence)
+    try:
+        data = request.get_json()
+        cliente = data.get('cliente')
+        piezas_raw = data.get('piezas', "") # Ej: "SKU-1, SKU-2"
+        total_venta = float(data.get('total', 0))
+        
+        # Para la Fase 10, mapeamos esto a un pedido con un ID de usuario ficticio (o el logueado)
+        # y datos de envío básicos.
+        
+        # Mapeo simple: Intentar extraer IDs numéricos de la cadena de piezas
+        import re
+        ids = re.findall(r'\d+', piezas_raw)
+        detalles = []
+        if ids:
+            qty_per_item = 1 # Por ahora 1 por simplificación
+            price_per_item = total_venta / len(ids)
+            for pid in ids:
+                detalles.append({
+                    "id_producto": int(pid),
+                    "cantidad": qty_per_item,
+                    "precio_unitario": price_per_item
+                })
+        else:
+            # Si no hay IDs, no podemos crear el pedido en el API (integridad)
+            return {"status": "error", "message": "No se encontraron IDs de productos válidos en el campo de piezas."}, 400
+
+        payload = {
+            "detalles": detalles,
+            "direccion": "Venta de Mostrador / " + cliente,
+            "ciudad": "Local",
+            "codigo_postal": "00000",
+            "telefono_contacto": "000-000-0000",
+            "notas": "Registrado desde Módulo de Ventas"
+        }
+        
+        response = post_data("/v1/pedidos/", payload, session.get('token'))
+        if response and response.status_code == 201:
+            return {"status": "success", "data": response.json()}
+        
+        msg = "Error al crear pedido en API"
+        if response:
+            try: msg = response.json().get('detail', msg)
+            except: pass
+        return {"status": "error", "message": msg}, 500
+        
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
 
 @views_bp.route('/usuarios')
 def usuarios():
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
-    
     usuarios_data = fetch_data("/v1/usuarios/", session.get('token'))
     usuarios_list = []
     
-    for u in usuarios_data:
+    # usuarios_data puede ser Lista o Dict con 'items'
+    usuarios_raw = []
+    if isinstance(usuarios_data, list):
+        usuarios_raw = usuarios_data
+    elif isinstance(usuarios_data, dict):
+        usuarios_raw = usuarios_data.get('items', [])
+        
+    for u in usuarios_raw:
         usuarios_list.append({
             "id": f"USR-{u.get('id_usuario', '')}",
             "nombre": f"{u.get('nombre', '')} {u.get('apellido_paterno', '')}",
@@ -251,91 +511,64 @@ def usuarios():
 @views_bp.route('/superadmin/usuario', methods=['POST'])
 def nuevo_usuario():
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
-    
     nombre_completo = request.form.get('nombre', '')
     nombres = nombre_completo.split()
-    nombre = nombres[0] if len(nombres) > 0 else "Admin"
-    apellido = nombres[1] if len(nombres) > 1 else "Macuin"
-    
-    correo = request.form.get('correo', 'admin@macuin.com')
-    rol = request.form.get('rol', '2') # Por defecto Trabajador (2)
-    
-    # Seguridad: No permitir crear Superadmins (1) desde este formulario
-    if str(rol) == '1':
-        rol = '2'
-    
-    password = request.form.get('password', 'password123')
-    
+    nombre = nombres[0] if len(nombres) > 0 else "N/A"
+    apellido = nombres[1] if len(nombres) > 1 else "N/A"
     usuario_data = {
-        "nombre": nombre,
-        "apellido_paterno": apellido,
-        "apellido_materno": apellido,
-        "correo": correo,
-        "password": password,
-        "id_rol": int(rol),
-        "telefono": "5555555555"
+        "nombre": nombre, "apellido_paterno": apellido, "apellido_materno": "",
+        "correo": request.form.get('correo'), "password": request.form.get('password'),
+        "id_rol": int(request.form.get('rol', '2')), "telefono": "000"
     }
-    
     response = post_data("/v1/usuarios/", usuario_data, session.get('token'))
     if response and response.status_code == 201:
-        flash("Usuario global registrado con éxito.", "success")
+        flash("Usuario creado.", "success")
     else:
-        flash("Error al intentar registrar usuario global.", "error")
-        
+        flash("Error al crear usuario.", "error")
     return redirect(url_for('views.superadmin'))
 
 @views_bp.route('/superadmin/empresa', methods=['POST'])
 def nueva_empresa():
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
-    
-    nombre = request.form.get('nombre', 'Empresa Nueva')
-    correo = request.form.get('correo', f"contacto@{nombre.lower().replace(' ', '')}.com")
-    
-    password = request.form.get('password', 'password123')
-    
     usuario_data = {
-        "nombre": nombre,
+        "nombre": request.form.get('nombre'),
         "apellido_paterno": "Empresa",
         "apellido_materno": "S.A.",
-        "correo": correo,
-        "password": password,
-        "id_rol": 3, # Rol Empresa
+        "correo": request.form.get('correo'),
+        "password": request.form.get('password'),
+        "id_rol": 3, # Rol de Empresa
         "telefono": "0000000000"
     }
-    
     response = post_data("/v1/usuarios/", usuario_data, session.get('token'))
     if response and response.status_code == 201:
-        flash(f"Empresa '{nombre}' registrada exitosamente como usuario.", "success")
+        flash("Empresa registrada exitosamente.", "success")
     else:
-        flash("Error al registrar la empresa en la base de datos.", "error")
-        
+        flash("Error al registrar empresa.", "error")
     return redirect(url_for('views.superadmin'))
 
 @views_bp.route('/perfil/actualizar', methods=['POST'])
 def perfil_actualizar():
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
-    
     id_usuario = session.get('id_usuario')
     if not id_usuario:
-        flash("Error: No se pudo identificar al usuario en la sesión.", "error")
+        flash("Error: No se pudo identificar al usuario.", "error")
         return redirect(url_for('views.usuarios'))
-        
-    nombre = request.form.get('nombre')
-    apellido_p = request.form.get('apellido_paterno')
-    apellido_m = request.form.get('apellido_materno')
     
-    update_data = {}
-    if nombre: update_data["nombre"] = nombre
-    if apellido_p: update_data["apellido_paterno"] = apellido_p
-    if apellido_m: update_data["apellido_materno"] = apellido_m
+    nombre_completo = request.form.get('nombre', '')
+    nombres = nombre_completo.split()
+    nombre = nombres[0] if len(nombres) > 0 else "N/A"
+    apellido = nombres[1] if len(nombres) > 1 else "N/A"
     
-    # Llamada a la API (PATCH)
-    response = patch_data(f"/v1/usuarios/{id_usuario}", update_data, session.get('token'))
+    usuario_data = {
+        "nombre": nombre,
+        "apellido_paterno": apellido
+    }
     
+    response = patch_data(f"/v1/usuarios/{id_usuario}", usuario_data, session.get('token'))
     if response and response.status_code == 200:
-        session['nombre'] = nombre # Actualizar nombre en sesión para el header
-        flash("Perfil actualizado con éxito.", "success")
+        session['nombre'] = nombre
+        flash("Perfil actualizado correctamente.", "success")
     else:
-        flash("Error al actualizar el perfil en el servidor.", "error")
-        
+        flash("Error al actualizar el perfil.", "error")
+    
     return redirect(url_for('views.usuarios'))

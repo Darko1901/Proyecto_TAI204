@@ -6,7 +6,11 @@
     <title>Ventas - Autopartes MACUIN</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Librerías de Exportación -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body class="{% if session.get('rol') == 1 %}theme-dark{% endif %}">
     <div class="dashboard-container" style="min-height: 100vh; display: flex; flex-direction: column;">
@@ -14,8 +18,43 @@
         <header class="dashboard-header">
             <h1>Autopartes MACUIN - Módulo de Ventas</h1>
             <div class="user-info">
-                <span><i class="fas fa-user-circle"></i> Hola, {{ session.get('nombre', session.get('usuario', 'Usuario')) }}</span>
-                <a href="{% if session.get('rol') == 1 %}{{ url_for('views.superadmin') }}{% else %}{{ url_for('views.dashboard') }}{% endif %}" class="btn-logout" style="margin-right: 10px;"><i class="fas fa-arrow-left"></i> Volver</a>
+                <!-- Menú de Navegación Rápida -->
+                <div class="nav-dropdown-wrapper" style="margin-right: 15px;" onclick="toggleNavMenu(event)">
+                    <button class="btn-nav-modules">
+                        <i class="fas fa-th"></i> Navegar <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </button>
+                    <div class="nav-dropdown-content">
+                        <a href="{{ url_for('views.dashboard') }}"><i class="fas fa-home"></i> Inicio</a>
+                        <a href="{{ url_for('views.ventas') }}"><i class="fas fa-chart-line"></i> Ventas</a>
+                        <a href="{{ url_for('views.almacen') }}"><i class="fas fa-cubes"></i> Almacén</a>
+                        <a href="{{ url_for('views.logistica') }}"><i class="fas fa-route"></i> Logística</a>
+                        {% if session.get('rol') == 1 %}
+                        <a href="{{ url_for('views.superadmin') }}"><i class="fas fa-user-shield"></i> Administración</a>
+                        {% endif %}
+                        <a href="{{ url_for('views.usuarios') }}"><i class="fas fa-user-cog"></i> Mi Perfil</a>
+                    </div>
+                </div>
+
+                <span><i class="fas fa-user-circle"></i> {{ session.get('nombre', session.get('usuario', 'Usuario')) }}</span>
+                <!-- Botón de Notificaciones -->
+                <div class="notification-bell-wrapper" onclick="toggleNotificaciones()">
+                    <i class="fas fa-bell"></i>
+                    <span id="notif-badge" class="notif-badge">0</span>
+                    
+                    <div id="notif-dropdown" class="notif-dropdown">
+                        <div class="notif-header">
+                            <h4>Notificaciones</h4>
+                            <span style="font-size: 0.7rem; color: #64748b; cursor: pointer;" onclick="marcarComoVisto()">Limpiar</span>
+                        </div>
+                        <div id="notif-list" class="notif-list">
+                            <div class="notif-empty">No hay avisos pendientes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('views.dashboard') }}" class="btn-logout" style="margin-right: 10px;">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
                 <a href="{{ url_for('auth.logout') }}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Salir</a>
             </div>
         </header>
@@ -26,46 +65,66 @@
                 <div class="stat-card">
                     <div class="stat-info">
                         <h4>Ventas del Día</h4>
-                        <span id="kpi-dia">${{ "{:,.2f}".format(kpis.ventas_dia) if kpis else "0.00" }}</span>
+                        <span id="kpi-dia">$0.00</span>
                     </div>
                     <i class="fas fa-chart-line stat-icon" style="color: #e57373;"></i>
                 </div>
                 <div class="stat-card">
                     <div class="stat-info">
                         <h4>Ventas del Mes</h4>
-                        <span id="kpi-mes">${{ "{:,.2f}".format(kpis.ventas_mes) if kpis else "0.00" }}</span>
+                        <span id="kpi-mes">$0.00</span>
                     </div>
                     <i class="fas fa-calendar-alt stat-icon" style="color: #3498db;"></i>
                 </div>
                 <div class="stat-card">
                     <div class="stat-info">
-                        <h4>Pedidos Completados</h4>
-                        <span id="kpi-completados">{{ kpis.pedidos_completados if kpis else "0" }}</span>
+                        <h4>Historial (Total)</h4>
+                        <span id="kpi-total">$0.00</span>
                     </div>
-                    <i class="fas fa-check-circle stat-icon" style="color: #4CAF50;"></i>
+                    <i class="fas fa-history stat-icon" style="color: #4CAF50;"></i>
                 </div>
                 <div class="stat-card">
                     <div class="stat-info">
-                        <h4>Pendientes de Envío</h4>
-                        <span id="kpi-pendientes">{{ kpis.pendientes_envio if kpis else "0" }}</span>
+                        <h4>Cancelaciones</h4>
+                        <span id="kpi-cancelaciones">0</span>
                     </div>
-                    <i class="fas fa-clock stat-icon" style="color: #f5b041;"></i>
+                    <i class="fas fa-times-circle stat-icon" style="color: #f5b041;"></i>
                 </div>
             </div>
             
-            <div class="card" style="width: 100%;" id="panel-ventas">
-                <h2 id="titulo-pdf" style="display: none; text-align: center; margin-bottom: 20px; font-size: 1.5rem; color: #333;">Reporte de Ventas - Autopartes MACUIN</h2>
-                <div class="toolbar">
-                    <div class="search-box">
-                        <i class="fas fa-search" style="color: #999;"></i>
-                        <input type="text" id="buscador" placeholder="Buscar por folio, cliente..." onkeyup="filtrarTabla()">
+            <div class="card" style="width: 100%;" id="reporte-container">
+                {% include 'components/pdf_template.html' %}
+                
+                <!-- Toolbar Horizontal Compacto -->
+                <div class="toolbar" style="display: flex; gap: 12px; align-items: center; background: #ffffff; padding: 12px 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); flex-wrap: nowrap; overflow-x: auto;">
+                    <div class="search-box" style="flex: 1; min-width: 200px; position: relative;">
+                        <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #e57373;"></i>
+                        <input type="text" id="buscador" placeholder="Buscar folio, cliente..." onkeyup="filtrarTabla()" style="width: 100%; padding: 10px 15px 10px 40px; border-radius: 10px; border: 1px solid #e2e8f0; font-weight: 600; font-size: 0.9rem; background: #f8fafc;">
                     </div>
-                    <div>
-                        <button class="btn-action btn-pdf" onclick="descargarPDF()">
-                            <i class="fas fa-file-pdf"></i> Exportar PDF
+                    
+                    <div class="filter-group" style="width: 180px;">
+                        <select id="filtro-estatus" onchange="filtrarTabla()" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; color: #1e293b; font-weight: 700; font-size: 0.85rem; cursor: pointer; background: white;">
+                            <option value="">-- Estatus --</option>
+                            <option value="Completado">Completado</option>
+                            <option value="Procesando">Procesando</option>
+                            <option value="Recibido">Recibido</option>
+                            <option value="Cancelado">Cancelado</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group" style="width: 150px;">
+                        <input type="date" id="filtro-fecha" onchange="filtrarTabla()" style="width: 100%; padding: 9px; border-radius: 10px; border: 1px solid #e2e8f0; color: #1e293b; font-weight: 700; font-size: 0.85rem; cursor: pointer; background: white;">
+                    </div>
+
+                    <div class="toolbar-actions" style="display: flex; gap: 8px; margin-left: auto;">
+                        <button class="btn-action btn-pdf" onclick="descargarPDF()" style="background: #1e293b; color: white; padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                            <i class="fas fa-file-pdf"></i> PDF
                         </button>
-                        <button class="btn-action btn-add" onclick="abrirModal(true)">
-                            <i class="fas fa-plus"></i> Nueva Venta
+                        <button class="btn-action btn-excel" onclick="exportarExcel()" style="background: #166534; color: white; padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </button>
+                        <button class="btn-action btn-add" onclick="abrirModalVenta(true)" style="background: #e57373; color: white; padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(229, 115, 115, 0.2); transition: all 0.2s;">
+                            <i class="fas fa-plus-circle"></i> Nueva Venta
                         </button>
                     </div>
                 </div>
@@ -90,55 +149,130 @@
         {% include 'components/footer.html' %}
     </div>
 
+    <!-- Modal Nueva Venta (Rediseño Estético Premium) -->
     <div class="modal-overlay" id="modalVenta">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-titulo">Registrar Nueva Venta</h3>
-                <button class="btn-close" onclick="cerrarModal()">&times;</button>
+        <div class="modal-content" style="background: #ffffff; color: #1e293b; width: 650px; border-radius: 20px; padding: 0; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+            <div class="modal-header" style="background: #1e293b; padding: 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #e57373;">
+                <h3 id="modal-titulo" style="margin: 0; color: white; font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px;">
+                    <i class="fas fa-cart-plus" style="color: #e57373; margin-right: 10px;"></i> REGISTRAR NUEVA VENTA
+                </h3>
+                <button class="btn-close" onclick="cerrarModal()" style="background: rgba(255,255,255,0.1); border: none; color: white; font-size: 20px; cursor: pointer; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">&times;</button>
             </div>
-            <form id="formVenta" method="POST" action="{{ url_for('views.nueva_venta') }}">
-                <input type="hidden" id="venta-id" name="venta_id">
-                <div class="form-group">
-                    <label>Cliente / Taller</label>
-                    <input type="text" id="venta-cliente" name="cliente" required placeholder="Ej: Autozone">
-                </div>
-                <div class="form-group">
-                    <label>Seleccionar Producto</label>
-                    <select id="venta-id-producto" name="id_producto" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value="">-- Seleccionar pieza --</option>
-                        <!-- Se llenará dinámicamente o por Jinja si pasamos productos -->
-                        {% if inventarioGlobal %}
-                            {% for p in inventarioGlobal %}
-                                <option value="{{ p.id_puro }}">{{ p.pieza }} (SKU: {{ p.id }})</option>
-                            {% endfor %}
-                        {% endif %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Cantidad</label>
-                    <input type="number" id="venta-cantidad" name="cantidad" value="1" min="1" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px;">
-                </div>
-                <div class="form-row">
-                    <div class="form-group-half">
-                        <label>Total Global ($)</label>
-                        <input type="number" step="0.01" id="venta-total" name="total" required>
+            
+            <form id="formVenta" onsubmit="event.preventDefault(); guardarVenta();" style="padding: 30px;">
+                <!-- Sección 1: Información Base y Selector de Piezas -->
+                <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 25px; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; gap: 15px; align-items: flex-end;">
+                        <div class="form-group" style="flex: 2;">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: #1e293b; margin-bottom: 5px; text-transform: uppercase;">Seleccionar Pieza del Inventario</label>
+                            <select id="select-pieza" style="width: 100%; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; font-weight: 600; background: white;">
+                                <option value="">-- Buscar SKU o Nombre --</option>
+                                <!-- Se llena vía JS -->
+                            </select>
+                        </div>
+                        <div class="form-group" style="width: 100px;">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: #1e293b; margin-bottom: 5px; text-transform: uppercase;">Cant.</label>
+                            <input type="number" id="input-cantidad" value="1" min="1" style="width: 100%; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; font-weight: 700; text-align: center;">
+                        </div>
+                        <button type="button" onclick="agregarPiezaALista()" style="background: #1e293b; color: white; padding: 11px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 800; transition: all 0.2s;">
+                            <i class="fas fa-plus"></i> AGREGAR
+                        </button>
                     </div>
-                    <div class="form-group-half">
-                        <label>Estatus</label>
-                        <select id="venta-estatus" name="estatus" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px;">
-                            <option value="Completado">Completado</option>
-                            <option value="Procesando">Procesando</option>
-                            <option value="Cancelado">Cancelado</option>
+
+                    <!-- Lista de Piezas Añadidas -->
+                    <div id="lista-piezas-container" style="max-height: 150px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: white;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                            <thead style="background: #f1f5f9; position: sticky; top: 0;">
+                                <tr>
+                                    <th style="padding: 10px; text-align: left;">Pieza</th>
+                                    <th style="padding: 10px; text-align: center;">Cant.</th>
+                                    <th style="padding: 10px; text-align: right;">Subtotal</th>
+                                    <th style="padding: 10px; text-align: center;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-piezas-body">
+                                <tr><td colspan="4" style="text-align: center; padding: 15px; color: #64748b;">No hay piezas añadidas</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="display: none;">
+                    <!-- Campo oculto para compatibilidad con lógica antigua si se requiere -->
+                    <input type="text" id="venta-piezas" readonly>
+                </div>
+
+                <!-- Sección 2: Datos del Cliente -->
+                <div style="margin-bottom: 25px;">
+                    <h4 style="margin: 0 0 15px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-left: 4px solid #e57373; padding-left: 10px;">DATOS DE FACTURACIÓN Y ENVÍO</h4>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #475569; margin-bottom: 5px;">Nombre Completo / Razón Social</label>
+                        <input type="text" id="venta-cliente" required placeholder="Nombre que aparecerá en la guía" style="width: 100%; border: 1px solid #cbd5e1; padding: 12px; border-radius: 10px;">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #475569; margin-bottom: 5px;">Calle y Número Exterior</label>
+                            <input type="text" id="venta-direccion" required placeholder="Av. Universidad #123" style="width: 100%; border: 1px solid #cbd5e1; padding: 12px; border-radius: 10px;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #475569; margin-bottom: 5px;">Código Postal</label>
+                            <input type="text" id="venta-cp" required placeholder="00000" style="width: 100%; border: 1px solid #cbd5e1; padding: 12px; border-radius: 10px;">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #475569; margin-bottom: 5px;">Ciudad / Estado</label>
+                            <input type="text" id="venta-ciudad" required placeholder="CDMX" style="width: 100%; border: 1px solid #cbd5e1; padding: 12px; border-radius: 10px;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #475569; margin-bottom: 5px;">Teléfono de Contacto</label>
+                            <input type="tel" id="venta-telefono" required placeholder="555-555-5555" style="width: 100%; border: 1px solid #cbd5e1; padding: 12px; border-radius: 10px;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3: Detalles de Transacción -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; padding-top: 15px; border-top: 1px dashed #e2e8f0;">
+                    <div class="form-group">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 800; color: #1e293b; margin-bottom: 5px;">IMPORTE TOTAL (MXN)</label>
+                        <div style="position: relative;">
+                            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 800; color: #2ecc71;">$</span>
+                            <input type="number" step="0.01" id="venta-total" required placeholder="0.00" style="width: 100%; border: 2px solid #2ecc71; padding: 12px 12px 12px 25px; border-radius: 10px; font-weight: 800; font-size: 1.1rem; color: #1e293b;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 800; color: #1e293b; margin-bottom: 5px;">PAQUETERÍA RECOMENDADA</label>
+                        <select id="venta-paqueteria" style="width: 100%; border: 1px solid #cbd5e1; padding: 12px; border-radius: 10px; background: white; font-weight: 600;">
+                            <option value="MACUIN Fleet Management">📦 Propia (MACUIN Fleet)</option>
+                            <option value="DHL Express">✈️ DHL Express</option>
+                            <option value="FedEx">🚛 FedEx International</option>
+                            <option value="Estafeta">📍 Estafeta Local</option>
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="btn-login" style="margin-top: 15px;">Guardar Venta y Terminar Proceso</button>
+
+                <div class="form-group" style="margin-bottom: 30px;">
+                    <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #475569; margin-bottom: 5px;">Notas / Instrucciones Especiales</label>
+                    <textarea id="venta-notes" rows="2" placeholder="Ej: Dejar con el guardia, llamar antes de llegar..." style="width: 100%; border: 1px solid #cbd5e1; padding: 12px; border-radius: 10px; resize: none; font-family: inherit;"></textarea>
+                </div>
+
+                <button type="submit" style="width: 100%; padding: 18px; background: linear-gradient(135deg, #e57373 0%, #d32f2f 100%); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 10px 15px -3px rgba(229, 115, 115, 0.4); display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <i class="fas fa-check-circle"></i> CONFIRMAR Y SINCRONIZAR VENTA
+                </button>
             </form>
         </div>
     </div>
 
+    <!-- Modales Compartidos (Phase 7 Sync) -->
+    {% include 'components/modal_detalle_venta.html' %}
+    {% include 'components/modal_editar_pedido.html' %}
+
     <script>
         window.ventasData = {{ ventasData|tojson|safe if ventasData else 'null' }};
+        window.inventarioGlobal = {{ inventarioGlobal|tojson|safe if inventarioGlobal else '[]' }};
     </script>
     {% include 'components/accessibility.html' %}
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>

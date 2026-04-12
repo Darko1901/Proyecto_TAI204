@@ -5,7 +5,7 @@ from app.data.database import get_db
 from app.models.usuario import Usuario, UsuarioCreate, UsuarioResponse
 from app.security.auth import verificar_password, crear_token, hashear_password
 
-router = APIRouter(tags=["Autenticación"])
+router = APIRouter(prefix="/v1/auth", tags=["Autenticación"])
 
 
 @router.post("/token")
@@ -17,6 +17,13 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credenciales incorrectas"
         )
+    
+    if not usuario.activo:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Su cuenta ha sido suspendida. Contacte al administrador."
+        )
+
     token = crear_token({"sub": usuario.correo, "rol": usuario.id_rol, "nombre": usuario.nombre, "id_usuario": usuario.id_usuario})
     return {"access_token": token, "token_type": "bearer"}
 
@@ -33,9 +40,21 @@ async def registro(datos: UsuarioCreate, db: Session = Depends(get_db)):
         correo=datos.correo,
         telefono=datos.telefono,
         password=hashear_password(datos.password),
-        id_rol=datos.id_rol
+        id_rol=5 # Forzamos rol de Cliente para registros públicos
     )
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
     return nuevo
+
+
+@router.post("/recuperar")
+async def verificar_correo_recuperacion(payload: dict, db: Session = Depends(get_db)):
+    """Verifica si el correo existe para iniciar recuperación."""
+    correo = payload.get("email")
+    usuario = db.query(Usuario).filter(Usuario.correo == correo).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Correo no encontrado")
+    if not usuario.activo:
+        raise HTTPException(status_code=403, detail="Usuario inactivo")
+    return {"status": "ok", "message": "Usuario verificado", "nombre": usuario.nombre}

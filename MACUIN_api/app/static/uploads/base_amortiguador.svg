@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fce4e4"/>
+      <stop offset="100%" style="stop-color:#f8d7d7"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Base amortiguador (rodamiento) -->
+  <ellipse cx="200" cy="200" rx="100" ry="50" fill="#555" stroke="#444" stroke-width="2"/>
+  <ellipse cx="200" cy="195" rx="100" ry="50" fill="#666"/>
+  <ellipse cx="200" cy="190" rx="80" ry="38" fill="#777"/>
+  <!-- Centro -->
+  <circle cx="200" cy="188" r="20" fill="#888" stroke="#666" stroke-width="2"/>
+  <circle cx="200" cy="188" r="10" fill="#999"/>
+  <!-- Goma superior -->
+  <ellipse cx="200" cy="170" rx="60" ry="20" fill="#333" stroke="#222" stroke-width="1.5"/>
+  <!-- Perno central -->
+  <rect x="196" y="140" width="8" height="35" fill="#aaa" stroke="#888" stroke-width="1"/>
+  <rect x="193" y="130" width="14" height="15" rx="2" fill="#999"/>
+  <!-- Tornillos montaje -->
+  <circle cx="150" cy="210" r="6" fill="#888"/>
+  <circle cx="250" cy="210" r="6" fill="#888"/>
+  <circle cx="200" cy="230" r="6" fill="#888"/>
+  <!-- Texto -->
+  <text x="200" y="290" text-anchor="middle" fill="#888" font-family="Arial" font-size="12">Base de Montaje</text>
+</svg>

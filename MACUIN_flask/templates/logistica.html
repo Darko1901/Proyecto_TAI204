@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Logística - MACUIN Enterprise</title>
+    <!-- Librerías de Exportación -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
@@ -11,6 +16,39 @@
         <header class="dashboard-header">
             <h1><i class="fas fa-truck-moving"></i> Centro de Control Logístico</h1>
             <div class="user-info">
+                <!-- Menú de Navegación Rápida -->
+                <div class="nav-dropdown-wrapper" style="margin-right: 15px;" onclick="toggleNavMenu(event)">
+                    <button class="btn-nav-modules">
+                        <i class="fas fa-th"></i> Navegar <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </button>
+                    <div class="nav-dropdown-content">
+                        <a href="{{ url_for('views.dashboard') }}"><i class="fas fa-home"></i> Inicio</a>
+                        <a href="{{ url_for('views.ventas') }}"><i class="fas fa-chart-line"></i> Ventas</a>
+                        <a href="{{ url_for('views.almacen') }}"><i class="fas fa-cubes"></i> Almacén</a>
+                        <a href="{{ url_for('views.logistica') }}"><i class="fas fa-route"></i> Logística</a>
+                        {% if session.get('rol') == 1 %}
+                        <a href="{{ url_for('views.superadmin') }}"><i class="fas fa-user-shield"></i> Administración</a>
+                        {% endif %}
+                        <a href="{{ url_for('views.usuarios') }}"><i class="fas fa-user-cog"></i> Mi Perfil</a>
+                    </div>
+                </div>
+
+                <!-- Botón de Notificaciones -->
+                <div class="notification-bell-wrapper" onclick="toggleNotificaciones()">
+                    <i class="fas fa-bell"></i>
+                    <span id="notif-badge" class="notif-badge">0</span>
+                    
+                    <div id="notif-dropdown" class="notif-dropdown">
+                        <div class="notif-header">
+                            <h4>Notificaciones</h4>
+                            <span style="font-size: 0.7rem; color: #64748b; cursor: pointer;" onclick="marcarComoVisto()">Limpiar</span>
+                        </div>
+                        <div id="notif-list" class="notif-list">
+                            <div class="notif-empty">No hay avisos pendientes</div>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="{% if session.get('rol') == 1 %}{{ url_for('views.superadmin') }}{% else %}{{ url_for('views.dashboard') }}{% endif %}" class="btn-logout" style="margin-right: 10px;">
                     <i class="fas fa-arrow-left"></i> Volver
                 </a>
@@ -19,34 +57,82 @@
         </header>
 
         <main class="dashboard-content" style="flex: 1;">
-            <div class="stats-container">
-                <div class="stat-card" style="border-left: 5px solid #3498db;">
-                    <div class="stat-info"><h4>En Tránsito</h4><span id="kpi-transito">{{ kpis.en_transito if kpis else "0" }}</span></div>
-                    <i class="fas fa-shipping-fast stat-icon"></i>
+            <div class="stats-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <!-- Global & Status Integrated -->
+                <div class="stat-card" style="border-left: 5px solid #3498db; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+                    <div class="stat-info">
+                        <h4 style="font-size: 0.7rem; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">En Tránsito</h4>
+                        <span id="kpi-transito" style="font-size: 1.2rem; font-weight: 800; color: #000;">0</span>
+                    </div>
                 </div>
-                <div class="stat-card" style="border-left: 5px solid #f1c40f;">
-                    <div class="stat-info"><h4>Pendientes</h4><span id="kpi-despacho">{{ kpis.pendientes_envio if kpis else "0" }}</span></div>
-                    <i class="fas fa-box-open stat-icon"></i>
+                <div class="stat-card" style="border-left: 5px solid #94a3b8; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+                    <div class="stat-info">
+                        <h4 style="font-size: 0.7rem; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">Recibido</h4>
+                        <span id="kpi-recibido" style="font-size: 1.2rem; font-weight: 800; color: #000;">0</span>
+                    </div>
                 </div>
-                <div class="stat-card" style="border-left: 5px solid #2ecc71;">
-                    <div class="stat-info"><h4>Entregados</h4><span id="kpi-entregados">{{ kpis.pedidos_completados if kpis else "0" }}</span></div>
-                    <i class="fas fa-check-double stat-icon"></i>
+                <div class="stat-card" style="border-left: 5px solid #f1c40f; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+                    <div class="stat-info">
+                        <h4 style="font-size: 0.7rem; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">Surtido</h4>
+                        <span id="kpi-surtido" style="font-size: 1.2rem; font-weight: 800; color: #000;">0</span>
+                    </div>
                 </div>
-                <div class="stat-card" style="border-left: 5px solid #e74c3c;">
-                    <div class="stat-info"><h4>Errores/Canc.</h4><span id="kpi-error">{{ kpis.retrasos_errores if kpis else "0" }}</span></div>
-                    <i class="fas fa-clock stat-icon"></i>
+                <div class="stat-card" style="border-left: 5px solid #3498db; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+                    <div class="stat-info">
+                        <h4 style="font-size: 0.7rem; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">Enviado</h4>
+                        <span id="kpi-enviado" style="font-size: 1.2rem; font-weight: 800; color: #000;">0</span>
+                    </div>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid #2ecc71; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+                    <div class="stat-info">
+                        <h4 style="font-size: 0.7rem; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">Completado</h4>
+                        <span id="kpi-completado" style="font-size: 1.2rem; font-weight: 800; color: #000;">0</span>
+                    </div>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid #e57373; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+                    <div class="stat-info">
+                        <h4 style="font-size: 0.7rem; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">Cancelado</h4>
+                        <span id="kpi-cancelado" style="font-size: 1.2rem; font-weight: 800; color: #000;">0</span>
+                    </div>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid #2ecc71; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+                    <div class="stat-info">
+                        <h4 style="font-size: 0.7rem; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">Entregados (Mes)</h4>
+                        <span id="kpi-entregados-mes" style="font-size: 1.2rem; font-weight: 800; color: #000;">0</span>
+                    </div>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid #e74c3c; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+                    <div class="stat-info">
+                        <h4 style="font-size: 0.7rem; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">Total Canc.</h4>
+                        <span id="kpi-cancelados-total" style="font-size: 1.2rem; font-weight: 800; color: #000;">0</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="toolbar">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="buscador-logistica" placeholder="Rastreo por Guía o Cliente..." onkeyup="filtrarLogistica()">
+            <div class="card" id="panel-logistica" style="width: 100%;">
+                {% include 'components/pdf_template.html' %}
+                
+                <div class="toolbar" style="display: flex; gap: 12px; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                    <div class="search-box" style="flex: 1;">
+                        <i class="fas fa-search" style="color: #e57373;"></i>
+                        <input type="text" id="buscador-logistica" placeholder="Rastreo por #Guía, Cliente o Courier..." onkeyup="filtrarLogistica()" style="color: #000; font-weight: 500;">
                     </div>
-                    <button class="btn-action btn-add" onclick="abrirModalLogistica()" style="background: #2c3e50;">
-                        <i class="fas fa-plus-circle"></i> Nuevo Despacho
-                    </button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-action btn-pdf" onclick="descargarPDF('logistica')" style="background: #333; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <button class="btn-action btn-excel" onclick="exportarExcel()" style="background: #27ae60; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </button>
+                        <div style="display: flex; gap: 10px;">
+                        <button class="btn-action btn-add" onclick="abrirModalVenta(true)" style="background: #e57373; color: white; border: none; border-radius: 10px; padding: 0 20px; font-weight: 700; cursor: pointer; height: 40px;">
+                            <i class="fas fa-plus-circle"></i> Registrar Nuevo Pedido
+                        </button>
+                        <button class="btn-action btn-add" onclick="abrirModalLogistica()" style="background: #2c3e50; color: white; border: none; border-radius: 10px; padding: 0 20px; font-weight: 700; cursor: pointer; height: 40px;">
+                            <i class="fas fa-truck-fast"></i> Gestionar Paqueterías
+                        </button>
+                    </div>
+                    </div>
                 </div>
                 <table class="macuin-table">
                     <thead>
@@ -60,7 +146,48 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="tabla-logistica-body"></tbody>
+                    <tbody id="tabla-logistica-body">
+                        {% for p in logisticaData %}
+                        <tr id="row-pedido-{{ p.id_pedido }}">
+                            <td style="font-weight: 800; color: #1e293b;">#{{ p.guia if p.guia else p.id_pedido }}</td>
+                            <td style="font-weight: 600;">{{ p.cliente or 'Cliente General' }}</td>
+                            <td>
+                                {% if p.paqueteria %}
+                                    <span class="tag-carrier"><i class="fas fa-truck-fast"></i> {{ p.paqueteria }}</span>
+                                {% else %}
+                                    <button class="btn-assign-quick" onclick="abrirAsignarPaqueteriaRapida({{ p.id_pedido }})">
+                                        <i class="fas fa-plus-circle"></i> Asignar
+                                    </button>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="progreso-container">
+                                    <div class="progreso-bar" style="width: {{ '20%' if p.id_estado == 1 else '40%' if p.id_estado == 2 else '70%' if p.id_estado == 3 else '100%' }}; 
+                                         background: {{ '#f5b041' if p.id_estado < 3 else '#4CAF50' }};"></div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge {{ 'badge-recibido' if p.id_estado == 1 else 'badge-surtido' if p.id_estado == 2 else 'badge-enviado' if p.id_estado == 3 else 'badge-completado' }}">
+                                    {{ p.estado or 'Recibido' }}
+                                </span>
+                            </td>
+                            <td style="font-weight: 500; font-size: 0.85rem; color: #64748b;">
+                                {{ p.entrega_estimada if p.entrega_estimada else 'Pendiente' }}
+                            </td>
+                            <td class="row-actions">
+                                <button class="btn-action-sm btn-pdf-sm" onclick="descargarPedidoIndividual({{ p.id_pedido }})" title="Descargar PDF de Envío">
+                                    <i class="fas fa-file-pdf"></i>
+                                </button>
+                                <button class="btn-action-sm btn-edit-sm" onclick="abrirEditarPedido({{ p.id_pedido }})" title="Editar Detalles">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-action-sm btn-next-sm" onclick="siguienteEstado({{ p.id_pedido }}, {{ p.id_estado }})" title="Siguiente Estado">
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
                 </table>
             </div>
         </main>
@@ -68,43 +195,150 @@
         <div class="modal-overlay" id="modalLogistica">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Generar Nuevo Despacho</h3>
+                    <h3><i class="fas fa-truck-ramp-box"></i> Nueva Paquetería (Aliado Logístico)</h3>
                     <button class="btn-close" onclick="cerrarModalLogistica()">&times;</button>
                 </div>
-                <form id="formLogistica">
+                <form id="formNuevaPaqueteria">
                     <div class="form-group">
-                        <label>Cliente / Destino</label>
-                        <input type="text" id="log-cliente" placeholder="Nombre del taller o cliente" required>
+                        <label>Nombre de la Paquetería</label>
+                        <input type="text" id="paq-nombre" placeholder="Ej: DHL Express, FedEx..." required>
                     </div>
                     <div class="form-row" style="display:flex; gap:10px;">
                         <div class="form-group" style="flex:1;">
-                            <label>Paquetería</label>
-                            <select id="log-courier">
-                                <option value="DHL">DHL</option>
-                                <option value="FedEx">FedEx</option>
-                                <option value="Estafeta">Estafeta</option>
-                                <option value="Interno">Reparto Interno</option>
-                            </select>
+                            <label>Sitio Web de Rastreo</label>
+                            <input type="url" id="paq-web" placeholder="https://www.rastreo.com">
                         </div>
                         <div class="form-group" style="flex:1;">
-                            <label>Fecha Estimada</label>
-                            <input type="date" id="log-fecha">
+                            <label>Teléfono de Soporte</label>
+                            <input type="tel" id="paq-tel" placeholder="800-000-0000">
                         </div>
                     </div>
-                    <button type="button" class="btn-login" style="background:#3498db; width:100%; margin-top:15px;" onclick="guardarDespacho()">
-                        <i class="fas fa-paper-plane"></i> Iniciar Envío
-                    </button>
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button type="button" class="btn-action" onclick="guardarPaqueteria()" style="flex: 1; background: #e57373; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer;">Guardar Paquetería</button>
+                        <button type="button" class="btn-action" onclick="cerrarModalLogistica()" style="flex: 1; background: #f1f5f9; color: #1e293b; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer;">Cancelar</button>
+                    </div>
                 </form>
             </div>
         </div>
-        {% include 'components/footer.html' %}
+
+        <!-- Modales Compartidos para Acciones Logísticas (Phase 6 Sync) -->
+        {% include 'components/modal_detalle_venta.html' %}
+        {% include 'components/modal_editar_pedido.html' %}
+
+        <!-- Mini-Modal para Asignación Rápida de Paquetería (Phase 12 Extension) -->
+        <div class="modal-overlay" id="modalAsignarCourier">
+            <div class="modal-content" style="width: 400px; padding: 25px; border-radius: 15px;">
+                <div class="modal-header" style="margin-bottom: 20px;">
+                    <h3 style="color: #1e293b;"><i class="fas fa-truck-fast"></i> Asignar Paquetería</h3>
+                    <button class="btn-close" onclick="document.getElementById('modalAsignarCourier').style.display='none'">&times;</button>
+                </div>
+                <form id="formAsignarCourier">
+                    <input type="hidden" id="courier-id-pedido">
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 700; color: #64748b;">Selecciona un Aliado Logístico</label>
+                        <select id="courier-seleccion" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; font-weight: 600; color: #1e293b;">
+                            <option value="">-- Seleccionar Paquetería --</option>
+                            <option value="DHL Express">DHL Express (Global)</option>
+                            <option value="FedEx">FedEx (Internacional)</option>
+                            <option value="Estafeta">Estafeta (Nacional)</option>
+                            <option value="Paquetexpress">Paquetexpress (Económico)</option>
+                            <option value="UPS">UPS Worldwide</option>
+                            <option value="Redpack">Redpack</option>
+                            <option value="MACUIN Fleet Management">MACUIN Fleet (Propio)</option>
+                        </select>
+                    </div>
+                    <div style="margin-top: 25px; display: flex; gap: 10px;">
+                        <button type="button" onclick="guardarPaqueteriaRapida()" style="flex: 2; background: #e57373; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s;">
+                            Guardar Cambios
+                        </button>
+                        <button type="button" onclick="document.getElementById('modalAsignarCourier').style.display='none'" style="flex: 1; background: #f1f5f9; color: #64748b; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+    <script>
+        window.logisticaData = {{ logisticaData|tojson|safe if logisticaData else '[]' }};
+        window.kpisLogistica = {{ kpis|tojson|safe if kpis else '{}' }};
+    </script>
+    <!-- Modales Compartidos (Phase 10 Restoration) -->
+    <div class="modal-overlay" id="modalVenta">
+        <div class="modal-content" style="background: white; color: #000; width: 500px;">
+            <div class="modal-header">
+                <h3 id="modal-titulo"><i class="fas fa-plus"></i> Registrar Nuevo Pedido (Manual)</h3>
+                <button class="btn-close" onclick="cerrarModal()">&times;</button>
+            </div>
+            <form id="formVenta" onsubmit="event.preventDefault(); guardarVenta();">
+                <div class="form-row" style="display: flex; gap: 10px; margin-bottom: 0;">
+                    <div class="form-group" style="flex: 1;">
+                        <label style="color: #000;">Folio (Automático)</label>
+                        <input type="text" id="venta-id" readonly placeholder="#FOLIO" style="background: #f8fafc; padding: 10px; border-radius: 8px;">
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <label style="color: #000;">IDs de Piezas (Ej: 1, 2, 5)</label>
+                        <input type="text" id="venta-piezas" required placeholder="Piezas del inventario" style="padding: 10px; border-radius: 8px;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #000;">Cliente / Nombre Completo</label>
+                    <input type="text" id="venta-cliente" required placeholder="Nombre para el envío" style="padding: 10px; border-radius: 8px;">
+                </div>
+
+                <div class="form-row" style="display: flex; gap: 10px; margin-bottom: 0;">
+                    <div class="form-group" style="flex: 2;">
+                        <label style="color: #000;">Dirección (Calle y Número)</label>
+                        <input type="text" id="venta-direccion" required placeholder="Av. Principal #456" style="padding: 10px; border-radius: 8px;">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label style="color: #000;">C.P.</label>
+                        <input type="text" id="venta-cp" required placeholder="00000" style="padding: 10px; border-radius: 8px;">
+                    </div>
+                </div>
+
+                <div class="form-row" style="display: flex; gap: 10px; margin-bottom: 0;">
+                    <div class="form-group" style="flex: 1;">
+                        <label style="color: #000;">Ciudad</label>
+                        <input type="text" id="venta-ciudad" required placeholder="CDMX" style="padding: 10px; border-radius: 8px;">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label style="color: #000;">Teléfono</label>
+                        <input type="tel" id="venta-telefono" required placeholder="555-000-0000" style="padding: 10px; border-radius: 8px;">
+                    </div>
+                </div>
+
+                <div class="form-row" style="display: flex; gap: 10px; margin-bottom: 0;">
+                    <div class="form-group" style="flex: 1;">
+                        <label style="color: #000;">Monto Total ($)</label>
+                        <input type="number" step="0.01" id="venta-total" required placeholder="0.00" style="padding: 10px; border-radius: 8px;">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label style="color: #000;">Paquetería Inicial</label>
+                        <select id="venta-paqueteria" style="padding: 10px; border-radius: 8px; width: 100%; border: 1px solid #ddd;">
+                            <option value="MACUIN Fleet Management">Propia (MACUIN Fleet)</option>
+                            <option value="DHL Express">DHL Express</option>
+                            <option value="FedEx">FedEx</option>
+                            <option value="Estafeta">Estafeta</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #000;">Notas del Pedido</label>
+                    <input type="text" id="venta-notas" placeholder="Ej: Entrega en horario de oficina" style="padding: 10px; border-radius: 8px;">
+                </div>
+
+                <button type="submit" style="width: 100%; margin-top: 10px; padding: 14px; background: #e57373; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem;">
+                    Confirmar Venta y Generar Guía
+                </button>
+            </form>
+        </div>
     </div>
 
-    {% include 'components/accessibility.html' %}
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    <script>window.onload = renderLogistica;</script>
+    {% include 'components/accessibility.html' %}
 </body>
 </html>
-
-
-

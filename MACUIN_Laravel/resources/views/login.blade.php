@@ -12,23 +12,33 @@
         <div class="left-panel">
             <div class="logo-section">
                 <h1>Autopartes<br>MACUIN</h1>
+
             </div>
             
-            <div class="login-section">
-                <h2>Inicio de sesión<br>Clientes</h2>
+                @if(session('success'))
+                    <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
                 
-                <form method="POST" action="{{ route('login') }}">
+                <form method="POST" action="{{ route('login.post') }}">
                     @csrf
                     <div class="form-group">
-                        <label for="usuario">Usuario</label>
-                        <input type="text" id="usuario" name="usuario" required>
+                        <label for="email">Correo Electrónico</label>
+                        <input type="email" id="email" name="email" required value="{{ old('email') }}">
                     </div>
                     
                     <div class="form-group">
-                        <label for="contrasena">Contraseña</label>
+                        <label for="password">Contraseña</label>
                         <div class="password-wrapper">
-                            <input type="password" id="contrasena" name="contrasena" required>
-                            <button type="button" class="toggle-password" onclick="togglePassword('contrasena')">
+                            <input type="password" id="password" name="password" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('password')">
                                 <i class="fas fa-eye-slash eye-icon"></i>
                             </button>
                         </div>
@@ -37,11 +47,10 @@
                     
                     <button type="submit" class="btn-login">Iniciar sesión</button>
                     
-                    <p class="register-link">
+                    <p class="register-link" style="margin-top: 15px; text-align: center;">
                         ¿No tienes una cuenta? <a href="{{ route('registro') }}">Regístrate aquí</a>
                     </p>
                 </form>
-            </div>
         </div>
         
         <div class="right-panel">

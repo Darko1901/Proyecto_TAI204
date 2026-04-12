@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fce4e4"/>
+      <stop offset="100%" style="stop-color:#f8d7d7"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#888"/>
+      <stop offset="50%" style="stop-color:#ccc"/>
+      <stop offset="100%" style="stop-color:#888"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Tambor -->
+  <ellipse cx="200" cy="200" rx="120" ry="130" fill="url(#metal)" stroke="#666" stroke-width="3"/>
+  <ellipse cx="200" cy="200" rx="95" ry="105" fill="#999" stroke="#777" stroke-width="2"/>
+  <ellipse cx="200" cy="200" rx="45" ry="50" fill="#aaa" stroke="#888" stroke-width="2"/>
+  <!-- Tornillos centrales -->
+  <circle cx="200" cy="170" r="5" fill="#666"/>
+  <circle cx="225" cy="185" r="5" fill="#666"/>
+  <circle cx="220" cy="215" r="5" fill="#666"/>
+  <circle cx="180" cy="215" r="5" fill="#666"/>
+  <circle cx="175" cy="185" r="5" fill="#666"/>
+  <!-- Superficie interior -->
+  <circle cx="200" cy="200" r="25" fill="#bbb"/>
+</svg>

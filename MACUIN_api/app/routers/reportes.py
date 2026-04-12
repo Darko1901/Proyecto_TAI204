@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, Date
+from datetime import datetime
 from io import BytesIO
 from app.data.database import get_db
 from app.models.pedido import Pedido
@@ -39,6 +40,14 @@ def _datos_top_productos(db: Session):
     ).join(DetallePedido).group_by(Producto.id_producto).order_by(
         func.sum(DetallePedido.cantidad).desc()
     ).limit(10).all()
+
+def _datos_ventas_tiempo(db: Session):
+    # Agrupa por fecha (sin hora) y suma el total de ventas e ingresos
+    return db.query(
+        func.cast(Pedido.fecha_pedido, Date).label("fecha"),
+        func.sum(Pedido.total).label("ingreso"),
+        func.count(Pedido.id_pedido).label("cantidad")
+    ).filter(Pedido.id_estado != 5).group_by(func.cast(Pedido.fecha_pedido, Date)).order_by("fecha").all()
 
 
 # --- PDF ---
@@ -180,8 +189,8 @@ async def obtener_kpis_dashboard(db: Session = Depends(get_db), usuario_actual: 
     start_of_month = date(today.year, today.month, 1)
 
     # Ventas
-    ventas_hoy = db.query(func.sum(Pedido.total)).filter(func.cast(Pedido.fecha_pedido, date) == today).scalar() or 0.0
-    ventas_mes = db.query(func.sum(Pedido.total)).filter(func.cast(Pedido.fecha_pedido, date) >= start_of_month).scalar() or 0.0
+    ventas_hoy = db.query(func.sum(Pedido.total)).filter(func.cast(Pedido.fecha_pedido, Date) == today).scalar() or 0.0
+    ventas_mes = db.query(func.sum(Pedido.total)).filter(func.cast(Pedido.fecha_pedido, Date) >= start_of_month).scalar() or 0.0
     
     # Estados de Pedidos
     completados = db.query(func.count(Pedido.id_pedido)).filter(Pedido.id_estado == 4).scalar() or 0
@@ -213,5 +222,16 @@ async def obtener_kpis_dashboard(db: Session = Depends(get_db), usuario_actual: 
         "retrasos_errores": errors,
         "total_articulos": total_articulos,
         "stock_bajo": stock_bajo_count,
-        "valor_inventario": valor_total
+        "valor_inventario": valor_total,
+        "hoy_formateada": datetime.now().strftime("%Y-%m-%d")
     }
+
+@router.get("/top-productos")
+async def obtener_top_productos(db: Session = Depends(get_db), usuario_actual: Usuario = Depends(verificar_token)):
+    datos = _datos_top_productos(db)
+    return [{"producto": row.nombre_producto, "cantidad": int(row.total)} for row in datos]
+
+@router.get("/ventas/tendencia")
+async def obtener_tendencia_ventas(db: Session = Depends(get_db), usuario_actual: Usuario = Depends(verificar_token)):
+    datos = _datos_ventas_tiempo(db)
+    return [{"fecha": str(row.fecha), "ingreso": float(row.ingreso), "cantidad": int(row.cantidad)} for row in datos]

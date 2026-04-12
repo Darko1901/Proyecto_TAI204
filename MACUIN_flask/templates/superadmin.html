@@ -10,76 +10,168 @@
 <body style="background-color: #f4f6f9; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column;">
 
     <div class="dashboard-container" style="min-height: 100vh; display: flex; flex-direction: column;">
-    <header class="master-header">
-        <h1><i class="fas fa-globe-americas" style="color: #3498db;"></i> MACUIN SuperAdmin Network</h1>
+    <header class="dashboard-header" style="background: #000000; border-bottom: 3px solid #df6c6c; padding: 15px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+        <h1 style="color: white; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;"><i class="fas fa-crown" style="color: #df6c6c; margin-right: 12px;"></i> MACUIN MASTER CONTROL</h1>
         <div class="user-info" style="display: flex; align-items: center; gap: 20px;">
-            <span><i class="fas fa-crown" style="color: #f1c40f;"></i> Master: {{ session.get('nombre', session.get('usuario', 'Admin')) }}</span>
-            <a href="{{ url_for('auth.logout') }}" class="btn-logout-master" style="background: rgba(255,255,255,0.1); color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px;">
-                <i class="fas fa-sign-out-alt"></i> Salir
+            <!-- Menú de Navegación Rápida -->
+            <div class="nav-dropdown-wrapper" onclick="toggleNavMenu(event)">
+                <button class="btn-nav-modules" style="font-weight: 800; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2);">
+                    <i class="fas fa-th"></i> Navegar <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                </button>
+                <div class="nav-dropdown-content" style="top: 45px;">
+                    <a href="{{ url_for('views.dashboard') }}"><i class="fas fa-home"></i> Inicio</a>
+                    <a href="{{ url_for('views.ventas') }}"><i class="fas fa-chart-line"></i> Ventas</a>
+                    <a href="{{ url_for('views.almacen') }}"><i class="fas fa-cubes"></i> Almacén</a>
+                    <a href="{{ url_for('views.logistica') }}"><i class="fas fa-route"></i> Logística</a>
+                    <a href="{{ url_for('views.superadmin') }}"><i class="fas fa-user-shield"></i> Administración</a>
+                    <a href="{{ url_for('views.usuarios') }}"><i class="fas fa-user-cog"></i> Mi Perfil</a>
+                </div>
+            </div>
+            <!-- Botón de Notificaciones -->
+            <div class="notification-bell-wrapper" onclick="toggleNotificaciones()" style="margin-right: 15px;">
+                <i class="fas fa-bell" style="color: white; font-size: 1.3rem;"></i>
+                <span id="notif-badge" class="notif-badge" style="background: #df6c6c; color: white; border: 2px solid #000;">0</span>
+                
+                <div id="notif-dropdown" class="notif-dropdown" style="top: 60px;">
+                    <div class="notif-header" style="background: #111; border-bottom: 1px solid #333;">
+                        <h4 style="color: white;">Alertas del Sistema</h4>
+                        <span style="font-size: 0.7rem; color: #888; cursor: pointer;" onclick="marcarComoVisto()">Limpiar</span>
+                    </div>
+                    <div id="notif-list" class="notif-list">
+                        <div class="notif-empty">Cargando alertas...</div>
+                    </div>
+                </div>
+            </div>
+
+            <span style="color: #ffffff; font-weight: 700; border: 1px solid #444; padding: 5px 15px; border-radius: 20px;"><i class="fas fa-user-secret" style="color: #ffffff;"></i> Master: {{ session.get('nombre', session.get('usuario', 'Admin')) }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="btn-logout" style="background: #ffffff; color: #000000; font-weight: 900;">
+                <i class="fas fa-power-off"></i> SALIR
             </a>
         </div>
     </header>
 
-    <div class="master-container" style="flex: 1;">
+    <div class="master-container" style="flex: 1; padding: 40px; background-color: #f8f9fa;">
         
-        <h2 class="section-title"><i class="fas fa-building"></i> Operación Interna MACUIN</h2>
-        <div class="module-grid">
-            <a href="{{ url_for('views.ventas') }}" class="module-card card-ventas">
-                <i class="fas fa-cash-register module-icon" style="color: #3498db;"></i>
-                <h3 style="margin: 0 0 5px 0; font-size: 1.1rem;">Ventas</h3>
-                <p style="margin: 0; font-size: 0.85rem; color: #7f8c8d;">Caja y Facturación</p>
+        <h2 class="section-title" style="border-left: 6px solid #000000; padding-left: 20px; margin-bottom: 30px; font-weight: 900; color: #000000; text-transform: uppercase; letter-spacing: 1px;"><i class="fas fa-terminal"></i> Terminal de Operación Global</h2>
+        
+        <style>
+            .module-card-master {
+                background: #000000 !important;
+                border: 2px solid #222;
+                border-radius: 16px;
+                padding: 35px 25px;
+                text-decoration: none;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                position: relative;
+                overflow: hidden;
+            }
+            .module-card-master::before {
+                content: '';
+                position: absolute;
+                top: 0; left: 0; width: 100%; height: 5px;
+                background: var(--accent-color, #ffffff);
+                opacity: 0.3;
+                transition: 0.3s;
+            }
+            .module-card-master:hover::before { opacity: 1; height: 8px; }
+            
+            .module-card-master:hover {
+                transform: translateY(-12px) scale(1.03);
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+                border-color: var(--accent-color, #ffffff);
+            }
+            .module-card-master i {
+                color: var(--accent-color, #ffffff) !important;
+                font-size: 3.2rem;
+                margin-bottom: 25px;
+                transition: transform 0.4s ease;
+                filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));
+            }
+            .module-card-master:hover i {
+                transform: scale(1.15) rotate(5deg);
+                filter: drop-shadow(0 0 15px var(--accent-color));
+            }
+            .kpi-card-master {
+                background: #000000 !important;
+                color: #ffffff !important;
+                border-left: 10px solid var(--kpi-color, #ffffff) !important;
+                padding: 30px;
+                border-radius: 18px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: all 0.4s ease;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            }
+            .kpi-card-master:hover {
+                transform: scale(1.04) translateX(10px);
+                box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            }
+        </style>
+
+        <div class="module-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 30px; margin-bottom: 50px;">
+            <a href="{{ url_for('views.ventas') }}" class="module-card-master" style="--accent-color: #3498db;">
+                <i class="fas fa-chart-line"></i>
+                <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; color: #ffffff; font-weight: 800;">FINANZAS</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #aaaaaa; text-transform: uppercase; letter-spacing: 1px;">Ventas & BI</p>
             </a>
-            <a href="{{ url_for('views.almacen') }}" class="module-card card-almacen">
-                <i class="fas fa-boxes module-icon" style="color: #e67e22;"></i>
-                <h3 style="margin: 0 0 5px 0; font-size: 1.1rem;">Almacén</h3>
-                <p style="margin: 0; font-size: 0.85rem; color: #7f8c8d;">Inventario y Stock</p>
+            <a href="{{ url_for('views.almacen') }}" class="module-card-master" style="--accent-color: #e67e22;">
+                <i class="fas fa-warehouse"></i>
+                <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; color: #ffffff; font-weight: 800;">INVENTARIO</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #aaaaaa; text-transform: uppercase; letter-spacing: 1px;">Control Global</p>
             </a>
-            <a href="{{ url_for('views.logistica') }}" class="module-card card-logistica">
-                <i class="fas fa-truck-loading module-icon" style="color: #2ecc71;"></i>
-                <h3 style="margin: 0 0 5px 0; font-size: 1.1rem;">Logística</h3>
-                <p style="margin: 0; font-size: 0.85rem; color: #7f8c8d;">Envíos y Rastreo</p>
+            <a href="{{ url_for('views.logistica') }}" class="module-card-master" style="--accent-color: #2ecc71;">
+                <i class="fas fa-map-location-dot"></i>
+                <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; color: #ffffff; font-weight: 800;">LOGÍSTICA</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #aaaaaa; text-transform: uppercase; letter-spacing: 1px;">Rastreo Maestro</p>
             </a>
-            <a href="{{ url_for('views.usuarios') }}" class="module-card card-perfil">
-                <i class="fas fa-user-circle module-icon" style="color: #9b59b6;"></i>
-                <h3 style="margin: 0 0 5px 0; font-size: 1.1rem;">Mi Perfil</h3>
-                <p style="margin: 0; font-size: 0.85rem; color: #7f8c8d;">Mis Credenciales</p>
+            <a href="{{ url_for('views.usuarios') }}" class="module-card-master" style="--accent-color: #9b59b6;">
+                <i class="fas fa-fingerprint"></i>
+                <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; color: #ffffff; font-weight: 800;">SISTEMA</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #aaaaaa; text-transform: uppercase; letter-spacing: 1px;">Acceso & Perfiles</p>
             </a>
         </div>
 
-        <h2 class="section-title"><i class="fas fa-users-cog"></i> Gestión de Usuarios Globales</h2>
+        <h2 class="section-title" style="border-left: 6px solid #000; padding-left: 20px; margin-bottom: 30px; font-weight: 900; color: #333; text-transform: uppercase; letter-spacing: 1px;"><i class="fas fa-bolt" style="color: #f1c40f;"></i> Estadísticas de Red</h2>
         
-        <div class="kpi-grid">
-            <div class="kpi-card" style="border-left: 5px solid #9b59b6;">
+        <div class="kpis-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px;">
+            <div class="kpi-card-master" style="--kpi-color: #3498db;">
                 <div>
-                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; color: #7f8c8d; text-transform: uppercase;">Empresas Registradas</h4>
-                    <span id="kpi-empresas" style="font-size: 1.8rem; font-weight: bold; color: #2c3e50;">0</span>
+                    <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #aaaaaa; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Entidades Activas</h4>
+                    <span id="kpi-empresas" style="font-size: 3rem; font-weight: 900; color: #ffffff;">0</span>
                 </div>
-                <i class="fas fa-city kpi-icon"></i>
+                <i class="fas fa-city" style="font-size: 3.5rem; color: rgba(52, 152, 219, 0.15);"></i>
             </div>
-            <div class="kpi-card" style="border-left: 5px solid #3498db;">
+            <div class="kpi-card-master" style="--kpi-color: #e67e22;">
                 <div>
-                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; color: #7f8c8d; text-transform: uppercase;">Usuarios Activos</h4>
-                    <span id="kpi-usuarios" style="font-size: 1.8rem; font-weight: bold; color: #2c3e50;">0</span>
+                    <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #aaaaaa; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Usuarios del Sistema</h4>
+                    <span id="kpi-usuarios" style="font-size: 3rem; font-weight: 900; color: #ffffff;">0</span>
                 </div>
-                <i class="fas fa-users kpi-icon"></i>
+                <i class="fas fa-user-gear" style="font-size: 3.5rem; color: rgba(230, 126, 34, 0.15);"></i>
             </div>
         </div>
 
-        <div class="table-container">
-            <div class="table-toolbar">
-                <input type="text" id="buscador" placeholder="Buscar usuario u origen..." onkeyup="filtrarTabla()">
-                <button class="btn-add-user" onclick="abrirModalUsuariosMaster()"><i class="fas fa-user-plus"></i> Dar de Alta</button>
+        <div class="table-container" style="background: white; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #eee;">
+            <div class="table-toolbar" style="padding: 20px; background: #fdfdfd; border-bottom: 2px solid #000; display: flex; justify-content: space-between; align-items: center;">
+                <input type="text" id="buscador" placeholder="🔎 Filtrar base de datos maestra..." onkeyup="filtrarTabla()" style="padding: 12px 20px; border-radius: 8px; border: 1px solid #ddd; width: 300px; font-weight: 600;">
+                <button class="btn-add-user" onclick="abrirModalUsuariosMaster()" style="background: #000; color: #fff; padding: 12px 25px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.3s;">
+                    <i class="fas fa-plus"></i> ALTA MAESTRA
+                </button>
             </div>
             
-            <table class="master-table">
-                <thead>
+            <table class="master-table" style="width: 100%; border-collapse: collapse;">
+                <thead style="background: #000; color: #fff;">
                     <tr>
-                        <th>ID</th>
-                        <th>Nombre Completo</th>
-                        <th>Origen / Asignación</th>
-                        <th>Tipo de Perfil</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900;">ID</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900;">Entidad / Usuario</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900;">Asignación</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900;">Perfil</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900;">Status</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900;">Comandos</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-body"></tbody>
@@ -132,7 +224,7 @@
                     </select>
                 </div>
                 
-                <button type="submit" style="width: 100%; padding: 10px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                <button type="submit" style="width: 100%; padding: 12px; background: #e53935; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; transition: background 0.2s;">
                     <i class="fas fa-save"></i> Registrar Usuario Global
                 </button>
             </form>
@@ -142,52 +234,54 @@
     <div class="modal-overlay" id="modalEditarUsuario">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 style="margin: 0; color: #2c3e50;"><i class="fas fa-edit"></i> Editar Usuario</h3>
+                <h3 style="margin: 0; color: #1e293b;"><i class="fas fa-edit"></i> Editar Usuario</h3>
                 <button class="btn-close" onclick="cerrarModalEditar()">&times;</button>
             </div>
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Nombre Completo</label>
-                <input type="text" id="edit-nombre" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Nombre Completo</label>
+                    <input type="text" id="edit-nombre" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Tipo de Perfil (Rol)</label>
+                    <select id="edit-rol" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="Cliente">Cliente (Comprador)</option>
+                        <option value="Trabajador">Trabajador Interno</option>
+                        <option value="Empresa">Empresa / Taller B2B</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Origen / Asignación</label>
+                    <select id="edit-origen" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></select>
+                </div>
+                <button onclick="guardarEdicionUsuario()" style="width: 100%; padding: 12px; background: #1e293b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; transition: background 0.2s;">
+                    <i class="fas fa-check"></i> Aplicar Cambios
+                </button>
             </div>
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Tipo de Perfil (Rol)</label>
-                <select id="edit-rol" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                    <option value="Cliente">Cliente (Comprador)</option>
-                    <option value="Trabajador">Trabajador Interno</option>
-                    <option value="Empresa">Empresa / Taller B2B</option>
-                </select>
-            </div>
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Origen / Asignación</label>
-                <select id="edit-origen" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></select>
-            </div>
-            <button onclick="guardarEdicionUsuario()" style="width: 100%; padding: 10px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                <i class="fas fa-check"></i> Guardar Cambios
-            </button>
         </div>
     </div>
 
     <div class="modal-overlay" id="modalEmpresa">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 style="margin: 0; color: #2c3e50;"><i class="fas fa-building"></i> Registrar Empresa / Taller</h3>
+                <h3 style="margin: 0; color: #1e293b;"><i class="fas fa-building"></i> Registro de Nueva Empresa</h3>
                 <button class="btn-close" onclick="cerrarModalEmpresa()">&times;</button>
             </div>
-            <form method="POST" action="{{ url_for('views.nueva_empresa') }}">
+            <form method="POST" action="{{ url_for('views.nueva_empresa') }}" style="padding: 20px;">
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Razón Social o Taller</label>
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Razón Social o Taller</label>
                     <input type="text" name="nombre" required placeholder="Ej. Autopartes del Centro" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                 </div>
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Correo de Contacto</label>
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Correo de Contacto</label>
                     <input type="email" name="correo" required placeholder="contacto@empresa.com" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Contraseña de Acceso</label>
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Contraseña de Acceso</label>
                     <input type="password" name="password" required placeholder="********" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                 </div>
-                <button type="submit" style="width: 100%; padding: 10px; background: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                    <i class="fas fa-paper-plane"></i> Guardar y Enviar a Registro
+                <button type="submit" style="width: 100%; padding: 12px; background: #e53935; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; transition: background 0.2s;">
+                    <i class="fas fa-paper-plane"></i> Finalizar y Dar de Alta
                 </button>
             </form>
         </div>
@@ -197,9 +291,7 @@
         window.usuariosGlobales = {{ usuariosGlobales|tojson|safe if usuariosGlobales else 'null' }};
     </script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    {% include 'components/accessibility.html' %}
-        {% include 'components/footer.html' %}
-    </div>
+    {% include 'components/footer.html' %}
     {% include 'components/accessibility.html' %}
 </body>
 </html>
