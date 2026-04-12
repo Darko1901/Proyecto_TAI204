@@ -6,6 +6,11 @@
     <title>Almacén - MACUIN Enterprise</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Librerías de Exportación -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body class="{% if session.get('rol') == 1 %}theme-dark{% endif %}">
     <div class="dashboard-container" style="min-height: 100vh; display: flex; flex-direction: column;">
@@ -13,7 +18,41 @@
         <header class="dashboard-header">
             <h1><i class="fas fa-warehouse"></i> Gestión de Almacén e Inventario</h1>
             <div class="user-info">
+                <!-- Menú de Navegación Rápida -->
+                <div class="nav-dropdown-wrapper" style="margin-right: 15px;" onclick="toggleNavMenu(event)">
+                    <button class="btn-nav-modules">
+                        <i class="fas fa-th"></i> Navegar <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </button>
+                    <div class="nav-dropdown-content">
+                        <a href="{{ url_for('views.dashboard') }}"><i class="fas fa-home"></i> Inicio</a>
+                        <a href="{{ url_for('views.ventas') }}"><i class="fas fa-chart-line"></i> Ventas</a>
+                        <a href="{{ url_for('views.almacen') }}"><i class="fas fa-cubes"></i> Almacén</a>
+                        <a href="{{ url_for('views.logistica') }}"><i class="fas fa-route"></i> Logística</a>
+                        {% if session.get('rol') == 1 %}
+                        <a href="{{ url_for('views.superadmin') }}"><i class="fas fa-user-shield"></i> Administración</a>
+                        {% endif %}
+                        <a href="{{ url_for('views.usuarios') }}"><i class="fas fa-user-cog"></i> Mi Perfil</a>
+                    </div>
+                </div>
+
                 <span><i class="fas fa-user-shield"></i> {{ session.get('nombre', session.get('usuario', 'Admin')) }}</span>
+                
+                <!-- Botón de Notificaciones -->
+                <div class="notification-bell-wrapper" onclick="toggleNotificaciones()">
+                    <i class="fas fa-bell"></i>
+                    <span id="notif-badge" class="notif-badge">0</span>
+                    
+                    <div id="notif-dropdown" class="notif-dropdown">
+                        <div class="notif-header">
+                            <h4>Notificaciones</h4>
+                            <span style="font-size: 0.7rem; color: #64748b; cursor: pointer;" onclick="marcarComoVisto()">Limpiar</span>
+                        </div>
+                        <div id="notif-list" class="notif-list">
+                            <div class="notif-empty">No hay avisos pendientes</div>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="{% if session.get('rol') == 1 %}{{ url_for('views.superadmin') }}{% else %}{{ url_for('views.dashboard') }}{% endif %}" class="btn-logout" style="margin-right: 10px;">
                     <i class="fas fa-arrow-left"></i> Volver
                 </a>
@@ -57,16 +96,30 @@
             </div>
 
             <div class="card" id="panel-almacen" style="width: 100%;">
-                <div class="toolbar">
-                    <div class="search-box">
-                        <i class="fas fa-search" style="color: #999;"></i>
-                        <input type="text" id="buscador-almacen" placeholder="Buscar por SKU, nombre o ubicación..." onkeyup="filtrarAlmacen()">
+                {% include 'components/pdf_template.html' %}
+                
+                <div class="toolbar" style="display: flex; gap: 12px; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                    <div class="search-box" style="flex: 1;">
+                        <i class="fas fa-search" style="color: #e57373;"></i>
+                        <input type="text" id="buscador-almacen" placeholder="Buscar por SKU, Nombre, Marca o Pasillo..." onkeyup="filtrarAlmacen()" style="color: #000; font-weight: 500;">
                     </div>
-                    <div>
-                        <button class="btn-action btn-add" onclick="abrirModalAlmacen()">
-                            <i class="fas fa-plus"></i> Registrar Entrada
-                        </button>
+                    
+                    <!-- Filtro de Existencias -->
+                    <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
+                        <label style="font-size: 0.8rem; font-weight: 800; color: #64748b; white-space: nowrap;">EXIS:</label>
+                        <select id="filtro-existencias" onchange="ordenarAlmacen(this.value)" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                            <option value="normal">Por Defecto</option>
+                            <option value="asc">Stock: Menor a Mayor</option>
+                            <option value="desc">Stock: Mayor a Menor</option>
+                        </select>
                     </div>
+
+                    <button class="btn-action btn-pdf" onclick="descargarPDF('almacen')" style="background: #333; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button class="btn-action btn-add" onclick="handleInventorySelection(null, 'new')" style="background: #e57373; color: white; border: none; border-radius: 10px; padding: 0 20px; font-weight: 700; cursor: pointer;">
+                        <i class="fas fa-plus"></i> Registrar Entrada
+                    </button>
                 </div>
 
                 <table class="macuin-table">
@@ -85,63 +138,91 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Paginación de Almacén -->
+            <div id="paginacion-almacen" style="display: flex; justify-content: center; gap: 8px; margin-top: 25px; padding: 10px;"></div>
         </main>
         {% include 'components/footer.html' %}
     </div>
 
-    <!-- Modal Almacen -->
-    <div class="modal-overlay" id="modalAlmacen" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-boxes"></i> Nueva Pieza de Almacén</h3>
-                <button class="btn-close" onclick="document.getElementById('modalAlmacen').style.display='none'">&times;</button>
+    <!-- Modal Almacén Maestro (Unificado) -->
+    <div class="modal-overlay" id="modalAlmacen" style="display: none; align-items: start; padding-top: 50px;">
+        <div class="modal-content" style="width: 700px; max-width: 95%; border-radius: 16px; border: none; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);">
+            <div class="modal-header" style="border-bottom: 2px solid #eee; padding-bottom: 15px;">
+                <div>
+                    <h3 id="modal-title" style="margin: 0; color: #000; font-weight: 900; font-size: 1.5rem;"><i class="fas fa-boxes"></i> Gestionar Inventario</h3>
+                    <p id="modal-subtitle" style="margin: 5px 0 0 0; font-size: 0.85rem; color: #666; font-weight: 600;">Modo dinámico de operación maestra</p>
+                </div>
+                <button class="btn-close" onclick="cerrarMasterModal()" style="font-size: 2rem;">&times;</button>
             </div>
-            <form method="POST" action="{{ url_for('views.nueva_pieza') }}" enctype="multipart/form-data">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="form-group">
-                        <label>Nombre de la Pieza</label>
-                        <input type="text" name="nombre" placeholder="Ej: Alternador Bosch" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+
+            <form id="inventory-master-form" onsubmit="submitUnifiedInventory(event)" enctype="multipart/form-data">
+                <input type="hidden" id="manage-mode" name="mode" value="new">
+                <input type="hidden" id="manage-id" name="id_puro" value="">
+
+                <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px;">
+                    <!-- Secciones de Catálogo (Ocultables para Nueva Entrada) -->
+                    <div id="full-data-section-img" style="display: flex; flex-direction: column; gap: 15px;">
+                        <!-- Columna Imagen -->
+                        <div id="image-preview-container" style="width: 100%; height: 200px; border-radius: 12px; background: #f8fafc; border: 2px dashed #e2e8f0; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                            <div id="upload-placeholder" style="text-align: center; color: #94a3b8;">
+                                <i class="fas fa-camera" style="font-size: 2.5rem; margin-bottom: 8px;"></i>
+                                <p style="font-size: 0.65rem; font-weight: 700;">Click para imagen</p>
+                            </div>
+                            <img id="img-preview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                            <input type="file" name="imagen" accept="image/*" onchange="previewImage(this)" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Categoría</label>
-                        <select name="categoria" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                            <option value="1">Motor / Mecánica</option>
-                            <option value="2">Sistema Eléctrico</option>
-                            <option value="3">Frenado y Suspensión</option>
-                            <option value="4">Limpieza y Fluidos</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Marca</label>
-                        <input type="text" name="marca" placeholder="Ej: Bosch" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    </div>
-                    <div class="form-group">
-                        <label>Modelo / No. Parte</label>
-                        <input type="text" name="modelo" placeholder="Ej: X-200" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    </div>
-                    <div class="form-group">
-                        <label>Precio Unitario ($)</label>
-                        <input type="number" step="0.01" name="precio" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    </div>
-                    <div class="form-group">
-                        <label>Stock Inicial (Unidades)</label>
-                        <input type="number" name="stock" value="0" min="0" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+
+                    <!-- Datos del Producto -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label style="color: #334155; font-weight: 800; font-size: 0.8rem;">Nombre de la Pieza</label>
+                            <input type="text" id="uni-nombre" name="nombre_producto" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                        </div>
+                        <div class="form-group" id="unified-stock-control">
+                            <label id="unified-stock-label" style="color: #334155; font-weight: 800; font-size: 0.8rem;">Cantidad en Stock a Ingresar</label>
+                            <input type="number" id="unified-quantity" name="stock" value="0" min="0" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                            <!-- Mantenemos uni-stock oculto o sincronizado si es necesario por compatibilidad de otros scripts -->
+                            <input type="hidden" id="uni-stock" name="stock_alt" value="0">
+                        </div>
+                        <!-- Grupo de Campos Ocultables -->
+                        <div id="full-data-section-fields" style="display: contents;">
+                            <div class="form-group">
+                                <label style="color: #334155; font-weight: 800; font-size: 0.8rem;">Precio ($)</label>
+                                <input type="number" step="0.01" id="uni-precio" name="precio" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                            </div>
+                            <div class="form-group">
+                                <label style="color: #334155; font-weight: 800; font-size: 0.8rem;">Marca</label>
+                                <input type="text" id="uni-marca" name="marca" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                            </div>
+                            <div class="form-group">
+                                <label style="color: #334155; font-weight: 800; font-size: 0.8rem;">Modelo</label>
+                                <input type="text" id="uni-modelo" name="modelo" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                            </div>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label style="color: #334155; font-weight: 800; font-size: 0.8rem;">Categoría</label>
+                                <select name="id_categoria" id="uni-categoria" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                                    <option value="1">Aceites y Aditivos</option>
+                                    <option value="2">Sensores y Eléctrico</option>
+                                    <option value="3">Frenado</option>
+                                    <option value="4">Motor y Transmisión</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-top: 15px;">
-                    <label>Descripción / Compatibilidad</label>
-                    <textarea name="descripcion" rows="2" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; resize: none;"></textarea>
+                <div id="full-data-section-desc" class="form-group" style="margin-top: 15px;">
+                    <label style="color: #334155; font-weight: 800; font-size: 0.8rem;">Descripción / Compatibilidad</label>
+                    <textarea id="uni-descripcion" name="descripcion" rows="2" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; resize: none;"></textarea>
                 </div>
 
-                <div class="form-group" style="margin-top: 15px;">
-                    <label><i class="fas fa-image"></i> Imagen del Producto</label>
-                    <input type="file" name="imagen" accept="image/*" style="width: 100%; padding: 8px; border: 1px dashed #3498db; border-radius: 4px; background: #f7f9fc;">
+                <div style="margin-top: 20px;">
+                    <button type="submit" id="main-manage-btn" style="width: 100%; padding: 14px; border: none; border-radius: 10px; background: #e57373; color: white; font-weight: 800; cursor: pointer;">
+                        <i class="fas fa-save"></i> Guardar Información
+                    </button>
                 </div>
-
-                <button type="submit" style="width: 100%; margin-top: 20px; padding: 12px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1rem;">
-                    <i class="fas fa-save"></i> Registrar Entrada en Inventario
-                </button>
             </form>
         </div>
     </div>

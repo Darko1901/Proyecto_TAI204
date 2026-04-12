@@ -19,6 +19,7 @@ class Envio(Base):
     codigo_postal = Column(String(10), nullable=False)
     telefono_contacto = Column(String(20), nullable=False)
     notas = Column(Text, nullable=True)
+    paqueteria = Column(String(100), nullable=True, default="MACUIN Fleet Management")
 
     pedido = relationship("Pedido", back_populates="envio")
 
@@ -34,5 +35,6 @@ class EnvioResponse(BaseModel):
     codigo_postal: str
     telefono_contacto: str
     notas: Optional[str]
+    paqueteria: Optional[str] = "MACUIN Fleet Management"
 
     model_config = {"from_attributes": True}

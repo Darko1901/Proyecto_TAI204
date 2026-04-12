@@ -1,103 +1,64 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CatalogoController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReviewController;
 
-// Rutas de autenticación para clientes externos
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', function () {
-    return redirect()->route('login');
-});
+    if (!session()->has('token')) return redirect()->route('login');
+    return view('index');
+})->name('home');
 
-Route::get('/login', function () {
-    return view('login');
-})->name('login');
+// Auth
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::get('/registro', [AuthController::class, 'showRegistro'])->name('registro');
+Route::post('/registro', [AuthController::class, 'registro'])->name('registro.post');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::post('/login', function () {
-    // Lógica de autenticación pendiente
-    return redirect()->route('dashboard');
-})->name('login.post');
-
-Route::get('/registro', function () {
-    return view('registro');
-})->name('registro');
-
-Route::post('/registro', function () {
-    // Lógica de registro pendiente
-    return redirect()->route('login');
-})->name('registro.post');
-
-// Rutas de recuperación de contraseña
 Route::get('/recuperar', function () {
     return view('recuperar');
 })->name('recuperar');
+Route::post('/recuperar', [App\Http\Controllers\PasswordResetController::class, 'sendResetLink'])->name('recuperar.post');
 
-Route::post('/recuperar', function () {
-    // Lógica de envío de correo pendiente
-    return back()->with('success', 'Enlace de recuperación enviado al correo.');
-})->name('recuperar.post');
-
-// Rutas del dashboard y funcionalidades principales
 Route::get('/dashboard', function () {
+    if (!session()->has('token')) return redirect()->route('login');
     return view('dashboard');
 })->name('dashboard');
 
-Route::get('/catalogo', function () {
-    $productos = config('productos');
-    $categorias = [];
-    foreach ($productos as $id => $prod) {
-        $categorias[$prod['categoria']][$id] = $prod;
-    }
-    return view('catalogo', ['categorias' => $categorias]);
-})->name('catalogo');
+// Catalogo
+Route::get('/catalogo', [CatalogoController::class, 'index'])->name('catalogo');
+Route::get('/detalle-producto/{id}', [CatalogoController::class, 'show'])->name('detalle_producto');
 
+// Carrito y Checkout
 Route::get('/carrito', function () {
     return view('carrito');
 })->name('carrito');
 
-Route::get('/detalle-producto/{id}', function ($id) {
-    $productos = config('productos');
-
-    $producto = $productos[$id] ?? null;
-
-    if (!$producto) {
-        return redirect()->route('catalogo')->with('error', 'Producto no encontrado');
-    }
-
-    return view('detalle_producto', ['producto' => $producto, 'id' => $id]);
-})->name('detalle_producto');
-
-Route::get('/perfil', function () {
-    return view('perfil');
-})->name('perfil');
-
-Route::post('/perfil/actualizar', function () {
-    // Lógica de actualización de perfil pendiente
-    return back()->with('success', 'Perfil actualizado correctamente');
-})->name('perfil.update');
-
-Route::post('/perfil/cambiar-password', function () {
-    // Lógica de cambio de contraseña pendiente
-    return back()->with('success', 'Contraseña actualizada correctamente');
-})->name('perfil.cambiar-password');
-
-// Rutas de Pedidos
-Route::get('/pedidos', function () {
-    return view('pedidos');
-})->name('pedidos');
-
-Route::get('/pedido/{id}', function ($id) {
-    return view('pedido_detalle');
-})->name('pedido.detalle');
-
 Route::get('/checkout', function () {
+    if (!session()->has('token')) return redirect()->route('login');
     return view('checkout');
 })->name('checkout');
 
-Route::post('/pedido/crear', function () {
-    // Lógica de creación de pedido pendiente
-    return redirect()->route('pedidos')->with('success', 'Pedido creado exitosamente');
-})->name('pedido.crear');
+Route::post('/pedido/crear', [OrderController::class, 'checkout'])->name('pedido.crear');
 
-Route::post('/pedido/{id}/cancelar', function ($id) {
-    // Lógica de cancelación de pedido pendiente
-    return redirect()->route('pedido.detalle', $id)->with('success', 'Pedido cancelado');
-})->name('pedido.cancelar');
+// Pedidos y Perfil
+Route::get('/perfil', [ProfileController::class, 'edit'])->name('perfil');
+Route::post('/perfil/actualizar', [ProfileController::class, 'update'])->name('perfil.update');
+
+Route::get('/pedidos', [OrderController::class, 'index'])->name('pedidos');
+Route::get('/pedido/{id}', [OrderController::class, 'show'])->name('pedido.detalle');
+Route::get('/pedido/{id}/factura', [OrderController::class, 'downloadInvoice'])->name('pedido.factura');
+Route::post('/pedido/{id}/cancelar', [OrderController::class, 'cancel'])->name('pedido.cancelar');
+
+// Reseñas
+Route::post('/resena/crear', [ReviewController::class, 'store'])->name('resena.crear');

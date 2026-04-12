@@ -1,0 +1,60 @@
+<!-- Modal Detalle Venta (Master Version with Timeline) -->
+<div class="modal-overlay" id="modalDetalleVenta">
+    <div class="modal-content" style="width: 800px; max-width: 95%; border-radius: 12px; background: white; color: #000;">
+        <div class="modal-header">
+            <h3><i class="fas fa-file-invoice-dollar"></i> Detalle de Orden: <span id="det-folio">-</span></h3>
+            <button class="btn-close" onclick="document.getElementById('modalDetalleVenta').style.display='none'">&times;</button>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 10px 0;">
+            <div>
+                <h4 style="margin-bottom: 10px; border-bottom: 2px solid #e57373; display: inline-block; color: #000;">Datos del Cliente</h4>
+                <p><strong>Nombre:</strong> <span id="det-cliente-nombre">-</span></p>
+                <p><strong>Dirección:</strong> <span id="det-direccion">-</span></p>
+                <p><strong>Ciudad/CP:</strong> <span id="det-ciudad">-</span> / <span id="det-cp">-</span></p>
+                <p><strong>Teléfono:</strong> <span id="det-telefono">-</span></p>
+                <p style="margin-top: 5px; font-style: italic; color: #666;"><strong>Notas:</strong> <span id="det-notas">-</span></p>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 10px; border-bottom: 2px solid #e57373; display: inline-block; color: #000;">Resumen del Pedido</h4>
+                <p><strong>Fecha:</strong> <span id="det-fecha">-</span></p>
+                <p><strong>Estado Actual:</strong> <span id="det-estatus" class="badge-warning" style="padding: 2px 8px; border-radius: 4px;">-</span></p>
+                <p style="font-size: 1.2rem; color: #e57373; font-weight: bold; margin-top: 10px;">Total: <span id="det-total">$0.00</span></p>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline" style="display: flex; justify-content: space-between; margin: 30px 0; position: relative; padding: 0 40px;">
+            <div style="position: absolute; top: 15px; left: 40px; right: 40px; height: 4px; background: #eee; z-index: 1;"></div>
+            <div class="step" id="step-1" style="z-index: 2; text-align: center;">
+                <div class="circle" style="width: 30px; height: 30px; border-radius: 50%; background: #ddd; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">1</div>
+                <span style="font-size: 0.7rem; font-weight: bold; color: #000;">Recibido</span>
+            </div>
+            <div class="step" id="step-2" style="z-index: 2; text-align: center;">
+                <div class="circle" style="width: 30px; height: 30px; border-radius: 50%; background: #ddd; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">2</div>
+                <span style="font-size: 0.7rem; font-weight: bold; color: #000;">Surtido</span>
+            </div>
+            <div class="step" id="step-3" style="z-index: 2; text-align: center;">
+                <div class="circle" style="width: 30px; height: 30px; border-radius: 50%; background: #ddd; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">3</div>
+                <span style="font-size: 0.7rem; font-weight: bold; color: #000;">Enviado</span>
+            </div>
+            <div class="step" id="step-4" style="z-index: 2; text-align: center;">
+                <div class="circle" style="width: 30px; height: 30px; border-radius: 50%; background: #ddd; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">4</div>
+                <span style="font-size: 0.7rem; font-weight: bold; color: #000;">Completado</span>
+            </div>
+        </div>
+
+        <div style="max-height: 200px; overflow-y: auto; background: #f9f9f9; padding: 15px; border-radius: 8px;">
+            <h5 style="margin-bottom: 10px; color: #000;"><i class="fas fa-list"></i> Productos en la Orden</h5>
+            <ul id="det-piezas-list" style="list-style: none; padding: 0;">
+                <!-- Se llena vía JS -->
+            </ul>
+        </div>
+        
+        <div style="margin-top: 20px; text-align: right;">
+            <button class="btn-pdf" onclick="window.print()" style="background: #333; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">
+                <i class="fas fa-print"></i> Imprimir Comprobante
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Defensa delantera / Front bumper -->
+  <path d="M60,200 Q60,170 100,160 L300,160 Q340,170 340,200 L340,230 Q340,250 320,255 L80,255 Q60,250 60,230 Z" fill="#333" stroke="#222" stroke-width="2"/>
+  <!-- Parrilla inferior -->
+  <rect x="120" y="210" width="160" height="30" rx="5" fill="#444"/>
+  <line x1="135" y1="215" x2="135" y2="235" stroke="#555" stroke-width="2"/>
+  <line x1="155" y1="215" x2="155" y2="235" stroke="#555" stroke-width="2"/>
+  <line x1="175" y1="215" x2="175" y2="235" stroke="#555" stroke-width="2"/>
+  <line x1="195" y1="215" x2="195" y2="235" stroke="#555" stroke-width="2"/>
+  <line x1="215" y1="215" x2="215" y2="235" stroke="#555" stroke-width="2"/>
+  <line x1="235" y1="215" x2="235" y2="235" stroke="#555" stroke-width="2"/>
+  <line x1="255" y1="215" x2="255" y2="235" stroke="#555" stroke-width="2"/>
+  <!-- Faro izquierdo -->
+  <ellipse cx="100" cy="185" rx="25" ry="15" fill="#eee" stroke="#bbb" stroke-width="1.5"/>
+  <!-- Faro derecho -->
+  <ellipse cx="300" cy="185" rx="25" ry="15" fill="#eee" stroke="#bbb" stroke-width="1.5"/>
+  <!-- Placa -->
+  <rect x="170" y="175" width="60" height="20" rx="3" fill="#eee" stroke="#ccc" stroke-width="1"/>
+  <!-- Lip inferior -->
+  <path d="M80,255 Q200,275 320,255" fill="none" stroke="#444" stroke-width="3"/>
+</svg>

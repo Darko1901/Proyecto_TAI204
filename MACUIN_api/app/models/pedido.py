@@ -8,6 +8,10 @@ from app.data.database import Base
 from app.models.detalle_pedido import DetallePedidoCreate, DetallePedidoResponse
 
 
+from app.models.envio import EnvioResponse
+from app.models.usuario import UsuarioResponse
+
+
 # SQLAlchemy ORM
 class Pedido(Base):
     __tablename__ = "pedidos"
@@ -42,8 +46,10 @@ class PedidoResponse(BaseModel):
     total: Decimal
     id_usuario: int
     id_estado: int
+    usuario: Optional[UsuarioResponse] = None
 
     model_config = {"from_attributes": True}
 
 class PedidoDetalladoResponse(PedidoResponse):
     detalles: List[DetallePedidoResponse] = []
+    envio: Optional[EnvioResponse] = None

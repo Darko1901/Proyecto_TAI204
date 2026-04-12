@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+    <linearGradient id="oil" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#fdd835"/><stop offset="100%" style="stop-color:#f9a825"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Aceite de motor / Motor oil bottle -->
+  <!-- Cuerpo de botella -->
+  <rect x="130" y="160" width="100" height="150" rx="8" fill="url(#oil)" stroke="#f57f17" stroke-width="2"/>
+  <!-- Cuello -->
+  <rect x="160" y="130" width="40" height="35" rx="5" fill="url(#oil)" stroke="#f57f17" stroke-width="2"/>
+  <!-- Tapa -->
+  <rect x="165" y="115" width="30" height="20" rx="4" fill="#e65100" stroke="#bf360c" stroke-width="1.5"/>
+  <!-- Manija -->
+  <path d="M230,170 Q260,170 260,200 L260,230 Q260,240 250,240 L230,240" fill="none" stroke="#f57f17" stroke-width="6"/>
+  <!-- Etiqueta -->
+  <rect x="140" y="210" width="80" height="60" rx="4" fill="white" opacity="0.9"/>
+  <text x="180" y="233" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="#333" text-anchor="middle">SAE</text>
+  <text x="180" y="250" font-family="Arial,sans-serif" font-size="16" font-weight="bold" fill="#d32f2f" text-anchor="middle">5W-30</text>
+  <text x="180" y="265" font-family="Arial,sans-serif" font-size="8" fill="#666" text-anchor="middle">SINTÉTICO</text>
+  <!-- Sello API -->
+  <circle cx="275" cy="170" r="18" fill="white" stroke="#1565c0" stroke-width="2"/>
+  <text x="275" y="173" font-family="Arial,sans-serif" font-size="9" font-weight="bold" fill="#1565c0" text-anchor="middle">API</text>
+</svg>

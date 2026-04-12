@@ -38,27 +38,30 @@ let ventasData = window.ventasData || [];
 
 // Dibuja la tabla de ventas en el HTML
 function renderTabla() {
+    const isDark = document.body.classList.contains('theme-dark');
+    const textColor = isDark ? '#ffffff' : '#000000';
+    const borderColor = isDark ? '#333' : '#eee';
     const tbody = document.getElementById("tabla-ventas-body");
     if (!tbody) return;
-    
+
     tbody.innerHTML = ""; 
     
     ventasData.forEach(venta => {
         let badgeClass = venta.estatus === "Completado" ? "badge-success" : 
-                         venta.estatus === "Procesando" ? "badge-warning" : "badge-danger";
+                         venta.estatus === "Procesando" || venta.estatus === "Recibido" ? "badge-warning" : "badge-danger";
                          
         tbody.innerHTML += `
-            <tr>
-                <td><strong>#${venta.id}</strong></td>
-                <td>${venta.cliente}</td>
-                <td>${venta.piezas}</td>
-                <td>${venta.fecha}</td>
-                <td>$${venta.total.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                <td><span class="badge ${badgeClass}">${venta.estatus}</span></td>
+            <tr style="border-bottom: 1px solid ${borderColor};">
+                <td style="color: ${textColor}; font-weight: 800;">#${venta.id}</td>
+                <td style="color: ${textColor};">${venta.cliente}</td>
+                <td style="color: ${textColor}; font-size: 0.85rem;">${venta.piezas}</td>
+                <td style="color: ${textColor};">${venta.fecha}</td>
+                <td style="color: ${textColor}; font-weight: 800; color: #1e293b;">$${parseFloat(venta.total).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                <td><span class="badge ${badgeClass}" style="border-radius: 4px; padding: 4px 10px; font-weight: 700;">${venta.estatus}</span></td>
                 <td class="row-actions">
-                    <button class="icon-view" onclick="verVenta('${venta.id}')" title="Ver"><i class="fas fa-eye"></i></button>
-                    <button class="icon-edit" onclick="editarVenta('${venta.id}')" title="Editar"><i class="fas fa-edit"></i></button>
-                    <button class="icon-delete" onclick="eliminarVenta('${venta.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    <button class="btn-action-sm btn-view-sm" onclick="verDetalleOrden('${venta.id_puro}')" title="Ver Detalle" style="color: #64748b; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px; border-radius: 8px; cursor: pointer; transition: all 0.2s;"><i class="fas fa-eye"></i></button>
+                    <button class="btn-action-sm btn-edit-sm" onclick="abrirEditarPedido('${venta.id_puro}')" title="Editar" style="color: #64748b; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px; border-radius: 8px; cursor: pointer; margin-left:5px; transition: all 0.2s;"><i class="fas fa-edit"></i></button>
+                    <button class="btn-action-sm btn-delete-sm" onclick="eliminarVenta('${venta.id_puro}')" title="Eliminar" style="color: #e57373; background: #fef2f2; border: 1px solid #fee2e2; padding: 8px; border-radius: 8px; cursor: pointer; margin-left:5px; transition: all 0.2s;"><i class="fas fa-trash-alt"></i></button>
                 </td>
             </tr>
         `;
@@ -69,40 +72,161 @@ function renderTabla() {
 
 // Calcula los totales de las tarjetas superiores
 function actualizarKPIs() {
-    if (!document.getElementById("kpi-dia")) return;
+    const kpiDia = document.getElementById("kpi-dia");
+    if (!kpiDia) return;
 
-    let totalDia = 0, totalMes = 0, completados = 0, pendientes = 0;
+    let totalDia = 0, totalMes = 0, totalHistorial = 0, cancelaciones = 0;
     const hoy = getFechaLocal();
     const mesActual = hoy.substring(0, 7); 
 
     ventasData.forEach(venta => {
+        const totalVenta = parseFloat(venta.total) || 0;
         if (venta.estatus !== "Cancelado") {
-            if (venta.fecha === hoy) totalDia += venta.total;
-            if (venta.fecha.startsWith(mesActual)) totalMes += venta.total;
+            totalHistorial += totalVenta;
+            if (venta.fecha === hoy) totalDia += totalVenta;
+            if (venta.fecha.startsWith(mesActual)) totalMes += totalVenta;
+        } else {
+            cancelaciones++;
         }
-        if (venta.estatus === "Completado") completados++;
-        if (venta.estatus === "Procesando") pendientes++;
     });
 
-    document.getElementById("kpi-dia").innerText = `$${totalDia.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+    kpiDia.innerText = `$${totalDia.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
     document.getElementById("kpi-mes").innerText = `$${totalMes.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-    document.getElementById("kpi-completados").innerText = completados;
-    document.getElementById("kpi-pendientes").innerText = pendientes;
+    document.getElementById("kpi-total").innerText = `$${totalHistorial.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+    document.getElementById("kpi-cancelaciones").innerText = cancelaciones;
 }
 
 // ================================================================
 // 3. ACCIONES CRUD Y MODALES
 // ================================================================
 
-function abrirModal(creandoNuevo = true) {
+function abrirModalVenta(creandoNuevo = true) {
     const modal = document.getElementById("modalVenta");
     if(!modal) return;
     modal.style.display = "flex";
     if (creandoNuevo) {
         modoEdicion = false;
         document.getElementById("formVenta").reset();
-        document.getElementById("venta-id").value = "V-" + Math.floor(Math.random() * 9000 + 1000);
-        document.getElementById("modal-titulo").innerText = "Registrar Nueva Venta";
+        document.getElementById("venta-id").value = "AUTOGENERADO";
+        listaItemsVenta = [];
+        renderListaItems();
+        
+        // Poblar selector de piezas
+        const select = document.getElementById('select-pieza');
+        if (select && window.inventarioGlobal) {
+            select.innerHTML = '<option value="">-- Buscar SKU o Nombre --</option>';
+            window.inventarioGlobal.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id_puro;
+                opt.text = `${p.id} - ${p.pieza} ($${p.precio})`;
+                opt.dataset.precio = p.precio;
+                opt.dataset.nombre = p.pieza;
+                select.appendChild(opt);
+            });
+        }
+    }
+}
+
+function agregarPiezaALista() {
+    const select = document.getElementById('select-pieza');
+    const inputCant = document.getElementById('input-cantidad');
+    if (!select.value) return;
+
+    const id = select.value;
+    const cant = parseInt(inputCant.value) || 0;
+    const opt = select.options[select.selectedIndex];
+    const precio = parseFloat(opt.dataset.precio);
+    const nombre = opt.dataset.nombre;
+
+    if (cant <= 0) return;
+
+    const itemExistente = listaItemsVenta.find(i => i.id_producto == id);
+    if (itemExistente) {
+        itemExistente.cantidad += cant;
+        itemExistente.subtotal = itemExistente.cantidad * itemExistente.precio;
+    } else {
+        listaItemsVenta.push({
+            id_producto: id,
+            nombre: nombre,
+            cantidad: cant,
+            precio: precio,
+            subtotal: cant * precio
+        });
+    }
+
+    renderListaItems();
+    inputCant.value = 1;
+}
+
+function eliminarPieza(index) {
+    listaItemsVenta.splice(index, 1);
+    renderListaItems();
+}
+
+function renderListaItems() {
+    const tbody = document.getElementById('lista-piezas-body');
+    if (!tbody) return;
+
+    if (listaItemsVenta.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 15px; color: #64748b;">No hay piezas añadidas</td></tr>';
+        document.getElementById('venta-total').value = "0.00";
+        return;
+    }
+
+    tbody.innerHTML = '';
+    let granTotal = 0;
+    listaItemsVenta.forEach((item, index) => {
+        granTotal += item.subtotal;
+        tbody.innerHTML += `
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px;">${item.nombre}</td>
+                <td style="padding: 10px; text-align: center;">${item.cantidad}</td>
+                <td style="padding: 10px; text-align: right; font-weight: 700;">$${item.subtotal.toLocaleString()}</td>
+                <td style="padding: 10px; text-align: center;">
+                    <button type="button" onclick="eliminarPieza(${index})" style="background: none; border: none; color: #e57373; cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    document.getElementById('venta-total').value = granTotal.toFixed(2);
+}
+
+async function guardarVenta() {
+    if (listaItemsVenta.length === 0) {
+        alert("Falta añadir productos a la venta.");
+        return;
+    }
+
+    const payload = {
+        id_usuario: 1, // Por simplicidad para MVP o usar session info
+        cliente_nombre: document.getElementById("venta-cliente").value,
+        direccion: document.getElementById("venta-direccion").value,
+        codigo_postal: document.getElementById("venta-cp").value,
+        ciudad: document.getElementById("venta-ciudad").value,
+        telefono: document.getElementById("venta-telefono").value,
+        paqueteria: document.getElementById("venta-paqueteria").value,
+        notas: document.getElementById("venta-notes").value,
+        items: listaItemsVenta // Mandamos el array completo
+    };
+
+    try {
+        const response = await fetch('/ventas/registrar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (result.status === "success") {
+            alert("¡Venta Registrada Exitosamente!");
+            location.reload();
+        } else {
+            alert("Error: " + result.message);
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Error de conexión al servidor.");
     }
 }
 
@@ -110,142 +234,770 @@ function cerrarModal() {
     document.getElementById("modalVenta").style.display = "none";
 }
 
-function guardarVenta() {
-    const id = document.getElementById("venta-id").value;
-    const cliente = document.getElementById("venta-cliente").value;
-    const piezas = document.getElementById("venta-piezas").value;
-    const total = parseFloat(document.getElementById("venta-total").value);
-    const estatus = document.getElementById("venta-estatus").value;
-    const fecha = getFechaLocal(); 
-
-    if (!cliente || !piezas || isNaN(total)) {
-        alert("Por favor llena todos los campos correctamente.");
-        return;
+async function verDetalleOrden(idOguia) {
+    const modal = document.getElementById("modalDetalleVenta");
+    if (!modal) return;
+    
+    // Mostramos cargando...
+    modal.style.display = "flex";
+    
+    // Tratamos de encontrar el objeto en ventasData o enviosData
+    let dataObj = (window.ventasData || []).find(v => v.id === idOguia || v.id_puro == idOguia);
+    if (!dataObj && typeof window.enviosData !== 'undefined') {
+        dataObj = window.enviosData.find(e => e.guia === idOguia || e.id_puro == idOguia);
     }
+    
+    const idPuro = dataObj ? (dataObj.id_puro || idOguia) : idOguia;
 
-    if (modoEdicion) {
-        const index = ventasData.findIndex(v => v.id === id);
-        ventasData[index] = { ...ventasData[index], cliente, piezas, total, estatus };
-    } else {
-        ventasData.unshift({ id, cliente, piezas, fecha, total, estatus });
+    try {
+        const response = await fetch(`/ventas/detalle/${idPuro}`);
+        const data = await response.json();
+        
+        // Sincronizar con los IDs de ventas.html (Phase 4 Fix)
+        if(document.getElementById("det-folio")) document.getElementById("det-folio").innerText = data.id_pedido || idPuro;
+        
+        const u = data.usuario || {};
+        const nombreFull = (u.nombre || u.apellido_paterno) ? `${u.nombre || ""} ${u.apellido_paterno || ""} ${u.apellido_materno || ""}`.trim() : "Cliente Local";
+        if(document.getElementById("det-cliente-nombre")) document.getElementById("det-cliente-nombre").innerText = nombreFull;
+        
+        if(document.getElementById("det-direccion")) document.getElementById("det-direccion").innerText = data.envio ? data.envio.direccion : (data.direccion || "Sucursal");
+        if(document.getElementById("det-ciudad")) document.getElementById("det-ciudad").innerText = data.envio ? data.envio.ciudad : (data.ciudad || "-");
+        if(document.getElementById("det-cp")) document.getElementById("det-cp").innerText = data.envio ? data.envio.codigo_postal : (data.codigo_postal || "-");
+        if(document.getElementById("det-telefono")) document.getElementById("det-telefono").innerText = data.envio ? data.envio.telefono_contacto : (data.telefono || "-");
+        if(document.getElementById("det-notas")) document.getElementById("det-notas").innerText = data.envio ? data.envio.notas || "Sin notas" : (data.notas || "Venta de mostrador");
+        
+        if(document.getElementById("det-fecha")) document.getElementById("det-fecha").innerText = data.fecha_pedido ? new Date(data.fecha_pedido).toLocaleDateString() : "N/A";
+        
+        const badgeEst = document.getElementById("det-estatus");
+        if(badgeEst) {
+            const estados = {1: "Recibido", 2: "Surtido", 3: "Enviado", 4: "Completado", 5: "Cancelado"};
+            badgeEst.innerText = estados[data.id_estado] || "Procesando";
+            badgeEst.className = `badge ${data.id_estado === 4 ? 'badge-success' : 'badge-warning'}`;
+        }
+        
+        if(document.getElementById("det-total")) document.getElementById("det-total").innerText = `$${parseFloat(data.total || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+
+        // Timeline Sync
+        for(let i=1; i<=4; i++) {
+            const step = document.getElementById(`step-${i}`);
+            if(!step) continue;
+            const circle = step.querySelector('.circle');
+            if (i <= data.id_estado && data.id_estado < 5) {
+                circle.style.background = "#e57373"; // Rojo Autopartes
+            } else {
+                circle.style.background = "#ddd";
+            }
+        }
+
+        // Llenar productos
+        const listContainer = document.getElementById("det-piezas-list");
+        if (listContainer) {
+            listContainer.innerHTML = "";
+            const detalles = data.detalles || [];
+            detalles.forEach(d => {
+                listContainer.innerHTML += `
+                    <li style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; color: #000;">
+                        <span><strong>${d.producto ? d.producto.nombre_producto : 'Pieza #'+d.id_producto}</strong> x ${d.cantidad}</span>
+                        <span style="font-weight: bold;">$${(d.cantidad * d.precio_unitario).toLocaleString()}</span>
+                    </li>
+                `;
+            });
+        }
+        
+    } catch (error) {
+        console.error("Error al obtener detalle:", error);
     }
-
-    cerrarModal();
-    renderTabla();
 }
 
-function eliminarVenta(id) {
-    if (confirm(`¿Estás seguro de eliminar la venta #${id}?`)) {
-        ventasData = ventasData.filter(v => v.id !== id);
-        renderTabla();
-    }
-}
-
-function editarVenta(id) {
-    modoEdicion = true;
+async function confirmarPedido(id) {
     const venta = ventasData.find(v => v.id === id);
-    document.getElementById("modal-titulo").innerText = "Editar Venta #" + id;
-    document.getElementById("venta-id").value = venta.id;
-    document.getElementById("venta-cliente").value = venta.cliente;
-    document.getElementById("venta-piezas").value = venta.piezas;
-    document.getElementById("venta-total").value = venta.total;
-    document.getElementById("venta-estatus").value = venta.estatus;
-    document.getElementById("modalVenta").style.display = "flex";
+    if (!venta) return;
+
+    if (confirm(`¿Confirmar orden #${venta.id_puro}? Esto notificará al cliente y pasará el pedido a SURTIDO (Almacén).`)) {
+        try {
+            const response = await fetch(`/ventas/confirmar/${venta.id_puro}`, { method: 'POST' });
+            const result = await response.json();
+            if (result.status === "success") {
+                alert("¡Orden Confirmada!\nEl equipo de almacén ha sido notificado para surtir las piezas.");
+                location.reload();
+            } else {
+                alert("Error: " + result.message);
+            }
+        } catch (e) {
+            alert("Error de conexión al intentar confirmar el pedido.");
+        }
+    }
 }
 
-function verVenta(id) {
-    const v = ventasData.find(venta => venta.id === id);
-    alert(`DETALLE DE VENTA\nFolio: ${v.id}\nCliente: ${v.cliente}\nPiezas: ${v.piezas}\nFecha: ${v.fecha}\nTotal: $${v.total.toFixed(2)}\nEstatus: ${v.estatus}`);
+async function eliminarVenta(id) {
+    // Buscar en ventasData o usar id como id_puro directo (Fase 6 Sync)
+    const venta = (window.ventasData || []).find(v => v.id === id || v.id_puro == id);
+    const idPuro = venta ? venta.id_puro : id;
+
+    if (!idPuro) return;
+
+    if (confirm(`¿Estás seguro de eliminar permanentemente la orden #${idPuro}? El stock será devuelto al inventario.`)) {
+        try {
+            const response = await fetch(`/ventas/eliminar/${idPuro}`, { method: 'POST' });
+            const result = await response.json();
+            if (result.status === "success") {
+                location.reload(); 
+            } else {
+                alert("Error: " + result.message);
+            }
+        } catch (e) {
+            alert("Error de conexión al intentar eliminar la venta.");
+        }
+    }
 }
+
+async function editarVenta(id) {
+    let idPuro = id;
+    if (typeof id === 'string' && id.startsWith('V-')) {
+        const v = (window.ventasData || []).find(venta => venta.id === id);
+        if (v) idPuro = v.id_puro;
+    }
+    
+    if (!idPuro) return;
+
+    try {
+        const response = await fetch(`/ventas/detalle/${idPuro}`);
+        const data = await response.json();
+
+        if (data.id_pedido) {
+            document.getElementById('edit-folio-title').innerText = data.id_pedido;
+            document.getElementById('edit-id-puro').value = data.id_pedido;
+            
+            // Llenar campos de envío (Phase 4 Fix: soporte para datos planos o anidados)
+            const envio = data.envio || data;
+            document.getElementById('edit-direccion').value = envio.direccion || "";
+            document.getElementById('edit-ciudad').value = envio.ciudad || "";
+            document.getElementById('edit-cp').value = envio.codigo_postal || "";
+            document.getElementById('edit-telefono').value = envio.telefono_contacto || envio.telefono || "";
+            document.getElementById('edit-notas').value = envio.notas || "";
+            
+            // Llenar estado
+            document.getElementById('edit-estado').value = data.id_estado;
+
+            document.getElementById('modalEditarPedido').style.display = "flex";
+        }
+    } catch (e) {
+        alert("Error al cargar los datos del pedido para edición.");
+    }
+}
+
+async function gestionarEnvioLogistica() {
+    const id = document.getElementById('edit-id-puro').value;
+    if (!id) return;
+    
+    if (confirm("¿Marcar este pedido como ENVIADO? Se registrará la fecha de salida y pasará al módulo de logística.")) {
+        document.getElementById('edit-estado').value = "3"; // 3 = Enviado
+        // Opcional: Podríamos hacer el submit automático aquí
+        document.getElementById('formEditarPedido').requestSubmit();
+    }
+}
+
+// Inicializar el formulario de edición avanzada
+document.addEventListener('DOMContentLoaded', () => {
+    const formEdit = document.getElementById('formEditarPedido');
+    if (formEdit) {
+        formEdit.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id-puro').value;
+            const formData = new FormData(formEdit);
+            
+            try {
+                const response = await fetch(`/ventas/editar/${id}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (result.status === "success") {
+                    alert("¡Cambios Guardados!\nEl pedido ha sido actualizado exitosamente.");
+                    location.reload();
+                } else {
+                    alert("Error: " + result.message);
+                }
+            } catch (err) {
+                alert("Error de conexión al intentar guardar los cambios.");
+            }
+        });
+    }
+});
 
 // ================================================================
 // 4. FILTROS Y EXPORTACIÓN
 // ================================================================
 
 function filtrarTabla() {
-    let filter = document.getElementById("buscador").value.toLowerCase();
-    let tbody = document.getElementById("tabla-ventas-body");
+    const textFilter = (document.getElementById("buscador")?.value || "").toLowerCase();
+    const statusFilter = document.getElementById("filtro-estatus")?.value || "";
+    const dateFilter = document.getElementById("filtro-fecha")?.value || "";
+    
+    const tbody = document.getElementById("tabla-ventas-body");
     if(!tbody) return;
-    let tr = tbody.getElementsByTagName("tr");
+    const trs = tbody.getElementsByTagName("tr");
 
-    for (let i = 0; i < tr.length; i++) {
-        let textValue = tr[i].innerText;
-        tr[i].style.display = textValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+    for (let i = 0; i < trs.length; i++) {
+        const tr = trs[i];
+        const rowText = tr.textContent.toLowerCase();
+        
+        // Estatus column is index 5
+        const cellStatus = tr.cells[5]?.innerText.trim() || "";
+        // Date column is index 3
+        const cellDate = tr.cells[3]?.innerText.trim() || "";
+        
+        let matchText = rowText.includes(textFilter);
+        let matchStatus = statusFilter === "" || cellStatus === statusFilter;
+        let matchDate = dateFilter === "" || cellDate === dateFilter;
+
+        tr.style.display = (matchText && matchStatus && matchDate) ? "" : "none";
     }
 }
 
-function descargarPDF() {
-    const elemento = document.getElementById('panel-ventas');
-    if (!elemento) return;
+function descargarPDF(contexto = 'ventas') {
+    // 0. Validar librerías
+    if (typeof jspdf === 'undefined' || typeof jspdf.jsPDF === 'undefined') {
+        alert("Librería jsPDF no detectada. Verifique la conexión a internet.");
+        return;
+    }
+
+    // Mostrar loader
+    let loader = document.getElementById('pdf-loading-overlay');
+    if (loader) loader.style.display = 'flex';
+
+    // 1. Obtener Datos
+    const sourceTableId = {
+        'ventas': 'tabla-ventas-body',
+        'logistica': 'tabla-logistica-body',
+        'almacen': 'tabla-almacen-body'
+    }[contexto];
+
+    const mainTableBody = document.getElementById(sourceTableId);
+    if (!mainTableBody) {
+        alert("Error: No se encontró la tabla de origen.");
+        if (loader) loader.style.display = 'none';
+        return;
+    }
+
+    // 2. Inicializar Documento
+    const { jsPDF } = jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // 3. Dibujar Branding Corporativo (Manual Draw)
+    // Fondo de acento según módulo
+    const themeColors = { 'ventas': [229, 115, 115], 'almacen': [46, 204, 113], 'logistica': [52, 152, 219] };
+    const accent = themeColors[contexto] || [30, 41, 59];
+
+    // Encabezado PURE TEXT (Garantiza visibilidad)
+    doc.setFillColor(30, 41, 59);
+    doc.rect(0, 0, pageWidth, 40, 'F');
     
-    // Ocultar toolbar y columna de acciones
-    const ocultarPDF = document.querySelectorAll('.row-actions, .toolbar, .col-acciones');
-    ocultarPDF.forEach(el => el.style.display = 'none'); 
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.text("AUTOPARTES MACUIN", 15, 20);
+    
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text("SOLUCIONES AUTOMOTRICES DE ALTA PRECISIÓN", 15, 28);
+    doc.text("Av. Tecnológico #123, Querétaro, MX | contacto@macuin.com", 15, 33);
 
-    // Mostrar título del PDF
-    const tituloPDF = document.getElementById('titulo-pdf');
-    if (tituloPDF) tituloPDF.style.display = 'block';
+    // Folio y Título del Reporte
+    doc.setFillColor(...accent);
+    doc.rect(pageWidth - 75, 12, 60, 18, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.text(`REPORTE DE ${contexto.toUpperCase()}`, pageWidth - 70, 19);
+    doc.setFontSize(8);
+    const folio = `#REP-${new Date().getTime().toString().slice(-4)}`;
+    doc.text(`FOLIO: ${folio}`, pageWidth - 70, 25);
 
-    const opciones = {
-        margin: 10,
-        filename: 'Reporte_Ventas_MACUIN.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-    };
+    // 4. Configurar Columnas y Filas para AutoTable
+    let columns = [];
+    let data = [];
 
-    if (typeof html2pdf !== 'undefined') {
-        html2pdf().set(opciones).from(elemento).save().then(() => {
-            ocultarPDF.forEach(el => el.style.display = ''); 
-            if (tituloPDF) tituloPDF.style.display = 'none';
+    if (contexto === 'ventas') {
+        columns = ["ID / FOLIO", "CLIENTE / TALLER", "PIEZAS", "FECHA", "TOTAL"];
+        Array.from(mainTableBody.rows).forEach(row => {
+            if (row.style.display !== 'none') {
+                const c = row.cells;
+                data.push([c[0].innerText, c[1].innerText, c[2].innerText, c[3].innerText, c[4].innerText]);
+            }
+        });
+    } else if (contexto === 'logistica') {
+        columns = ["GUÍA / ID", "DESTINATARIO", "COURIER", "ESTADO", "ENTREGA"];
+        Array.from(mainTableBody.rows).forEach(row => {
+            if (row.style.display !== 'none') {
+                const c = row.cells;
+                data.push([c[0].innerText, c[1].innerText, c[2].innerText, c[4].innerText, c[5].innerText]);
+            }
         });
     } else {
-        alert("Librería PDF no disponible.");
-        ocultarPDF.forEach(el => el.style.display = '');
-        if (tituloPDF) tituloPDF.style.display = 'none';
+        columns = ["SKU / ID", "PRODUCTO", "CATEGORÍA", "PRECIO", "STOCK"];
+        Array.from(mainTableBody.rows).forEach(row => {
+            if (row.style.display !== 'none') {
+                const c = row.cells;
+                data.push([c[0].innerText, c[1].innerText, c[2].innerText, c[5].innerText, c[4].innerText]);
+            }
+        });
+    }
+
+    // 5. Generar Tabla Programática
+    doc.autoTable({
+        head: [columns],
+        body: data,
+        startY: 50,
+        theme: 'striped',
+        headStyles: { fillColor: [30, 41, 59], textColor: 255, fontSize: 10, halign: 'center' },
+        styles: { fontSize: 9, cellPadding: 4, halign: 'left' },
+        columnStyles: { 0: { fontStyle: 'bold' }, 4: { halign: 'right' } },
+        margin: { left: 15, right: 15 }
+    });
+
+    // 6. Pie de Página y Firmas
+    const finalY = doc.lastAutoTable.finalY + 20;
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text("ESTE DOCUMENTO ES UN COMPROBANTE OFICIAL DE CONTROL INTERNO.", 15, finalY);
+    doc.text(`FECHA DE EMISIÓN: ${new Date().toLocaleString()}`, 15, finalY + 5);
+    
+    // Línea de firma
+    doc.setDrawColor(0);
+    doc.line(130, finalY + 15, 180, finalY + 15);
+    doc.text("FIRMA AUTORIZADA", 140, finalY + 20);
+
+    // Finalizar
+    doc.save(`MACUIN_${contexto.toUpperCase()}_OFICIAL.pdf`);
+    if (loader) loader.style.display = 'none';
+    console.log("✅ Reporte Programático Generado Correctamente.");
+}
+
+function exportarExcel() {
+    if (typeof XLSX === 'undefined') {
+        alert("La librería para exportar a Excel no está cargada.");
+        return;
+    }
+    
+    // Verificamos si estamos en Logística, Almacén o Ventas
+    const isLogistica = !!document.getElementById('tabla-logistica-body');
+    const isAlmacen = !!document.getElementById('tabla-almacen-body');
+    
+    let ws_data = [];
+    let fileName = "Reporte";
+
+    if (isLogistica) {
+        fileName = "LOGISTICA";
+        ws_data.push(["Guía", "Destinatario", "Courier", "Estado", "Entrega Est."]);
+        
+        // Usar los datos de la ventana o intentar leer de la tabla si fallan los datos globales
+        const dataArr = window.logisticaData || [];
+        if (dataArr.length > 0) {
+            dataArr.forEach(l => {
+                ws_data.push([
+                    l.guia || l.id_pedido, 
+                    l.cliente || l.destino || l.nombre, 
+                    l.courier || l.paqueteria || "Pendiente", 
+                    l.estado || "Recibido", 
+                    l.entrega_estimada || l.fecha || "Pendiente"
+                ]);
+            });
+        } else {
+            // Fallback: leer de la tabla física
+            const tableRows = document.querySelectorAll('#tabla-logistica-body tr');
+            tableRows.forEach(row => {
+                const cells = row.cells;
+                if (cells.length >= 6) {
+                    ws_data.push([
+                        cells[0].innerText.trim(),
+                        cells[1].innerText.trim(),
+                        cells[2].innerText.trim(),
+                        cells[4].innerText.trim(),
+                        cells[5].innerText.trim()
+                    ]);
+                }
+            });
+        }
+    } else if (isAlmacen) {
+        fileName = "ALMACEN";
+        ws_data.push(["SKU", "Pieza", "Categoría", "Stock", "Precio"]);
+        (window.inventarioData || []).forEach(i => {
+            ws_data.push([`#${i.id_puro}`, i.pieza, i.categoria, i.stock, i.precio]);
+        });
+    } else {
+        fileName = "VENTAS";
+        ws_data.push(["Folio", "Cliente", "Piezas", "Fecha", "Total", "Estatus"]);
+        (window.ventasData || []).forEach(v => {
+            ws_data.push([v.id, v.cliente, v.piezas, v.fecha, v.total, v.estatus]);
+        });
+    }
+    
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    XLSX.utils.book_append_sheet(wb, ws, fileName);
+    XLSX.writeFile(wb, `REPORTE_MACUIN_${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+// ================================================================
+// SISTEMA DE NOTIFICACIONES DINÁMICAS
+// ================================================================
+
+function toggleNotificaciones() {
+    const dropdown = document.getElementById('notif-dropdown');
+    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+}
+
+function inicializarNotificaciones() {
+    const list = document.getElementById('notif-list');
+    const badge = document.getElementById('notif-badge');
+    if (!list || !badge) return;
+
+    list.innerHTML = '';
+    let count = 0;
+
+    // 1. Alertas de Stock Bajo (Stock < 5)
+    const stockBajoItems = (window.inventarioData || []).filter(item => parseInt(item.stock) < 5);
+    stockBajoItems.forEach(item => {
+        count++;
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'notif-item';
+        itemDiv.onclick = () => irAAccion('almacen', item.id_puro);
+        itemDiv.innerHTML = `
+            <div class="notif-icon icon-stock"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="notif-body">
+                <span class="notif-msg">Stock Bajo: ${item.pieza}</span>
+                <span class="notif-time">Quedan: ${item.stock} pzas</span>
+            </div>`;
+        list.appendChild(itemDiv);
+    });
+
+    // 2. Avisos de Nuevos Pedidos (Estado 1 - Recibido)
+    const nuevosPedidos = (window.logisticaData || []).filter(p => p.id_estado == 1 || p.estado === "Recibido");
+    nuevosPedidos.forEach(pedido => {
+        count++;
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'notif-item';
+        itemDiv.onclick = () => irAAccion('logistica', pedido.id_pedido);
+        itemDiv.innerHTML = `
+            <div class="notif-icon icon-order"><i class="fas fa-shopping-cart"></i></div>
+            <div class="notif-body">
+                <span class="notif-msg">Pedido Nuevo #${pedido.id_pedido}</span>
+                <span class="notif-time">${pedido.cliente || 'Pendiente'}</span>
+            </div>`;
+        list.appendChild(itemDiv);
+    });
+
+    badge.innerText = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+    
+    // Actualizar también los números del Dashboard si existen
+    const dashboardAvisos = document.querySelector('.hero-welcome p + div div:nth-child(1) p');
+    if (dashboardAvisos) dashboardAvisos.innerText = `${nuevosPedidos.length} Pedidos en espera`;
+    
+    const dashboardAlertas = document.querySelector('.hero-welcome p + div div:nth-child(2) p');
+    if (dashboardAlertas) dashboardAlertas.innerText = `${stockBajoItems.length} Piezas en stock bajo`;
+
+    if (count === 0) list.innerHTML = '<div class="notif-empty" style="padding:20px; text-align:center; color:#94a3b8;">No hay avisos hoy</div>';
+}
+
+function irAAccion(modulo, id) {
+    const currentLoc = window.location.pathname;
+    
+    if ((modulo === 'almacen' && currentLoc.includes('/almacen')) || 
+        (modulo === 'logistica' && currentLoc.includes('/logistica'))) {
+        ejecutarResaltado(modulo, id);
+    } else {
+        // Guardar en sessionStorage y navegar
+        sessionStorage.setItem('pendingAction', JSON.stringify({ modulo, id }));
+        window.location.href = `/${modulo}`;
     }
 }
 
+function ejecutarResaltado(modulo, id) {
+    if (modulo === 'almacen') {
+        renderAlmacen(); // Asegurar que esté renderizado
+        setTimeout(() => {
+            const rows = document.querySelectorAll('#tabla-almacen-body tr');
+            rows.forEach(row => {
+                if (row.innerHTML.includes(id)) {
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    row.style.backgroundColor = '#fff3cd';
+                    setTimeout(() => row.style.backgroundColor = '', 3000);
+                }
+            });
+        }, 500);
+    } else {
+        // En logística, abrir el modal de estado
+        const row = document.getElementById(`row-pedido-${id}`);
+        if (row) {
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.style.backgroundColor = '#f0f9ff';
+            setTimeout(() => row.style.backgroundColor = '', 3000);
+            abrirAsignarPaqueteriaRapida(id); // Función ya existente
+        }
+    }
+}
+
+// Check for pending actions on load
+window.addEventListener('DOMContentLoaded', () => {
+    const pending = sessionStorage.getItem('pendingAction');
+    if (pending) {
+        const { modulo, id } = JSON.parse(pending);
+        sessionStorage.removeItem('pendingAction');
+        setTimeout(() => ejecutarResaltado(modulo, id), 800);
+    }
+});
+
+// ================================================================
+function ordenarAlmacen(criterio) {
+    if (!window.inventarioData) {
+        console.error("No hay datos de inventario disponibles.");
+        return;
+    }
+    
+    // 1. Clonar y ordenar los datos
+    let sortedData = [...window.inventarioData];
+    if (criterio === 'asc') {
+        sortedData.sort((a, b) => (parseInt(a.stock) || 0) - (parseInt(b.stock) || 0));
+    } else if (criterio === 'desc') {
+        sortedData.sort((a, b) => (parseInt(b.stock) || 0) - (parseInt(a.stock) || 0));
+    }
+
+    // 2. IMPORTANTE: Actualizar la referencia local para que la paginación use el nuevo orden
+    window.inventarioGlobalSorted = sortedData;
+    paginaActualAlmacen = 1; // Reiniciar a la primera página
+    
+    console.log(`Ordenando almacén por: ${criterio}`);
+    renderAlmacen();
+}
+
+function marcarComoVisto() {
+    const badge = document.getElementById('notif-badge');
+    badge.style.display = 'none';
+    alert("Notificaciones marcadas como leídas.");
+}
+
+// ================================================================
+// SISTEMA DE NAVEGACIÓN RÁPIDA (Modules Dropdown)
+// ================================================================
+
+function toggleNavMenu(event) {
+    if (event) event.stopPropagation();
+    const dropdown = document.querySelector('.nav-dropdown-content');
+    if (dropdown) {
+        dropdown.classList.toggle('active');
+    }
+}
+
+// Llamar al cargar
+window.addEventListener('DOMContentLoaded', () => {
+    inicializarNotificaciones();
+    
+    // Cerrar notificaciones y menú nav al hacer clic fuera
+    document.addEventListener('click', (e) => {
+        // Notificaciones
+        const wrapperNotif = document.querySelector('.notification-bell-wrapper');
+        const dropdownNotif = document.getElementById('notif-dropdown');
+        if (wrapperNotif && !wrapperNotif.contains(e.target)) {
+            if (dropdownNotif) dropdownNotif.style.display = 'none';
+        }
+
+        // Menú Navegación
+        const wrapperNav = document.querySelector('.nav-dropdown-wrapper');
+        const dropdownNav = document.querySelector('.nav-dropdown-content');
+        if (wrapperNav && !wrapperNav.contains(e.target)) {
+            if (dropdownNav) dropdownNav.classList.remove('active');
+        }
+    });
+});
 
 // ================================================================
 // MÓDULO DE ALMACÉN (Inventario Inteligente)
 // ================================================================
 
-let inventarioData = window.inventarioData || [
-    { id: "SKU-9901", pieza: "Alternador Bosch", categoria: "Eléctrico", pasillo: "A-1", stock: 5, min: 10, precio: 2400 },
-    { id: "SKU-5520", pieza: "Bomba de Agua", categoria: "Motor", pasillo: "B-3", stock: 25, min: 15, precio: 850 },
-    { id: "SKU-1122", pieza: "Aceite Sintético 5W30", categoria: "Lubricantes", pasillo: "C-2", stock: 100, min: 20, precio: 180 },
-    { id: "SKU-8844", pieza: "Radiador de Aluminio", categoria: "Enfriamiento", pasillo: "A-4", stock: 3, min: 5, precio: 1950 }
-];
+let inventarioData = window.inventarioData || [];
+let paginaActualAlmacen = 1;
+const itemsPorPaginaAlmacen = 10;
 
 function renderAlmacen() {
     const tbody = document.getElementById("tabla-almacen-body");
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    if (!window.inventarioData) return;
+    // Usar datos ordenados si existen, de lo contrario los originales
+    const dataAlmacen = window.inventarioGlobalSorted || window.inventarioData || [];
 
-    window.inventarioData.forEach(item => {
-        let stockStatus = item.stock <= item.min ? 'badge-danger' : 'badge-success';
-        let stockIcon = item.stock <= item.min ? '<i class="fas fa-exclamation-triangle"></i> stock bajo: ' : '';
+    const isDark = document.body.classList.contains('theme-dark');
+    const textColor = isDark ? '#ffffff' : '#000000';
+    const borderColor = isDark ? '#333' : '#eee';
+
+    // Paginación lógica
+    const inicio = (paginaActualAlmacen - 1) * itemsPorPaginaAlmacen;
+    const fin = inicio + itemsPorPaginaAlmacen;
+    const dataPaginada = dataAlmacen.slice(inicio, fin);
+
+    dataPaginada.forEach(item => {
+        let stockVal = parseInt(item.stock) || 0;
+        let stockStatus = stockVal < 5 ? 'badge-danger' : 'badge-success';
+        let stockIcon = stockVal < 5 ? '<i class="fas fa-exclamation-triangle"></i> ' : '<i class="fas fa-check-circle"></i> ';
 
         tbody.innerHTML += `
-            <tr>
-                <td><strong>${item.id}</strong></td>
-                <td>${item.pieza}</td>
-                <td><span class="tag-categoria">${item.categoria}</span></td>
-                <td><i class="fas fa-map-marker-alt"></i> ${item.pasillo}</td>
-                <td><span class="badge ${stockStatus}">${stockIcon}${item.stock} unidades</span></td>
-                <td>$${item.precio.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                <td class="row-actions">
-                    <button class="icon-edit" onclick="ajustarStock('${item.id}', 1)" title="Entrada de Stock"><i class="fas fa-plus-circle"></i></button>
-                    <button class="icon-delete" onclick="ajustarStock('${item.id}', -1)" title="Salida de Stock"><i class="fas fa-minus-circle"></i></button>
-                    <button class="icon-view" onclick="editarPieza('${item.id}')" title="Configurar Producto"><i class="fas fa-cog"></i></button>
+            <tr style="border-bottom: 1px solid ${borderColor};">
+                <td style="color: ${textColor}; font-weight: 800;">#${item.id_puro || item.id_producto}</td>
+                <td style="color: ${textColor};">${item.pieza || item.nombre_producto}</td>
+                <td><span class="tag-categoria" style="color: ${textColor}; border: 1px solid ${isDark ? '#444' : '#ddd'};">${item.categoria || 'Repuestos'}</span></td>
+                <td style="color: ${textColor};"><i class="fas fa-map-marker-alt" style="opacity: 0.5;"></i> ${item.ubicacion || 'Cualquiera'}</td>
+                <td><span class="badge ${stockStatus}" style="border-radius: 4px; padding: 4px 10px; font-weight: 700;">${stockIcon}${stockVal}</span></td>
+                <td style="color: ${textColor}; font-weight: 700;">$${parseFloat(item.precio || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                <td class="row-actions" style="display:flex; gap:5px;">
+                    <button class="btn-action-sm" onclick="sumarUnoStock('${item.id_puro || item.id_producto}')" title="Agregar 1 Stock" style="background:#2ecc71; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;"><i class="fas fa-plus"></i></button>
+                    <button class="btn-action-sm" onclick="restarUnoStock('${item.id_puro || item.id_producto}')" title="Restar 1 Stock" style="background:#e67e22; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;"><i class="fas fa-minus"></i></button>
+                    <button class="btn-action-sm btn-edit-sm" onclick="handleInventorySelection('${item.id_puro || item.id_producto}', 'edit')" title="Editar"><i class="fas fa-edit"></i></button>
                 </td>
             </tr>
         `;
     });
-    actualizarKPIsAlmacen();
+    renderPaginacionAlmacen();
+}
+
+function renderPaginacionAlmacen() {
+    const container = document.getElementById("paginacion-almacen");
+    if (!container) return;
+    container.innerHTML = "";
+    
+    const paginasTotales = Math.ceil(inventarioData.length / itemsPorPaginaAlmacen);
+    if (paginasTotales <= 1) return;
+
+    // Contenedor de Estilo Premium
+    const nav = document.createElement("div");
+    nav.style.cssText = "display: flex; align-items: center; gap: 5px; background: #f8fafc; padding: 10px 20px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);";
+
+    // Etiqueta: Página X de Y
+    const label = document.createElement("span");
+    label.innerText = `Página ${paginaActualAlmacen} de ${paginasTotales}`;
+    label.style.cssText = "margin-right: 15px; font-size: 0.85rem; font-weight: 700; color: #64748b; background: white; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0;";
+    nav.appendChild(label);
+
+    const createBtn = (text, page, isActive = false, isDisabled = false) => {
+        const btn = document.createElement("button");
+        btn.innerText = text;
+        btn.disabled = isDisabled;
+        btn.style.cssText = `
+            min-width: 35px;
+            height: 35px;
+            padding: 0 10px;
+            border: 1px solid ${isActive ? '#3b82f6' : '#e2e8f0'};
+            border-radius: 6px;
+            background: ${isActive ? '#3b82f6' : 'white'};
+            color: ${isActive ? 'white' : '#1e293b'};
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: ${isDisabled ? 'default' : 'pointer'};
+            transition: all 0.2s;
+            opacity: ${isDisabled ? '0.5' : '1'};
+        `;
+        if (!isDisabled) {
+            btn.onmouseover = () => { if(!isActive) btn.style.background = "#f1f5f9"; };
+            btn.onmouseout = () => { if(!isActive) btn.style.background = "white"; };
+            btn.onclick = () => {
+                paginaActualAlmacen = page;
+                renderAlmacen();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+        }
+        return btn;
+    };
+
+    // Botón Inicio
+    nav.appendChild(createBtn("«", 1, false, paginaActualAlmacen === 1));
+
+    // Lógica de Números con Elipses
+    let range = [];
+    let delta = 2;
+    for (let i = Math.max(2, paginaActualAlmacen - delta); i <= Math.min(paginasTotales - 1, paginaActualAlmacen + delta); i++) {
+        range.push(i);
+    }
+
+    // Primera Página siempre visible
+    nav.appendChild(createBtn("1", 1, paginaActualAlmacen === 1));
+
+    if (range[0] > 2) {
+        const span = document.createElement("span");
+        span.innerText = "...";
+        span.style.cssText = "padding: 0 5px; color: #94a3b8;";
+        nav.appendChild(span);
+    }
+
+    range.forEach(i => {
+        nav.appendChild(createBtn(i.toString(), i, paginaActualAlmacen === i));
+    });
+
+    if (range[range.length - 1] < paginasTotales - 1) {
+        const span = document.createElement("span");
+        span.innerText = "...";
+        span.style.cssText = "padding: 0 5px; color: #94a3b8;";
+        nav.appendChild(span);
+    }
+
+    // Última Página siempre visible
+    if (paginasTotales > 1) {
+        nav.appendChild(createBtn(paginasTotales.toString(), paginasTotales, paginaActualAlmacen === paginasTotales));
+    }
+
+    // Botón Siguiente / Última
+    nav.appendChild(createBtn("»", Math.min(paginasTotales, paginaActualAlmacen + 1), false, paginaActualAlmacen === paginasTotales));
+    
+    const lastBtn = createBtn("Última »", paginasTotales, false, paginaActualAlmacen === paginasTotales);
+    lastBtn.style.minWidth = "auto";
+    nav.appendChild(lastBtn);
+
+    container.appendChild(nav);
+}
+
+async function sumarUnoStock(id) {
+    if(!id) return;
+    try {
+        const response = await fetch(`/almacen/ajustar/${id}/1`, { method: 'POST' });
+        const result = await response.json();
+        if (result.status === "success") {
+            const item = (window.inventarioData || []).find(i => i.id_puro == id);
+            if(item) {
+                item.stock = (parseInt(item.stock) || 0) + 1;
+                renderAlmacen(); // Actualización inmediata sin recarga
+            }
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function restarUnoStock(id) {
+    if(!id) return;
+    try {
+        const response = await fetch(`/almacen/ajustar/${id}/-1`, { method: 'POST' });
+        const result = await response.json();
+        if (result.status === "success") {
+            const item = (window.inventarioData || []).find(i => i.id_puro == id);
+            if(item && item.stock > 0) {
+                item.stock = (parseInt(item.stock) || 0) - 1;
+                renderAlmacen(); // Actualización inmediata sin recarga
+            }
+        }
+    } catch (e) { console.error(e); }
+}
+
+/**
+ * Filtro Maestro para Almacén (LA LUPITA)
+ */
+function filtrarAlmacen() {
+    const filter = (document.getElementById("buscador-almacen")?.value || "").toLowerCase();
+    const tbody = document.getElementById("tabla-almacen-body");
+    if(!tbody) return;
+    const trs = tbody.getElementsByTagName("tr");
+
+    for (let i = 0; i < trs.length; i++) {
+        const tr = trs[i];
+        tr.style.display = tr.textContent.toLowerCase().includes(filter) ? "" : "none";
+    }
 }
 
 function actualizarKPIsAlmacen() {
@@ -258,6 +1010,21 @@ function actualizarKPIsAlmacen() {
     document.getElementById("kpi-total-piezas").innerText = totalPiezas;
     document.getElementById("kpi-valor-total").innerText = `$${valorInventario.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
     document.getElementById("kpi-stock-bajo").innerText = stockBajo;
+}
+
+// Visualización de imagen en tiempo real
+function previewImage(input) {
+    const placeholder = document.getElementById('upload-placeholder');
+    const preview = document.getElementById('img-preview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
 }
 
 async function ajustarStock(id, cantidad) {
@@ -284,15 +1051,271 @@ async function ajustarStock(id, cantidad) {
     }
 }
 
-function filtrarAlmacen() {
-    let input = document.getElementById("buscador-almacen");
-    let filter = input.value.toLowerCase();
-    let tbody = document.getElementById("tabla-almacen-body");
-    let tr = tbody.getElementsByTagName("tr");
+async function guardarEntrada() {
+    const idPuro = document.getElementById("ent-id-puro").value;
+    const cantidadStr = document.getElementById("ent-cantidad").value;
+    const tipo = parseInt(document.getElementById("ent-tipo").value);
+    const cantidad = parseInt(cantidadStr);
+    
+    if (!idPuro) return alert("Por favor seleccione una refacción.");
+    if (isNaN(cantidad) || cantidad <= 0) return alert("Por favor ingrese una cantidad válida.");
 
-    for (let i = 0; i < tr.length; i++) {
-        let textValue = tr[i].textContent || tr[i].innerText;
-        tr[i].style.display = textValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+    const totalAjuste = cantidad * tipo;
+    
+    try {
+        const response = await fetch(`/almacen/ajustar/${idPuro}/${totalAjuste}`, { method: 'POST' });
+        const result = await response.json();
+        
+        if (result.status === "success") {
+            cerrarMasterModal();
+            location.reload(); 
+        } else {
+            alert("Error al procesar la entrada: " + result.message);
+        }
+    } catch (e) {
+        alert("Error de conexión al servidor.");
+    }
+}
+
+function abrirMasterModal() {
+    const modal = document.getElementById("modalAlmacen");
+    if (modal) {
+        handleInventorySelection('new'); // Predeterminado a nuevo
+        modal.style.display = "flex";
+    }
+}
+
+function cerrarMasterModal() {
+    const modal = document.getElementById("modalAlmacen");
+    if (modal) modal.style.display = "none";
+}
+
+function handleInventorySelection(id, forcedMode = null) {
+    const modeInput = document.getElementById("manage-mode");
+    const idInput = document.getElementById("manage-id");
+    const stockControl = document.getElementById("unified-stock-control");
+    const stockLabel = document.getElementById("unified-stock-label");
+    const mainBtn = document.getElementById("main-manage-btn");
+    const modalTitle = document.getElementById("modal-title");
+    const modalSubtitle = document.getElementById("modal-subtitle");
+    const modal = document.getElementById("modalAlmacen");
+
+    if (modal) modal.style.display = "flex";
+
+    document.getElementById("inventory-master-form").reset();
+    document.getElementById("unified-quantity").value = 0;
+    
+    let mode = forcedMode;
+    if (!mode) mode = (!id || id === 'new') ? 'new' : 'edit';
+
+    if (mode === 'new') {
+        modeInput.value = "new";
+        idInput.value = "";
+        
+        // MOSTRAR TODOS LOS CAMPOS SEGÚN SOLICITUD
+        const imgSec = document.getElementById("full-data-section-img");
+        const fieldsSec = document.getElementById("full-data-section-fields");
+        const descSec = document.getElementById("full-data-section-desc");
+        const gridContainer = imgSec ? imgSec.parentElement : null;
+
+        if(imgSec) imgSec.style.display = "flex";
+        if(fieldsSec) fieldsSec.style.display = "contents";
+        if(descSec) descSec.style.display = "block";
+        if(gridContainer) {
+            gridContainer.style.display = "grid";
+            gridContainer.style.gridTemplateColumns = "1fr 1.5fr";
+        }
+
+        if(stockControl) stockControl.style.display = "flex";
+        stockLabel.innerText = "Cantidad en Stock";
+        modalTitle.innerText = "Nueva Entrada";
+        modalSubtitle.innerText = "Complete todos los campos del catálogo maestro";
+        mainBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Registrar Nuevo Producto';
+        mainBtn.style.background = "linear-gradient(135deg, #e53935 0%, #b71c1c 100%)";
+        
+        const nombreField = document.getElementById("uni-nombre");
+        if(nombreField) {
+            nombreField.parentElement.style.display = "block";
+            nombreField.required = true;
+        }
+
+        document.getElementById("upload-placeholder").style.display = "flex";
+        document.getElementById("img-preview").style.display = "none";
+        document.getElementById("img-preview").src = "";
+    } 
+    else if (mode === 'adjust') {
+        // Modo Ajuste (+/-) - También simplificado
+        const imgSec = document.getElementById("full-data-section-img");
+        const fieldsSec = document.getElementById("full-data-section-fields");
+        const descSec = document.getElementById("full-data-section-desc");
+        const gridContainer = imgSec ? imgSec.parentElement : null;
+
+        if(imgSec) imgSec.style.display = "none";
+        if(fieldsSec) fieldsSec.style.display = "none";
+        if(descSec) descSec.style.display = "none";
+        if(gridContainer) {
+            gridContainer.style.gridTemplateColumns = "1fr";
+            gridContainer.style.display = "block";
+        }
+
+        modeInput.value = "adjust";
+        idInput.value = id;
+        stockControl.style.display = "flex";
+        stockLabel.innerText = "Cantidad a Sumar (+/-)";
+        modalTitle.innerText = "Ajuste de Existencias";
+        modalSubtitle.innerText = "Incremente o reduzca el stock rápidamente";
+        mainBtn.innerHTML = '<i class="fas fa-save"></i> Guardar Ajuste';
+        mainBtn.style.background = "#27ae60";
+
+        const item = (window.inventarioData || []).find(i => i.id_puro == id);
+        if (item) {
+            if(document.getElementById("current-stock-badge")) {
+                document.getElementById("current-stock-badge").innerText = item.stock;
+            }
+        }
+    }
+    else {
+        // Modo EDIT (Tuerca) - MOSTRAR TODO
+        const imgSec = document.getElementById("full-data-section-img");
+        const fieldsSec = document.getElementById("full-data-section-fields");
+        const descSec = document.getElementById("full-data-section-desc");
+        const gridContainer = imgSec ? imgSec.parentElement : null;
+
+        if(imgSec) imgSec.style.display = "flex";
+        if(fieldsSec) fieldsSec.style.display = "contents";
+        if(descSec) descSec.style.display = "block";
+        if(gridContainer) {
+            gridContainer.style.display = "grid";
+            gridContainer.style.gridTemplateColumns = "1fr 1.5fr";
+        }
+
+        modeInput.value = "update";
+        idInput.value = id;
+        stockControl.style.display = "none";
+        modalTitle.innerText = "Edición de Producto";
+        modalSubtitle.innerText = "Modo dinámico de operación maestra";
+        mainBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar Ficha Técnica';
+        mainBtn.style.background = "#1e293b";
+
+        const item = (window.inventarioData || []).find(i => i.id_puro == id);
+        if (item) {
+            document.getElementById("uni-nombre").value = item.pieza || "";
+            document.getElementById("uni-precio").value = item.precio || 0;
+            document.getElementById("uni-marca").value = item.marca || "";
+            document.getElementById("uni-modelo").value = item.modelo || "";
+            document.getElementById("uni-descripcion").value = item.descripcion || "";
+            
+            const preview = document.getElementById("img-preview");
+            const placeholder = document.getElementById("upload-placeholder");
+            if (item.imagen_url) {
+                preview.src = item.imagen_url;
+                preview.style.display = "block";
+                placeholder.style.display = "none";
+            } else {
+                preview.style.display = "none";
+                placeholder.style.display = "flex";
+            }
+        }
+    }
+}
+
+async function abrirAjusteRapido(id) {
+    const item = window.inventarioData.find(i => i.id_puro == id);
+    if (!item) return;
+
+    let cantidad = prompt(`Sumar stock a: ${item.pieza}\nExistencia actual: ${item.stock}\n\nIngrese la cantidad a SUMAR:`, "1");
+    
+    if (cantidad !== null && !isNaN(cantidad) && parseInt(cantidad) !== 0) {
+        const num = parseInt(cantidad);
+        try {
+            const response = await fetch(`/almacen/ajustar/${id}/${num}`, { method: 'POST' });
+            const result = await response.json();
+            if (result.status === "success") {
+                item.stock = result.data.nueva_cantidad;
+                renderAlmacen(); // Refrescar tabla inmediatamente
+            } else {
+                alert("Error al ajustar stock: " + result.message);
+            }
+        } catch (e) {
+            alert("Error de conexión.");
+        }
+    }
+}
+
+function changeUnifiedStock(delta) {
+    const input = document.getElementById("unified-quantity");
+    let val = parseInt(input.value) || 0;
+    input.value = val + delta;
+}
+
+function submitUnifiedInventory(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const mode = document.getElementById("manage-mode").value;
+    const id = document.getElementById("manage-id").value;
+
+    let url = "/almacen/nuevo";
+    if (mode === "update" || mode === "adjust") {
+        url = mode === "adjust" ? `/almacen/ajustar/${id}` : `/almacen/editar/${id}`;
+    }
+
+    fetch(url, {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message || "Operación exitosa");
+            location.reload(); 
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        // Fallback para demo si falla el backend
+        alert("Modo Demo: Se reflejarán cambios visuales.");
+        location.reload();
+    });
+}
+
+async function eliminarPieza(id, nombre) {
+    if (!confirm(`¿Estás COMPLETAMENTE SEGURO de eliminar "${nombre}"?\nEsta acción no se puede deshacer.`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/almacen/eliminar/${id}`, { method: 'POST' });
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            alert("Error al intentar eliminar el producto.");
+        }
+    } catch (e) {
+        alert("Error de conexión al servidor.");
+    }
+}
+
+// Unified logic replaces switchTab
+
+function setTipoMovimiento(tipo) {
+    const btnEntrada = document.getElementById("btn-tipo-entrada");
+    const btnSalida = document.getElementById("btn-tipo-salida");
+    const inputTipo = document.getElementById("ent-tipo");
+
+    inputTipo.value = tipo;
+    if (tipo === 1) {
+        btnEntrada.style.background = "#2ecc71";
+        btnEntrada.style.color = "white";
+        btnSalida.style.background = "transparent";
+        btnSalida.style.color = "#64748b";
+    } else {
+        btnSalida.style.background = "#e53935";
+        btnSalida.style.color = "white";
+        btnEntrada.style.background = "transparent";
+        btnEntrada.style.color = "#64748b";
     }
 }
 
@@ -303,7 +1326,6 @@ function editarPieza(id) {
     let nuevoPrecio = prompt(`Editando ${item.pieza}.\nIngrese el nuevo precio unitario:`, item.precio);
     
     if (nuevoPrecio !== null && !isNaN(nuevoPrecio)) {
-        // Usar un formulario dinámico para enviar la actualización y que Flask maneje el redirect/flash
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/almacen/editar/${idPuro}`;
@@ -319,21 +1341,6 @@ function editarPieza(id) {
     }
 }
 
-function abrirModalAlmacen() {
-    const modal = document.getElementById("modalPieza");
-    if(modal) modal.style.display = "flex";
-}
-
-function abrirModalAlmacen() {
-    const modal = document.getElementById("modalAlmacen");
-    if(modal) modal.style.display = "flex";
-}
-
-function cerrarModalAlmacen() {
-    const modal = document.getElementById("modalAlmacen");
-    if(modal) modal.style.display = "none";
-}
-
 
 // ================================================================
 // LÓGICA DE LOGÍSTICA (Envío y Rastreo - MACUIN Enterprise)
@@ -342,56 +1349,191 @@ function cerrarModalAlmacen() {
 let enviosData = window.logisticaData || [];
 
 function renderLogistica() {
-    const tbody = document.getElementById("tabla-logistica-body");
+    const list = window.logisticaData || [];
+    const tbody = document.getElementById('tabla-logistica-body');
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    enviosData.forEach(envio => {
-        let statusClass = "";
-        const statusLower = (envio.estado || "").toLowerCase();
-        
-        switch(statusLower) {
-            case "entregado": statusClass = "badge-success"; break;
-            case "enviado": 
-            case "en tránsito": statusClass = "badge-warning"; break;
-            case "preparando": 
-            case "pendiente": statusClass = "badge-info"; break;
-            case "cancelado": 
-            case "retrasado": statusClass = "badge-danger"; break;
-            default: statusClass = "badge-info";
+    const isDark = document.body.classList.contains('theme-dark');
+    const textColor = isDark ? '#ffffff' : '#000000';
+    const rowBg = isDark ? '#1a1a1a' : '#ffffff';
+    const borderColor = isDark ? '#333' : '#f1f5f9';
+
+    list.forEach(envio => {
+        let progreso = "5%";
+        let badgeColor = "#94a3b8"; 
+        let statusText = envio.estado;
+        let actions = "";
+
+        const idEst = envio.id_estado;
+
+        if (idEst === 1) {
+            progreso = "25%"; badgeColor = "#3498db"; 
+            actions = `<button onclick="actualizarEstadoLogistica(${envio.id_pedido}, 2)" class="btn-action" style="background:#e57373; color:white; border:none; padding:10px 18px; border-radius:10px; font-weight:700; cursor:pointer; box-shadow:0 4px 10px rgba(229,115,115,0.3);"><i class="fas fa-box-open"></i> Surtir</button>`;
+        } else if (idEst === 2) {
+            progreso = "50%"; badgeColor = "#f1c40f"; 
+            actions = `<button onclick="actualizarEstadoLogistica(${envio.id_pedido}, 3)" class="btn-action" style="background:#e57373; color:white; border:none; padding:10px 18px; border-radius:10px; font-weight:700; cursor:pointer; box-shadow:0 4px 10px rgba(229,115,115,0.3);"><i class="fas fa-truck-ramp-box"></i> Despachar</button>`;
+        } else if (idEst === 3) {
+            progreso = "75%"; badgeColor = "#9b59b6"; 
+            actions = `<button onclick="actualizarEstadoLogistica(${envio.id_pedido}, 4)" class="btn-action" style="background:#e57373; color:white; border:none; padding:10px 18px; border-radius:10px; font-weight:700; cursor:pointer; box-shadow:0 4px 10px rgba(229,115,115,0.3);"><i class="fas fa-check-double"></i> Entregar</button>`;
+        } else if (idEst === 4) {
+            progreso = "100%"; badgeColor = "#2ecc71"; 
+            actions = `<span style="color:#2ecc71; font-weight:800; font-size:1.1rem;"><i class="fas fa-circle-check"></i> Finalizado</span>`;
+        } else {
+            progreso = "0%"; badgeColor = "#e74c3c"; 
+            actions = `<span style="color:#e74c3c; font-weight:800;"><i class="fas fa-ban"></i> Cancelado</span>`;
         }
-        
-        // Calcular progreso simulado basado en estado si no existe
-        let autoProgreso = 10;
-        if (statusLower === "entregado") autoProgreso = 100;
-        else if (statusLower === "enviado" || statusLower === "en tránsito") autoProgreso = 60;
-        else if (statusLower === "surtido") autoProgreso = 30;
 
         tbody.innerHTML += `
-            <tr>
-                <td><strong>#${envio.guia}</strong></td>
-                <td>${envio.destino || envio.cliente}</td>
-                <td><i class="fas fa-shipping-fast"></i> ${envio.courier}</td>
-                <td style="width: 180px;">
-                    <div style="background:#eee; border-radius:10px; height:8px; overflow:hidden; margin-bottom: 4px;">
-                        <div style="background:#3498db; height:100%; width:${envio.progreso || autoProgreso}%; transition: width 0.5s ease;"></div>
-                    </div>
-                    <small style="font-weight: bold; color: #555;">${envio.progreso || autoProgreso}% completado</small>
+            <tr style="border-bottom: 2px solid ${borderColor}; transition: all 0.2s; background: ${rowBg};">
+                <td style="padding: 15px 15px;">
+                    <div style="font-weight: 900; color: ${textColor}; font-size: 1rem;">#${envio.guia}</div>
                 </td>
-                <td><span class="badge ${statusClass}">${envio.estado || envio.status}</span></td>
-                <td>${envio.fecha}</td>
-                <td class="row-actions">
-                    <button class="icon-view" onclick="rastrearPaquete('${envio.guia}')" title="Rastrear Ubicación">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </button>
-                    <button class="icon-edit" onclick="actualizarEstatus('${envio.guia}')" title="Actualizar Estado">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
+                <td style="padding: 15px 15px;">
+                    <div style="font-weight: 800; color: ${textColor}; font-size: 0.9rem;">${envio.destino}</div>
+                </td>
+                <td style="padding: 15px 15px;">
+                    <span style="font-size: 0.75rem; color: ${textColor}; font-weight:700;">${envio.courier}</span>
+                </td>
+                <td style="padding: 15px 15px; width: 120px;">
+                    <div style="background:${isDark?'#444':'#f1f5f9'}; border-radius:10px; height:8px; overflow:hidden;">
+                        <div style="background: ${badgeColor}; height:100%; width:${progreso}; transition: 0.5s;"></div>
+                    </div>
+                </td>
+                <td style="padding: 15px 15px;">
+                    <span style="font-size: 0.75rem; font-weight: 900; color: ${badgeColor}; border: 1px solid ${badgeColor}; padding: 2px 10px; border-radius: 12px; text-transform:uppercase;">${statusText}</span>
+                </td>
+                <td style="padding: 15px 15px; font-size: 0.85rem; color: ${textColor}; font-weight: 600;">
+                    ${envio.fecha || 'Pendiente'}
+                </td>
+                <td style="padding: 15px 15px; text-align: center;">
+                    <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                        <button class="btn-action" onclick="siguienteEtapaLogistica(${envio.id_pedido}, ${idEst})" title="Siguiente Etapa" style="background:#2c3e50; color:white; border:none; padding:8px; border-radius:8px; cursor:pointer;"><i class="fas fa-arrow-right"></i></button>
+                        <button class="btn-action" onclick="abrirAsignarPaqueteriaRapida(${envio.id_pedido})" title="Asignar Paquetería" style="background:#3498db; color:white; border:none; padding:8px; border-radius:8px; cursor:pointer;"><i class="fas fa-truck-fast"></i></button>
+                        <button class="icon-edit" onclick="verDetalleOrden('${envio.id_puro}')" title="Ver Pedido" style="background:none; border: 1px solid ${borderColor}; color:${textColor}; padding:8px; border-radius:8px; cursor:pointer;"><i class="fas fa-eye"></i></button>
+                        <button class="icon-edit" onclick="abrirEditarPedido('${envio.id_puro}')" title="Editar Pedido" style="background:none; border: 1px solid ${borderColor}; color:${textColor}; padding:8px; border-radius:8px; cursor:pointer;"><i class="fas fa-edit"></i></button>
+                        <button class="icon-delete" onclick="eliminarVenta('${envio.id_puro}')" title="Eliminar Pedido" style="background:none; border: 1px solid ${borderColor}; color:#e57373; padding:8px; border-radius:8px; cursor:pointer;"><i class="fas fa-trash-alt"></i></button>
+                    </div>
                 </td>
             </tr>
         `;
     });
     actualizarKPIsLogistica();
+}
+
+function filtrarLogistica() {
+    const filter = (document.getElementById("buscador-logistica")?.value || "").toLowerCase();
+    const tbody = document.getElementById("tabla-logistica-body");
+    if(!tbody) return;
+    const trs = tbody.getElementsByTagName("tr");
+
+    for (let i = 0; i < trs.length; i++) {
+        const tr = trs[i];
+        tr.style.display = tr.textContent.toLowerCase().includes(filter) ? "" : "none";
+    }
+}
+
+async function actualizarEstadoLogistica(idPedido, nuevoEstado) {
+    if (!idPedido) { alert("Error: ID de pedido no válido."); return; }
+    const labels = {
+        2: "RECIBIDO Y EN PREPARACIÓN",
+        3: "DESPACHADO Y ENVIADO",
+        4: "ENTREGADO FINAL"
+    };
+    
+    if (confirm(`¿Mover el pedido #${idPedido} a: ${labels[nuevoEstado]}?`)) {
+        try {
+            const formData = new FormData();
+            formData.append('id_estado', nuevoEstado);
+            
+            const response = await fetch(`/ventas/editar/${idPedido}`, {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            
+            if (result.status === "success") {
+                alert(`¡Operación Exitosa!\nEtapa de logística actualizada correctamente.`);
+                location.reload();
+            } else {
+                alert("Error: " + result.message);
+            }
+        } catch (e) {
+            alert("Error de conexión al procesar el flujo logístico.");
+        }
+    }
+}
+
+async function siguienteEtapaLogistica(idPedido, currentStatus) {
+    // Validar paquetería obligatoria (Requerimiento Usuario)
+    const envioObj = (window.logisticaData || []).find(e => e.id_pedido == idPedido);
+    if (!envioObj || !envioObj.courier || envioObj.courier.trim() === "" || envioObj.courier === "Pendiente" || envioObj.courier.includes("--")) {
+        alert("¡ATENCIÓN! Es obligatorio asignar una paquetería real antes de avanzar el estado del pedido.");
+        abrirAsignarPaqueteriaRapida(idPedido);
+        return;
+    }
+
+    if (currentStatus >= 4) { alert("El pedido ya está finalizado."); return; }
+    const nextStatus = currentStatus + 1;
+    await actualizarEstadoLogistica(idPedido, nextStatus);
+}
+
+async function abrirAsignarPaqueteriaRapida(idPedido) {
+    const modal = document.getElementById('modalAsignarCourier');
+    if (!modal) return;
+    
+    document.getElementById('courier-id-pedido').value = idPedido;
+    
+    // Tratamos de encontrar si ya tiene paquetería
+    const envioObj = (window.logisticaData || []).find(e => e.id_pedido == idPedido);
+    if (envioObj && envioObj.courier) {
+        const select = document.getElementById('courier-seleccion');
+        // Solo asignamos si existe en las opciones, si no que quede el placeholder
+        for (let i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === envioObj.courier) {
+                select.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    
+    modal.style.display = "flex";
+}
+
+async function guardarPaqueteriaRapida() {
+    const idPedido = document.getElementById('courier-id-pedido').value;
+    const paqueteria = document.getElementById('courier-seleccion').value;
+
+    if (!paqueteria) {
+        alert("Por favor selecciona una paquetería.");
+        return;
+    }
+
+    console.log(`📤 Enviando actualización JSON: Pedido #${idPedido} -> ${paqueteria}`);
+
+    try {
+        const response = await fetch(`/logistica/asignar_paqueteria/${idPedido}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ paqueteria: paqueteria })
+        });
+        const result = await response.json();
+        
+        if (result.status === "success") {
+            console.log("✅ Persistencia confirmada por el servidor.");
+            document.getElementById('modalAsignarCourier').style.display = 'none';
+            // Recarga para reflejar cambios en la tabla
+            location.reload();
+        } else {
+            console.error("❌ Fallo en persistencia:", result.message);
+            alert("Error: " + result.message);
+        }
+    } catch (e) {
+        console.error("❌ Error de red/servidor:", e);
+        alert("Error de conexión al asignar paquetería.");
+    }
 }
 
 function abrirModalLogistica() {
@@ -402,6 +1544,83 @@ function abrirModalLogistica() {
 function cerrarModalLogistica() {
     const modal = document.getElementById("modalLogistica");
     if(modal) modal.style.display = "none";
+}
+
+function guardarPaqueteria() {
+    const nombre = document.getElementById('paq-nombre').value;
+    const web = document.getElementById('paq-web').value;
+    const tel = document.getElementById('paq-tel').value;
+
+    if (!nombre) { alert("El nombre es obligatorio."); return; }
+    
+    // Simulación de éxito para demo (en producción iría un fetch POST /logistica/paqueteria)
+    alert(`¡Paquetería "${nombre}" registrada correctamente!`);
+    cerrarModalLogistica();
+    location.reload(); 
+}
+
+async function abrirEditarPedido(id) {
+    const modal = document.getElementById("modalEditarPedido");
+    if (!modal) return;
+    
+    // Iniciar loader o limpiar
+    if(document.getElementById("edit-folio-title")) document.getElementById("edit-folio-title").innerText = "Cargando...";
+    if(document.getElementById("edit-id-puro")) document.getElementById("edit-id-puro").value = id;
+
+    modal.style.display = "flex";
+
+    try {
+        const response = await fetch(`/ventas/detalle/${id}`);
+        const data = await response.json();
+
+        if (data && (data.id_pedido || data.id)) {
+            if(document.getElementById('edit-folio-title')) document.getElementById('edit-folio-title').innerText = data.id_pedido || data.id;
+            
+            // Llenar campos de envío
+            const envio = data.envio || data;
+            if(document.getElementById('edit-direccion')) document.getElementById('edit-direccion').value = envio.direccion || "";
+            if(document.getElementById('edit-ciudad')) document.getElementById('edit-ciudad').value = envio.ciudad || "";
+            if(document.getElementById('edit-cp')) document.getElementById('edit-cp').value = envio.codigo_postal || "";
+            if(document.getElementById('edit-telefono')) document.getElementById('edit-telefono').value = envio.telefono_contacto || envio.telefono || "";
+            if(document.getElementById('edit-notas')) document.getElementById('edit-notas').value = envio.notas || "";
+            
+            // Llenar datos expanded
+            const user = data.usuario || {};
+            if (document.getElementById('edit-cliente-nombre')) {
+                document.getElementById('edit-cliente-nombre').value = `${user.nombre || ""} ${user.apellido_paterno || ""}`.trim();
+            }
+            if (document.getElementById('edit-paqueteria')) {
+                document.getElementById('edit-paqueteria').value = envio.paqueteria || "MACUIN Fleet Management";
+            }
+
+            // Llenar productos
+            const container = document.getElementById('edit-productos-container');
+            if (container) {
+                container.innerHTML = "";
+                const productos = data.detalles || [];
+                if (productos.length === 0) {
+                    container.innerHTML = '<p style="font-size:0.75rem; color:#999;">Sin productos registrados</p>';
+                } else {
+                    productos.forEach(p => {
+                        container.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px; border-bottom:1px solid #eee; padding-bottom:2px; color: #000;">
+                            <span>${p.producto ? p.producto.nombre_producto : 'Producto #'+p.id_producto}</span>
+                            <span style="font-weight:700;">x${p.cantidad}</span>
+                        </div>`;
+                    });
+                }
+            }
+
+            // Llenar estado
+            document.getElementById('edit-estado').value = data.id_estado;
+
+            modal.style.display = "flex";
+        } else {
+            alert("No se pudieron cargar los datos del pedido.");
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Error al intentar cargar los detalles del pedido.");
+    }
 }
 
 function guardarDespacho() {
@@ -451,19 +1670,53 @@ function rastrearPaquete(guia) {
 }
 
 function actualizarKPIsLogistica() {
+    // Si el backend envió KPIs pre-calculados, usarlos (Phase 8 Expansion)
+    const k = window.kpisLogistica;
+    if (k && Object.keys(k).length > 0) {
+        // Globales
+        if(document.getElementById("kpi-transito")) document.getElementById("kpi-transito").innerText = k.transito || 0;
+        if(document.getElementById("kpi-entregados-mes")) document.getElementById("kpi-entregados-mes").innerText = k.completos || 0;
+        if(document.getElementById("kpi-cancelados-total")) document.getElementById("kpi-cancelados-total").innerText = k.total_cancelados || 0;
+
+        // Desglose
+        if(document.getElementById("kpi-recibido")) document.getElementById("kpi-recibido").innerText = k.recibido || 0;
+        if(document.getElementById("kpi-surtido")) document.getElementById("kpi-surtido").innerText = k.surtido || 0;
+        if(document.getElementById("kpi-enviado")) document.getElementById("kpi-enviado").innerText = k.transito || 0;
+        if(document.getElementById("kpi-completado")) document.getElementById("kpi-completado").innerText = k.completos || 0;
+        if(document.getElementById("kpi-cancelado")) document.getElementById("kpi-cancelado").innerText = k.cancelados || 0;
+        return;
+    }
+
     if (!document.getElementById("kpi-transito")) return;
-    document.getElementById("kpi-transito").innerText = enviosData.filter(e => e.status === "En Tránsito").length;
-    document.getElementById("kpi-despacho").innerText = enviosData.filter(e => e.status === "Preparando").length;
-    document.getElementById("kpi-entregados").innerText = enviosData.filter(e => e.status === "Entregado").length;
+    
+    let transito = 0, pendientes = 0, entregadosMes = 0, entregadosTotal = 0, canceladosMes = 0, canceladosTotal = 0;
+    const hoy = getFechaLocal();
+    const mesActual = hoy.substring(0, 7);
+
+    (window.logisticaData || []).forEach(envio => {
+        const idEst = parseInt(envio.id_estado);
+        if (idEst === 3) transito++;
+        if (idEst === 1 || idEst === 2) pendientes++;
+        
+        if (idEst === 4 || envio.estado === "Finalizado" || envio.estado === "Entregado") {
+            entregadosTotal++;
+            if (envio.fecha && envio.fecha.startsWith(mesActual)) entregadosMes++;
+        }
+        
+        if (idEst === 5 || envio.estado === "Cancelado") {
+            canceladosTotal++;
+            if (envio.fecha && envio.fecha.startsWith(mesActual)) canceladosMes++;
+        }
+    });
+
+    document.getElementById("kpi-transito").innerText = transito;
+    document.getElementById("kpi-pendientes").innerText = pendientes;
+    document.getElementById("kpi-entregados-mes").innerText = entregadosMes;
+    document.getElementById("kpi-entregados-total").innerText = entregadosTotal;
+    document.getElementById("kpi-cancelados-mes").innerText = canceladosMes;
+    document.getElementById("kpi-cancelados-total").innerText = canceladosTotal;
 }
 
-function filtrarLogistica() {
-    let filter = document.getElementById("buscador-logistica").value.toLowerCase();
-    let rows = document.getElementById("tabla-logistica-body").getElementsByTagName("tr");
-    for (let row of rows) {
-        row.style.display = row.textContent.toLowerCase().includes(filter) ? "" : "none";
-    }
-}
 
 
 // ================================================================
@@ -518,15 +1771,15 @@ function renderSuperAdmin() {
         
         tbody.innerHTML += `
             <tr>
-                <td><strong>${empresa.id}</strong></td>
-                <td>${empresa.nombre}</td>
-                <td><span class="tag-categoria">${empresa.plan}</span></td>
-                <td><i class="fas fa-users" style="color:#7f8c8d;"></i> ${empresa.usuarios}</td>
+                <td style="color: #000000; font-weight: 800;">${empresa.id}</td>
+                <td style="color: #000000;">${empresa.nombre}</td>
+                <td><span class="tag-categoria" style="background: transparent; color: #000; border: none; font-weight: 800;">${empresa.plan}</span></td>
+                <td style="color: #000000;"><i class="fas fa-users" style="color:#000000; opacity:0.6;"></i> ${empresa.usuarios}</td>
                 <td><span class="badge ${statusClass}">${empresa.estado}</span></td>
                 <td class="row-actions">
-                    <button class="icon-view" onclick="alert('Entrando al servidor de ${empresa.nombre} como SuperUsuario...')" title="Inspeccionar Empresa"><i class="fas fa-sign-in-alt"></i></button>
-                    <button class="icon-edit" onclick="alert('Modificando roles y permisos de ${empresa.nombre}')" title="Asignar Roles"><i class="fas fa-cogs"></i></button>
-                    <button class="icon-delete" onclick="alert('Suspendiendo servicio a ${empresa.nombre}')" title="Suspender Cuenta"><i class="fas fa-ban"></i></button>
+                    <button class="icon-view" onclick="alert('Iniciando sesión remota...')" title="Inspeccionar" style="color: #000000; border: 1px solid #ddd; border-radius: 4px; background: none; padding: 6px;"><i class="fas fa-sign-in-alt"></i></button>
+                    <button class="icon-edit" onclick="alert('Configurando roles...')" title="Roles" style="color: #000000; border: 1px solid #ddd; border-radius: 4px; background: none; padding: 6px;"><i class="fas fa-cogs"></i></button>
+                    <button class="icon-delete" onclick="alert('Suspendiendo servicio...')" title="Suspender" style="color: #000000; border: 1px solid #ddd; border-radius: 4px; background: none; padding: 6px;"><i class="fas fa-ban"></i></button>
                 </td>
             </tr>
         `;
@@ -596,7 +1849,9 @@ function renderTablaUsuarios() {
                 <td><span class="${badgeClass}">${usr.estado}</span></td>
                 <td>
                     <button style="background:none; border:none; color:#3498db; cursor:pointer; font-size: 1.1rem; margin-right: 15px;" title="Editar" onclick="abrirModalEditar('${usr.id}')"><i class="fas fa-edit"></i></button>
-                    <button style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size: 1.1rem;" title="Suspender/Activar" onclick="suspenderUsuario('${usr.id}')"><i class="fas fa-ban"></i></button>
+                    <button style="background:none; border:none; color:${usr.estado === 'Activo' ? '#e74c3c' : '#2ecc71'}; cursor:pointer; font-size: 1.1rem;" title="${usr.estado === 'Activo' ? 'Suspender' : 'Activar'}" onclick="suspenderUsuario(${usr.id_puro})">
+                        <i class="fas ${usr.estado === 'Activo' ? 'fa-user-slash' : 'fa-user-check'}"></i>
+                    </button>
                 </td>
             </tr>
         `;
@@ -664,6 +1919,29 @@ function guardarUsuarioMaster() {
     renderTablas();
 }
 
+function changeUnifiedStock(val) {
+    const input = document.getElementById("unified-quantity");
+    const current = parseInt(input.value) || 0;
+    input.value = current + val;
+}
+
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById("img-preview").src = e.target.result;
+            document.getElementById("img-preview").style.display = "block";
+            document.getElementById("upload-placeholder").style.display = "none";
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+
+function cerrarMasterModal() {
+    document.getElementById('modalAlmacen').style.display = 'none';
+}
+
 function abrirModalEditar(id) {
     const usuario = usuariosGlobales.find(u => u.id === id);
     if(usuario) {
@@ -692,13 +1970,13 @@ function guardarEdicionUsuario() {
     }
 }
 
-function suspenderUsuario(id) {
+function suspenderUsuario(id_puro) {
     if(confirm("¿Cambiar el estado de este usuario?")) {
-        const usuario = usuariosGlobales.find(u => u.id === id);
-        if(usuario) {
-            usuario.estado = usuario.estado === "Activo" ? "Suspendido" : "Activo";
-            renderTablas(); 
-        }
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/superadmin/toggle/${id_puro}`;
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 
@@ -742,9 +2020,38 @@ window.onload = function() {
     if (document.getElementById("tabla-body") && typeof renderTablas === 'function') {
         renderTablas();
     }
+    // ── Init Notifications ──
+    initNotifications();
+
     // ── Init bubble repel on cards ──
     initBubbleCards();
 };
+
+async function initNotifications() {
+    const badge = document.getElementById("notif-badge");
+    if (!badge) return;
+
+    try {
+        const response = await fetch('/v1/reportes/dashboard'); // Mock or real endpoint through Flask proxy if needed
+        const data = await response.json();
+        
+        // Si hay pedidos pendientes (status < 3)
+        const pendientes = data.pendientes_envio || 0;
+        if (pendientes > 0) {
+            badge.innerText = `${pendientes} NUEVOS`;
+            badge.style.display = "block";
+            
+            // Si estamos en la home, animar la tarjeta de logística
+            const card = document.getElementById("logistica-card");
+            if (card) {
+                card.style.border = "2px solid #e57373";
+                card.style.boxShadow = "0 0 15px rgba(229,115,115,0.3)";
+            }
+        }
+    } catch (e) {
+        console.warn("Notifications check failed (Check API connectivity)");
+    }
+}
 
 // ================================================================
 // BUBBLE REPEL CARD EFFECT

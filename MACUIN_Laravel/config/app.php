@@ -123,4 +123,14 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | API Gateway Configuration
+    |--------------------------------------------------------------------------
+    |
+    | External API end-points used by the Laravel consumer.
+    |
+    */
+    'api_url' => env('API_BASE_URL', 'http://macuin_api:8080'),
+
 ];

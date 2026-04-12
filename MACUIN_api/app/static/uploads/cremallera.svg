@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fce4e4"/>
+      <stop offset="100%" style="stop-color:#f8d7d7"/>
+    </linearGradient>
+    <linearGradient id="rack" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#666"/>
+      <stop offset="50%" style="stop-color:#999"/>
+      <stop offset="100%" style="stop-color:#666"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Cremallera cuerpo central -->
+  <rect x="100" y="175" width="200" height="50" rx="10" fill="url(#rack)" stroke="#555" stroke-width="2"/>
+  <!-- Barras laterales -->
+  <rect x="40" y="192" width="70" height="16" rx="4" fill="#888" stroke="#666" stroke-width="1.5"/>
+  <rect x="290" y="192" width="70" height="16" rx="4" fill="#888" stroke="#666" stroke-width="1.5"/>
+  <!-- Guardapolvos -->
+  <path d="M90,180 L100,175 L100,225 L90,220 Z" fill="#333"/>
+  <path d="M310,180 L300,175 L300,225 L310,220 Z" fill="#333"/>
+  <!-- Rótulas extremos -->
+  <circle cx="45" cy="200" r="10" fill="#777" stroke="#555" stroke-width="1.5"/>
+  <circle cx="355" cy="200" r="10" fill="#777" stroke="#555" stroke-width="1.5"/>
+  <!-- Conexiones hidráulicas -->
+  <rect x="160" y="160" width="12" height="20" rx="3" fill="#777"/>
+  <rect x="228" y="160" width="12" height="20" rx="3" fill="#777"/>
+  <!-- Soporte montaje -->
+  <rect x="140" y="225" width="30" height="25" rx="3" fill="#555"/>
+  <rect x="230" y="225" width="30" height="25" rx="3" fill="#555"/>
+  <circle cx="155" cy="242" r="5" fill="#888"/>
+  <circle cx="245" cy="242" r="5" fill="#888"/>
+</svg>

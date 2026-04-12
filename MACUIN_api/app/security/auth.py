@@ -1,30 +1,35 @@
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import HTTPException, status, Depends
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import hashlib
+import os
+import binascii
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.data.database import get_db
 from app.models.usuario import Usuario
-import os
 
-# Configuración JWT — igual que en myAPI_JWT pero con credenciales desde BD
-SECRET_KEY = os.getenv("SECRET_KEY", "macuin_clave_secreta_2024")
+# Configuración JWT
+SECRET_KEY = os.getenv("SECRET_KEY", "macuin_clave_secreta_204")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440 # 24 horas
 
-# Contexto para hashear contraseñas con bcrypt
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# Esquema OAuth2 — apunta al endpoint /token
+# Esquema OAuth2
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-
 def hashear_password(password: str) -> str:
-    return pwd_context.hash(password)
+    # Usar PBKDF2 con SHA256 manualmente para evitar bugs de passlib en este entorno
+    salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
+    pwdhash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+    pwdhash = binascii.hexlify(pwdhash)
+    return (salt + pwdhash).decode('ascii')
 
 def verificar_password(password_plano: str, password_hash: str) -> bool:
-    return pwd_context.verify(password_plano, password_hash)
+    # Verificar el hash generado por el método anterior
+    salt = password_hash[:64].encode('ascii')
+    stored_hash = password_hash[64:].encode('ascii')
+    pwdhash = hashlib.pbkdf2_hmac('sha256', password_plano.encode('utf-8'), salt, 100000)
+    return binascii.hexlify(pwdhash) == stored_hash
 
 def crear_token(datos: dict) -> str:
     datos_token = datos.copy()
@@ -33,7 +38,6 @@ def crear_token(datos: dict) -> str:
     return jwt.encode(datos_token, SECRET_KEY, algorithm=ALGORITHM)
 
 def verificar_token(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    """Decodifica el JWT y retorna el usuario autenticado. Se usa como Depends() en los endpoints protegidos."""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         correo: str = payload.get("sub")

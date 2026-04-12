@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Cuerpo bomba -->
+  <ellipse cx="200" cy="180" rx="80" ry="70" fill="#555" stroke="#444" stroke-width="2"/>
+  <ellipse cx="200" cy="175" rx="70" ry="60" fill="#666"/>
+  <!-- Polea -->
+  <circle cx="200" cy="175" r="40" fill="#777" stroke="#666" stroke-width="2"/>
+  <circle cx="200" cy="175" r="30" fill="#888"/>
+  <circle cx="200" cy="175" r="10" fill="#999"/>
+  <!-- Ranuras polea -->
+  <circle cx="200" cy="175" r="35" fill="none" stroke="#777" stroke-width="1.5"/>
+  <!-- Depósito -->
+  <rect x="240" y="120" width="50" height="70" rx="8" fill="#444" stroke="#333" stroke-width="2"/>
+  <rect x="248" y="125" width="34" height="30" rx="3" fill="#555"/>
+  <rect x="245" y="112" width="40" height="12" rx="4" fill="#333"/>
+  <!-- Conexiones -->
+  <rect x="140" y="160" width="15" height="10" rx="2" fill="#888"/>
+  <rect x="140" y="185" width="15" height="10" rx="2" fill="#888"/>
+  <!-- Soporte -->
+  <rect x="175" y="245" width="50" height="15" rx="3" fill="#555"/>
+  <circle cx="190" cy="252" r="5" fill="#888"/>
+  <circle cx="210" cy="252" r="5" fill="#888"/>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#fce4e4"/><stop offset="100%" style="stop-color:#f8d7d7"/></linearGradient>
+    <linearGradient id="carbon" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#333"/><stop offset="50%" style="stop-color:#444"/><stop offset="100%" style="stop-color:#333"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="20" fill="url(#bg)"/>
+  <!-- Spoiler trasero -->
+  <!-- Vista lateral -->
+  <path d="M60,220 L80,180 Q200,140 320,180 L340,220 Z" fill="url(#carbon)" stroke="#222" stroke-width="2"/>
+  <!-- Superficie superior -->
+  <path d="M80,180 Q200,140 320,180 Q200,170 80,180" fill="#444" stroke="#333" stroke-width="1"/>
+  <!-- Labio -->
+  <path d="M65,220 Q200,230 335,220" fill="none" stroke="#555" stroke-width="2"/>
+  <!-- Soporte izquierdo -->
+  <rect x="110" y="220" width="15" height="50" rx="3" fill="#444" stroke="#333" stroke-width="1.5"/>
+  <rect x="105" y="265" width="25" height="10" rx="2" fill="#555"/>
+  <!-- Soporte derecho -->
+  <rect x="275" y="220" width="15" height="50" rx="3" fill="#444" stroke="#333" stroke-width="1.5"/>
+  <rect x="270" y="265" width="25" height="10" rx="2" fill="#555"/>
+  <!-- Detalle fibra de carbono -->
+  <line x1="120" y1="195" x2="130" y2="205" stroke="#3a3a3a" stroke-width="0.5"/>
+  <line x1="160" y1="188" x2="170" y2="198" stroke="#3a3a3a" stroke-width="0.5"/>
+  <line x1="200" y1="185" x2="210" y2="195" stroke="#3a3a3a" stroke-width="0.5"/>
+  <line x1="240" y1="188" x2="250" y2="198" stroke="#3a3a3a" stroke-width="0.5"/>
+  <line x1="280" y1="195" x2="290" y2="205" stroke="#3a3a3a" stroke-width="0.5"/>
+</svg>

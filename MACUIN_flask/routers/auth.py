@@ -30,27 +30,43 @@ def login_personal_interno():
                 
                 # Decodificar el JWT (base64) para obtener el rol sin dependencias extras
                 try:
-                    payload_b64 = access_token.split('.')[1]
+                    parts = access_token.split('.')
+                    if len(parts) != 3:
+                        raise Exception("JWT malformado")
+                        
+                    payload_b64 = parts[1]
                     # Corregir padding para base64
-                    payload_json = base64.b64decode(payload_b64 + '=' * (-len(payload_b64) % 4)).decode('utf-8')
+                    missing_padding = len(payload_b64) % 4
+                    if missing_padding:
+                        payload_b64 += '=' * (4 - missing_padding)
+                        
+                    payload_json = base64.b64decode(payload_b64).decode('utf-8')
                     payload = json.loads(payload_json)
-                    rol = payload.get('rol')
-                    nombre = payload.get('nombre')
-                    id_usuario = payload.get('id_usuario')
-                    session['rol'] = rol
+                    
+                    rol = payload.get('rol', 0)
+                    nombre = payload.get('nombre', 'Usuario')
+                    id_usuario = payload.get('id_usuario', 0)
+                    
+                    session['rol'] = int(rol)
                     session['nombre'] = nombre
                     session['id_usuario'] = id_usuario
-                except Exception:
+                except Exception as e:
+                    print(f"Error decodificando token: {e}")
                     rol = None
 
                 session['usuario'] = usuario
                 session['token'] = access_token
                 
-                if rol == 1:
+                if int(session.get('rol', 0)) == 1:
                     return redirect(url_for('views.superadmin'))
                 return redirect(url_for('views.dashboard'))
             else:
-                flash('Credenciales incorrectas o error en el servidor.', 'error')
+                if response and response.status_code == 401:
+                    flash('Credenciales incorrectas.', 'error')
+                elif response and response.status_code == 403:
+                    flash('Su cuenta está inactivada.', 'error')
+                else:
+                    flash('Error en el servidor de API.', 'error')
             
     return render_template('login_personal.html')
 
