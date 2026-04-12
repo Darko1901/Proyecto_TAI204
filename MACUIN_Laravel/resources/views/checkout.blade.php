@@ -79,7 +79,7 @@
 
                     <div class="form-group" style="margin-bottom:25px;">
                         <label style="font-weight:700; color:#444; margin-bottom:10px;"><i class="fas fa-phone" style="color:#b71c1c; margin-right:8px;"></i> TELÉFONO DE CONTACTO</label>
-                        <input type="tel" name="telefono_contacto" placeholder="Tu número de 10 dígitos" required value="{{ old('telefono_contacto', $usuario['telefono'] ?? '') }}" style="padding:15px; border-radius:10px; border:1px solid #ddd; width:100%;">
+                        <input type="tel" name="telefono_contacto" placeholder="Tu número de 10 dígitos" required maxlength="20" value="{{ old('telefono_contacto', $usuario['telefono'] ?? '') }}" style="padding:15px; border-radius:10px; border:1px solid #ddd; width:100%;">
                     </div>
                     
                     <div class="form-group" style="margin-bottom:35px;">

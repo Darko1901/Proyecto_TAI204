@@ -25,7 +25,14 @@ def hashear_password(password: str) -> str:
     return (salt + pwdhash).decode('ascii')
 
 def verificar_password(password_plano: str, password_hash: str) -> bool:
-    # Verificar el hash generado por el método anterior
+    # Soporte para hashes bcrypt legacy (formato $2b$ o $2a$)
+    if password_hash.startswith('$2b$') or password_hash.startswith('$2a$'):
+        try:
+            import bcrypt as _bcrypt
+            return _bcrypt.checkpw(password_plano.encode('utf-8'), password_hash.encode('utf-8'))
+        except Exception:
+            return False
+    # Verificar el hash PBKDF2 (formato actual)
     salt = password_hash[:64].encode('ascii')
     stored_hash = password_hash[64:].encode('ascii')
     pwdhash = hashlib.pbkdf2_hmac('sha256', password_plano.encode('utf-8'), salt, 100000)

@@ -28,8 +28,11 @@ def dashboard():
     token = session.get('token')
     # Datos para la campanita de notificaciones
     inventario_raw = fetch_data("/v1/autopartes/", token)
+    if inventario_raw == "__TOKEN_INVALIDO__":
+        session.clear()
+        return redirect(url_for('auth.login_personal_interno'))
     inventario = inventario_raw.get('items', []) if isinstance(inventario_raw, dict) else []
-    
+
     pedidos_raw = fetch_data("/v1/pedidos/", token)
     pedidos = pedidos_raw.get('items', []) if isinstance(pedidos_raw, dict) else (pedidos_raw if isinstance(pedidos_raw, list) else [])
     
@@ -81,6 +84,9 @@ def ventas():
     
     kpis = fetch_data("/v1/reportes/dashboard", session.get('token'))
     pedidos_data = fetch_data("/v1/pedidos/", session.get('token'))
+    if pedidos_data == "__TOKEN_INVALIDO__":
+        session.clear()
+        return redirect(url_for('auth.login_personal_interno'))
     ventas_list = []
     
     # pedidos_data puede ser Lista o Dict con 'items'
@@ -434,54 +440,46 @@ def logistica():
 
 @views_bp.route('/ventas/nueva', methods=['POST'])
 def nueva_venta():
-    if 'usuario' not in session: return "No autorizado", 401
-    
-    # Datos crudos del formulario (Phase 10 Persistence)
+    if 'usuario' not in session: return {"status": "error", "message": "No autorizado"}, 401
+
     try:
         data = request.get_json()
-        cliente = data.get('cliente')
-        piezas_raw = data.get('piezas', "") # Ej: "SKU-1, SKU-2"
-        total_venta = float(data.get('total', 0))
-        
-        # Para la Fase 10, mapeamos esto a un pedido con un ID de usuario ficticio (o el logueado)
-        # y datos de envío básicos.
-        
-        # Mapeo simple: Intentar extraer IDs numéricos de la cadena de piezas
-        import re
-        ids = re.findall(r'\d+', piezas_raw)
-        detalles = []
-        if ids:
-            qty_per_item = 1 # Por ahora 1 por simplificación
-            price_per_item = total_venta / len(ids)
-            for pid in ids:
-                detalles.append({
-                    "id_producto": int(pid),
-                    "cantidad": qty_per_item,
-                    "precio_unitario": price_per_item
-                })
-        else:
-            # Si no hay IDs, no podemos crear el pedido en el API (integridad)
-            return {"status": "error", "message": "No se encontraron IDs de productos válidos en el campo de piezas."}, 400
+        items = data.get('items', [])
 
+        if not items:
+            return {"status": "error", "message": "No hay productos en la venta."}, 400
+
+        detalles = []
+        for item in items:
+            precio = float(item.get('precio', 0))
+            if precio <= 0:
+                return {"status": "error", "message": f"Precio inválido para {item.get('nombre', 'producto')}."}, 400
+            detalles.append({
+                "id_producto": int(item['id_producto']),
+                "cantidad": int(item.get('cantidad', 1)),
+                "precio_unitario": precio
+            })
+
+        telefono = str(data.get('telefono', '0000000000'))[:20]
         payload = {
             "detalles": detalles,
-            "direccion": "Venta de Mostrador / " + cliente,
-            "ciudad": "Local",
-            "codigo_postal": "00000",
-            "telefono_contacto": "000-000-0000",
-            "notas": "Registrado desde Módulo de Ventas"
+            "direccion": data.get('direccion', 'Venta de Mostrador'),
+            "ciudad": data.get('ciudad', 'Local'),
+            "codigo_postal": data.get('codigo_postal', '00000'),
+            "telefono_contacto": telefono,
+            "notas": data.get('notas', 'Registrado desde Módulo de Ventas')
         }
-        
+
         response = post_data("/v1/pedidos/", payload, session.get('token'))
         if response and response.status_code == 201:
             return {"status": "success", "data": response.json()}
-        
+
         msg = "Error al crear pedido en API"
         if response:
             try: msg = response.json().get('detail', msg)
             except: pass
         return {"status": "error", "message": msg}, 500
-        
+
     except Exception as e:
         return {"status": "error", "message": str(e)}, 500
 

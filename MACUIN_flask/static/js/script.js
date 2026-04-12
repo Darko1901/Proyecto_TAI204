@@ -111,32 +111,71 @@ function abrirModalVenta(creandoNuevo = true) {
         listaItemsVenta = [];
         renderListaItems();
         
-        // Poblar selector de piezas
-        const select = document.getElementById('select-pieza');
-        if (select && window.inventarioGlobal) {
-            select.innerHTML = '<option value="">-- Buscar SKU o Nombre --</option>';
-            window.inventarioGlobal.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id_puro;
-                opt.text = `${p.id} - ${p.pieza} ($${p.precio})`;
-                opt.dataset.precio = p.precio;
-                opt.dataset.nombre = p.pieza;
-                select.appendChild(opt);
-            });
-        }
+        // Limpiar búsqueda de piezas
+        const buscarInput = document.getElementById('buscar-pieza');
+        const hiddenSelect = document.getElementById('select-pieza');
+        if (buscarInput) buscarInput.value = '';
+        if (hiddenSelect) { hiddenSelect.value = ''; hiddenSelect.dataset.precio = ''; hiddenSelect.dataset.nombre = ''; }
+        ocultarDropdownPiezas();
     }
+}
+
+function filtrarPiezas(query) {
+    const dropdown = document.getElementById('dropdown-piezas');
+    if (!dropdown || !window.inventarioGlobal) return;
+
+    const q = query.trim().toLowerCase();
+    const resultados = q.length === 0
+        ? window.inventarioGlobal.slice(0, 50)
+        : window.inventarioGlobal.filter(p =>
+            (p.pieza || '').toLowerCase().includes(q) ||
+            (p.id || '').toString().toLowerCase().includes(q)
+          ).slice(0, 50);
+
+    if (resultados.length === 0) {
+        dropdown.innerHTML = '<div style="padding:10px; color:#94a3b8; font-size:0.85rem;">Sin resultados</div>';
+    } else {
+        dropdown.innerHTML = resultados.map(p => `
+            <div onclick="seleccionarPieza('${p.id_puro}', '${(p.pieza||'').replace(/'/g,"\\'")}', ${p.precio})"
+                style="padding:10px 12px; cursor:pointer; font-size:0.85rem; font-weight:600; border-bottom:1px solid #f1f5f9;"
+                onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='white'">
+                <span style="color:#64748b; font-size:0.75rem;">${p.id} &nbsp;|&nbsp;</span>${p.pieza}
+                <span style="float:right; color:#2ecc71; font-weight:800;">$${parseFloat(p.precio).toLocaleString()}</span>
+            </div>
+        `).join('');
+    }
+    dropdown.style.display = 'block';
+}
+
+function seleccionarPieza(id, nombre, precio) {
+    const buscarInput = document.getElementById('buscar-pieza');
+    const hiddenSelect = document.getElementById('select-pieza');
+    if (buscarInput) buscarInput.value = nombre;
+    if (hiddenSelect) {
+        hiddenSelect.value = id;
+        hiddenSelect.dataset.precio = precio;
+        hiddenSelect.dataset.nombre = nombre;
+    }
+    ocultarDropdownPiezas();
+}
+
+function ocultarDropdownPiezas() {
+    const dropdown = document.getElementById('dropdown-piezas');
+    if (dropdown) dropdown.style.display = 'none';
 }
 
 function agregarPiezaALista() {
     const select = document.getElementById('select-pieza');
     const inputCant = document.getElementById('input-cantidad');
-    if (!select.value) return;
+    if (!select || !select.value) {
+        alert("Selecciona una pieza primero.");
+        return;
+    }
 
     const id = select.value;
     const cant = parseInt(inputCant.value) || 0;
-    const opt = select.options[select.selectedIndex];
-    const precio = parseFloat(opt.dataset.precio);
-    const nombre = opt.dataset.nombre;
+    const precio = parseFloat(select.dataset.precio);
+    const nombre = select.dataset.nombre;
 
     if (cant <= 0) return;
 
@@ -156,6 +195,12 @@ function agregarPiezaALista() {
 
     renderListaItems();
     inputCant.value = 1;
+    // Reset search input
+    const buscarInput = document.getElementById('buscar-pieza');
+    if (buscarInput) buscarInput.value = '';
+    select.value = '';
+    select.dataset.precio = '';
+    select.dataset.nombre = '';
 }
 
 function eliminarPieza(index) {
@@ -212,7 +257,7 @@ async function guardarVenta() {
     };
 
     try {
-        const response = await fetch('/ventas/registrar', {
+        const response = await fetch('/ventas/nueva', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -2023,8 +2068,6 @@ window.onload = function() {
     // ── Init Notifications ──
     initNotifications();
 
-    // ── Init bubble repel on cards ──
-    initBubbleCards();
 };
 
 async function initNotifications() {
@@ -2053,59 +2096,3 @@ async function initNotifications() {
     }
 }
 
-// ================================================================
-// BUBBLE REPEL CARD EFFECT
-// ================================================================
-function spawnBubble(card, x, y) {
-    const b = document.createElement('span');
-    b.classList.add('card-bubble');
-
-    // Random size 4–10px
-    const size = Math.random() * 6 + 4;
-    b.style.width  = size + 'px';
-    b.style.height = size + 'px';
-
-    // Position relative to the card
-    const rect = card.getBoundingClientRect();
-    b.style.left = (x - rect.left) + 'px';
-    b.style.top  = (y - rect.top)  + 'px';
-
-    // Direction away from cursor (random arc, mostly outward)
-    const angle  = Math.random() * 2 * Math.PI;
-    const dist   = Math.random() * 60 + 30;
-    const tx     = Math.cos(angle) * dist;
-    const ty     = Math.sin(angle) * dist;
-
-    b.style.setProperty('--tx', tx + 'px');
-    b.style.setProperty('--ty', ty + 'px');
-
-    card.appendChild(b);
-
-    // Remove after animation completes
-    setTimeout(() => b.remove(), 900);
-}
-
-function initBubbleCards() {
-    const selectors = [
-        '.stat-card', '.card-premium', '.kpi-card',
-        '.module-card', '.card'
-    ];
-
-    selectors.forEach(sel => {
-        document.querySelectorAll(sel).forEach(card => {
-            // Ensure card has position relative for bubbles
-            if (getComputedStyle(card).position === 'static') {
-                card.style.position = 'relative';
-            }
-            card.style.overflow = 'hidden';
-
-            let throttle = false;
-            card.addEventListener('mousemove', (e) => {
-                if (throttle) return;
-                throttle = true;
-                spawnBubble(card, e.clientX, e.clientY);
-                setTimeout(() => { throttle = false; }, 80);
-            });
-        });
-    });
-}

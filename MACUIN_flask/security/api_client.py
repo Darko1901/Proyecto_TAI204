@@ -24,6 +24,8 @@ def fetch_data(endpoint, token):
             headers=get_api_headers(token),
             timeout=5
         )
+        if response.status_code == 401:
+            return "__TOKEN_INVALIDO__"
         return response.json() if response.status_code == 200 else []
     except:
         return []

@@ -24,7 +24,7 @@ def login_personal_interno():
             
         if usuario and contrasena:
             response = login_api(usuario, contrasena)
-            if response and response.status_code == 200:
+            if response is not None and response.status_code == 200:
                 token_data = response.json()
                 access_token = token_data.get('access_token')
                 
@@ -61,12 +61,12 @@ def login_personal_interno():
                     return redirect(url_for('views.superadmin'))
                 return redirect(url_for('views.dashboard'))
             else:
-                if response and response.status_code == 401:
+                if response is not None and response.status_code == 401:
                     flash('Credenciales incorrectas.', 'error')
-                elif response and response.status_code == 403:
+                elif response is not None and response.status_code == 403:
                     flash('Su cuenta está inactivada.', 'error')
                 else:
-                    flash('Error en el servidor de API.', 'error')
+                    flash('Error de conexión con el servidor.', 'error')
             
     return render_template('login_personal.html')
 

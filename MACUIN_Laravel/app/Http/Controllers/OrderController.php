@@ -94,7 +94,7 @@ class OrderController extends Controller
             'direccion' => $request->direccion,
             'ciudad' => $request->ciudad,
             'codigo_postal' => $request->codigo_postal,
-            'telefono_contacto' => $request->telefono_contacto,
+            'telefono_contacto' => substr($request->telefono_contacto ?? '0000000000', 0, 20),
             'notas' => "[PAGO: " . strtoupper($metodo) . "] " . ($request->referencias ?? ''),
             'metodo_pago' => $metodo // Pasamos esto para que la vista de confirmación lo tenga
         ];

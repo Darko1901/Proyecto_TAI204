@@ -46,7 +46,11 @@ Route::get('/carrito', function () {
 
 Route::get('/checkout', function () {
     if (!session()->has('token')) return redirect()->route('login');
-    return view('checkout');
+    $token = session('token');
+    $response = \Illuminate\Support\Facades\Http::withToken($token)
+        ->get(env('API_BASE_URL', 'http://macuin_api:8080') . '/v1/usuarios/me');
+    $usuario = $response->successful() ? $response->json() : [];
+    return view('checkout', compact('usuario'));
 })->name('checkout');
 
 Route::post('/pedido/crear', [OrderController::class, 'checkout'])->name('pedido.crear');

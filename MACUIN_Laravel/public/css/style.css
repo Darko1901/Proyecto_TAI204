@@ -31,6 +31,12 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+/* Pages with dashboard-header use flex column so footer stays at bottom */
+body:has(.dashboard-header) {
+    display: flex;
+    flex-direction: column;
+}
+
 .container {
     display: flex;
     height: 100vh;
@@ -308,8 +314,7 @@ body {
 
 .dashboard-content {
     padding: 40px;
-    overflow-y: auto;
-    height: calc(100vh - 80px);
+    flex: 1;
 }
 
 .dashboard-content h2 {
