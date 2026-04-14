@@ -51,7 +51,8 @@ async def crear_pedido(datos: PedidoCreate, db: Session = Depends(get_db), usuar
         ciudad=datos.ciudad,
         codigo_postal=datos.codigo_postal,
         telefono_contacto=datos.telefono_contacto,
-        notas=datos.notas
+        notas=datos.notas,
+        paqueteria=datos.paqueteria
     ))
 
     db.commit()

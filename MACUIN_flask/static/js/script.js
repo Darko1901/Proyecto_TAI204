@@ -35,6 +35,7 @@ function getFechaLocal() {
 // Datos iniciales simulados
 let modoEdicion = false;
 let ventasData = window.ventasData || [];
+let listaItemsVenta = [];
 
 // Dibuja la tabla de ventas en el HTML
 function renderTabla() {
@@ -125,26 +126,59 @@ function filtrarPiezas(query) {
     if (!dropdown || !window.inventarioGlobal) return;
 
     const q = query.trim().toLowerCase();
+    // Mostramos todos los productos que coincidan (o todo el catálogo si está vacío)
     const resultados = q.length === 0
-        ? window.inventarioGlobal.slice(0, 50)
+        ? window.inventarioGlobal
         : window.inventarioGlobal.filter(p =>
             (p.pieza || '').toLowerCase().includes(q) ||
             (p.id || '').toString().toLowerCase().includes(q)
-          ).slice(0, 50);
+          );
 
     if (resultados.length === 0) {
-        dropdown.innerHTML = '<div style="padding:10px; color:#94a3b8; font-size:0.85rem;">Sin resultados</div>';
+        dropdown.innerHTML = '<div style="padding:15px; text-align:center; color:#94a3b8; font-size:0.85rem;">No se encontraron piezas con ese nombre o SKU.</div>';
     } else {
         dropdown.innerHTML = resultados.map(p => `
             <div onclick="seleccionarPieza('${p.id_puro}', '${(p.pieza||'').replace(/'/g,"\\'")}', ${p.precio})"
-                style="padding:10px 12px; cursor:pointer; font-size:0.85rem; font-weight:600; border-bottom:1px solid #f1f5f9;"
-                onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='white'">
-                <span style="color:#64748b; font-size:0.75rem;">${p.id} &nbsp;|&nbsp;</span>${p.pieza}
-                <span style="float:right; color:#2ecc71; font-weight:800;">$${parseFloat(p.precio).toLocaleString()}</span>
+                style="padding:12px 15px; cursor:pointer; font-size:0.85rem; font-weight:600; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;"
+                onmouseover="this.style.background='#f8fafc'; this.style.color='#e57373'" onmouseout="this.style.background='white'; this.style.color='#1e293b'">
+                <div>
+                    <span style="color:#94a3b8; font-size:0.7rem; font-family:monospace;">[${p.id}]</span> 
+                    <span style="margin-left:5px;">${p.pieza}</span>
+                </div>
+                <span style="color:#10b981; font-weight:800;">$${parseFloat(p.precio).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
             </div>
         `).join('');
     }
     dropdown.style.display = 'block';
+}
+
+function toggleManualAjuste(isManual) {
+    const inputTotal = document.getElementById('venta-total');
+    const containerMotivo = document.getElementById('container-motivo');
+    
+    if (isManual) {
+        inputTotal.readOnly = false;
+        inputTotal.style.background = "white";
+        inputTotal.focus();
+        if(containerMotivo) containerMotivo.style.display = "block";
+    } else {
+        inputTotal.readOnly = true;
+        inputTotal.style.background = "#f8fafc";
+        if(containerMotivo) containerMotivo.style.display = "none";
+        calcularTotalVenta(); // Volver al cálculo automático
+    }
+}
+
+function calcularTotalVenta() {
+    let granTotal = 0;
+    listaItemsVenta.forEach(item => {
+        granTotal += (item.subtotal || 0);
+    });
+    
+    const inputTotal = document.getElementById('venta-total');
+    if (inputTotal) {
+        inputTotal.value = granTotal.toFixed(2);
+    }
 }
 
 function seleccionarPieza(id, nombre, precio) {
@@ -214,19 +248,22 @@ function renderListaItems() {
 
     if (listaItemsVenta.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 15px; color: #64748b;">No hay piezas añadidas</td></tr>';
-        document.getElementById('venta-total').value = "0.00";
+        const inputTotal = document.getElementById('venta-total');
+        if(inputTotal) inputTotal.value = "0.00";
         return;
     }
 
     tbody.innerHTML = '';
-    let granTotal = 0;
     listaItemsVenta.forEach((item, index) => {
-        granTotal += item.subtotal;
         tbody.innerHTML += `
             <tr style="border-bottom: 1px solid #eee;">
                 <td style="padding: 10px;">${item.nombre}</td>
-                <td style="padding: 10px; text-align: center;">${item.cantidad}</td>
-                <td style="padding: 10px; text-align: right; font-weight: 700;">$${item.subtotal.toLocaleString()}</td>
+                <td style="padding: 10px; text-align: center;">
+                    <input type="number" value="${item.cantidad}" min="1" 
+                        onchange="actualizarCantidad(${index}, this.value)"
+                        style="width: 60px; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px; font-weight: 700;">
+                </td>
+                <td style="padding: 10px; text-align: right; font-weight: 700;">$${item.subtotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                 <td style="padding: 10px; text-align: center;">
                     <button type="button" onclick="eliminarPieza(${index})" style="background: none; border: none; color: #e57373; cursor: pointer;">
                         <i class="fas fa-times"></i>
@@ -235,7 +272,26 @@ function renderListaItems() {
             </tr>
         `;
     });
-    document.getElementById('venta-total').value = granTotal.toFixed(2);
+    
+    // Solo recalculamos si no está en modo manual
+    const isManual = document.getElementById('ajuste-manual')?.checked;
+    if (!isManual) {
+        calcularTotalVenta();
+    }
+}
+
+function actualizarCantidad(index, nuevaCantidad) {
+    const cant = parseInt(nuevaCantidad) || 1;
+    if (cant <= 0) {
+        alert("La cantidad debe ser al menos 1");
+        renderListaItems();
+        return;
+    }
+    
+    listaItemsVenta[index].cantidad = cant;
+    listaItemsVenta[index].subtotal = cant * listaItemsVenta[index].precio;
+    
+    renderListaItems();
 }
 
 async function guardarVenta() {
@@ -244,16 +300,32 @@ async function guardarVenta() {
         return;
     }
 
+    const totalFinal = parseFloat(document.getElementById("venta-total").value) || 0;
+    const isManual = document.getElementById('ajuste-manual')?.checked;
+    const motivoManual = document.getElementById('motivo-manual')?.value.trim();
+
+    if (isManual && !motivoManual) {
+        alert("Atención: Es obligatorio ingresar el motivo del ajuste manual de precio.");
+        document.getElementById('motivo-manual').focus();
+        return;
+    }
+
+    let notasFinales = document.getElementById("venta-notes").value;
+    if (isManual) {
+        notasFinales += ` [AJUSTE MANUAL] Motivo: ${motivoManual}`;
+    }
+
     const payload = {
-        id_usuario: 1, // Por simplicidad para MVP o usar session info
+        id_usuario: 1, 
         cliente_nombre: document.getElementById("venta-cliente").value,
         direccion: document.getElementById("venta-direccion").value,
         codigo_postal: document.getElementById("venta-cp").value,
         ciudad: document.getElementById("venta-ciudad").value,
         telefono: document.getElementById("venta-telefono").value,
         paqueteria: document.getElementById("venta-paqueteria").value,
-        notas: document.getElementById("venta-notes").value,
-        items: listaItemsVenta // Mandamos el array completo
+        notas: notasFinales,
+        items: listaItemsVenta,
+        total_personalizado: totalFinal // Enviamos el total por si la API lo soporta o para tracking
     };
 
     try {
@@ -302,14 +374,27 @@ async function verDetalleOrden(idOguia) {
         if(document.getElementById("det-folio")) document.getElementById("det-folio").innerText = data.id_pedido || idPuro;
         
         const u = data.usuario || {};
-        const nombreFull = (u.nombre || u.apellido_paterno) ? `${u.nombre || ""} ${u.apellido_paterno || ""} ${u.apellido_materno || ""}`.trim() : "Cliente Local";
-        if(document.getElementById("det-cliente-nombre")) document.getElementById("det-cliente-nombre").innerText = nombreFull;
-        
-        if(document.getElementById("det-direccion")) document.getElementById("det-direccion").innerText = data.envio ? data.envio.direccion : (data.direccion || "Sucursal");
-        if(document.getElementById("det-ciudad")) document.getElementById("det-ciudad").innerText = data.envio ? data.envio.ciudad : (data.ciudad || "-");
-        if(document.getElementById("det-cp")) document.getElementById("det-cp").innerText = data.envio ? data.envio.codigo_postal : (data.codigo_postal || "-");
-        if(document.getElementById("det-telefono")) document.getElementById("det-telefono").innerText = data.envio ? data.envio.telefono_contacto : (data.telefono || "-");
-        if(document.getElementById("det-notas")) document.getElementById("det-notas").innerText = data.envio ? data.envio.notas || "Sin notas" : (data.notas || "Venta de mostrador");
+        let nombreMostrar = "Cliente Local";
+        if (u && (u.nombre || u.apellido_paterno)) {
+            nombreMostrar = `${u.nombre || ""} ${u.apellido_paterno || ""}`.trim();
+        }
+
+        const envio = data.envio || {};
+        let notasMostrar = envio.notas || data.notas || "Sin notas";
+
+        // Lógica de extracción del nombre si se guardó en notas (Hack de bajo impacto)
+        if (notasMostrar.startsWith("CLIENTE: ")) {
+            const parts = notasMostrar.split(" | ");
+            nombreMostrar = parts[0].replace("CLIENTE: ", "").trim();
+            notasMostrar = parts.length > 1 ? parts.slice(1).join(" | ") : "Sin notas adicionales";
+        }
+
+        if(document.getElementById("det-cliente-nombre")) document.getElementById("det-cliente-nombre").innerText = nombreMostrar;
+        if(document.getElementById("det-direccion")) document.getElementById("det-direccion").innerText = envio.direccion || data.direccion || "Sucursal";
+        if(document.getElementById("det-ciudad")) document.getElementById("det-ciudad").innerText = envio.ciudad || data.ciudad || "-";
+        if(document.getElementById("det-cp")) document.getElementById("det-cp").innerText = envio.codigo_postal || data.codigo_postal || "-";
+        if(document.getElementById("det-telefono")) document.getElementById("det-telefono").innerText = envio.telefono_contacto || data.telefono || "-";
+        if(document.getElementById("det-notas")) document.getElementById("det-notas").innerText = notasMostrar;
         
         if(document.getElementById("det-fecha")) document.getElementById("det-fecha").innerText = data.fecha_pedido ? new Date(data.fecha_pedido).toLocaleDateString() : "N/A";
         
@@ -1311,18 +1396,16 @@ function submitUnifiedInventory(event) {
     })
     .then(r => r.json())
     .then(data => {
-        if (data.success) {
-            alert(data.message || "Operación exitosa");
+        if (data.status === "success" || data.success) {
+            alert(data.message || "Operación realizada con éxito");
             location.reload(); 
         } else {
-            alert("Error: " + data.message);
+            alert("Error: " + (data.message || "No se pudo procesar la solicitud"));
         }
     })
     .catch(err => {
         console.error(err);
-        // Fallback para demo si falla el backend
-        alert("Modo Demo: Se reflejarán cambios visuales.");
-        location.reload();
+        alert("Error de conexión con el servidor maestro.");
     });
 }
 
@@ -1591,17 +1674,31 @@ function cerrarModalLogistica() {
     if(modal) modal.style.display = "none";
 }
 
-function guardarPaqueteria() {
+async function guardarPaqueteria() {
     const nombre = document.getElementById('paq-nombre').value;
     const web = document.getElementById('paq-web').value;
     const tel = document.getElementById('paq-tel').value;
 
     if (!nombre) { alert("El nombre es obligatorio."); return; }
     
-    // Simulación de éxito para demo (en producción iría un fetch POST /logistica/paqueteria)
-    alert(`¡Paquetería "${nombre}" registrada correctamente!`);
-    cerrarModalLogistica();
-    location.reload(); 
+    try {
+        const response = await fetch('/logistica/paqueteria', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre, web, tel })
+        });
+        const result = await response.json();
+        
+        if (result.status === "success") {
+            alert(`¡Aliado Logístico "${nombre}" registrado correctamente!`);
+            cerrarModalLogistica();
+            location.reload(); 
+        } else {
+            alert("Error: " + result.message);
+        }
+    } catch (e) {
+        alert("Error de conexión al registrar la paquetería.");
+    }
 }
 
 async function abrirEditarPedido(id) {

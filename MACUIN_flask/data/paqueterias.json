@@ -1,0 +1,27 @@
+[
+    {
+        "nombre": "MACUIN Fleet Management",
+        "web": "https://macuin.com/track",
+        "tel": "800-MACUIN-1"
+    },
+    {
+        "nombre": "DHL Express",
+        "web": "https://www.dhl.com",
+        "tel": "55-5345-7000"
+    },
+    {
+        "nombre": "FedEx",
+        "web": "https://www.fedex.com",
+        "tel": "55-5228-9904"
+    },
+    {
+        "nombre": "Estafeta",
+        "web": "https://www.estafeta.com",
+        "tel": "800-378-2338"
+    },
+    {
+        "nombre": "ONEpaqueteria",
+        "web": "https://onepaqueteria.com/sucursal/queretaro.html",
+        "tel": "442-483-0969"
+    }
+]
