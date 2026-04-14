@@ -11,6 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/html-docx-js@0.3.1/dist/html-docx.js"></script>
 </head>
 <body class="{% if session.get('rol') == 1 %}theme-master{% endif %}">
     <div class="dashboard-container" style="min-height: 100vh; display: flex; flex-direction: column;">
@@ -98,28 +99,43 @@
             <div class="card" id="panel-almacen" style="width: 100%;">
                 {% include 'components/pdf_template.html' %}
                 
-                <div class="toolbar" style="display: flex; gap: 12px; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
-                    <div class="search-box" style="flex: 1;">
+                <div class="toolbar" style="display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; flex-wrap: wrap;">
+                    <div class="search-box" style="flex: 1; min-width: 180px;">
                         <i class="fas fa-search" style="color: #e57373;"></i>
                         <input type="text" id="buscador-almacen" placeholder="Buscar por SKU, Nombre, Marca o Pasillo..." onkeyup="filtrarAlmacen()" style="color: #000; font-weight: 500;">
                     </div>
-                    
-                    <!-- Filtro de Existencias -->
+
+                    <!-- Filtro de Categoría -->
+                    <div class="filter-group">
+                        <select id="filtro-categoria-a" onchange="filtrarAlmacen()" style="padding: 9px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: white; color: #1e293b;">
+                            <option value="">-- Categoría --</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro de Existencias (Ordenar) -->
                     <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
                         <label style="font-size: 0.8rem; font-weight: 800; color: #64748b; white-space: nowrap;">EXIS:</label>
-                        <select id="filtro-existencias" onchange="ordenarAlmacen(this.value)" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                        <select id="filtro-existencias" onchange="ordenarAlmacen(this.value)" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: white;">
                             <option value="normal">Por Defecto</option>
                             <option value="asc">Stock: Menor a Mayor</option>
                             <option value="desc">Stock: Mayor a Menor</option>
                         </select>
                     </div>
 
-                    <button class="btn-action btn-pdf" onclick="descargarPDF('almacen')" style="background: #333; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;">
-                        <i class="fas fa-file-pdf"></i> PDF
-                    </button>
-                    <button class="btn-action btn-add" onclick="handleInventorySelection(null, 'new')" style="background: #e57373; color: white; border: none; border-radius: 10px; padding: 0 20px; font-weight: 700; cursor: pointer;">
-                        <i class="fas fa-plus"></i> Registrar Entrada
-                    </button>
+                    <div style="display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap;">
+                        <button class="btn-action btn-pdf" onclick="descargarPDF('almacen')" style="background: #1e293b; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <button class="btn-action btn-excel" onclick="exportarExcel('almacen')" style="background: #166534; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </button>
+                        <button class="btn-action btn-docx" onclick="exportarDocx('almacen')" style="background: #1d4ed8; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-file-word"></i> DOCX
+                        </button>
+                        <button class="btn-action btn-add" onclick="handleInventorySelection(null, 'new')" style="background: #e57373; color: white; border: none; border-radius: 8px; padding: 10px 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-plus"></i> Registrar Entrada
+                        </button>
+                    </div>
                 </div>
 
                 <table class="macuin-table">

@@ -560,28 +560,28 @@ document.addEventListener('DOMContentLoaded', () => {
 // ================================================================
 
 function filtrarTabla() {
-    const textFilter = (document.getElementById("buscador")?.value || "").toLowerCase();
+    const textFilter   = (document.getElementById("buscador")?.value || "").toLowerCase();
     const statusFilter = document.getElementById("filtro-estatus")?.value || "";
-    const dateFilter = document.getElementById("filtro-fecha")?.value || "";
-    
+    const dateFilter   = document.getElementById("filtro-fecha")?.value || "";
+    const catFilter    = (document.getElementById("filtro-categoria-v")?.value || "").toLowerCase();
+
     const tbody = document.getElementById("tabla-ventas-body");
-    if(!tbody) return;
+    if (!tbody) return;
     const trs = tbody.getElementsByTagName("tr");
 
     for (let i = 0; i < trs.length; i++) {
         const tr = trs[i];
-        const rowText = tr.textContent.toLowerCase();
-        
-        // Estatus column is index 5
+        const rowText    = tr.textContent.toLowerCase();
         const cellStatus = tr.cells[5]?.innerText.trim() || "";
-        // Date column is index 3
-        const cellDate = tr.cells[3]?.innerText.trim() || "";
-        
-        let matchText = rowText.includes(textFilter);
-        let matchStatus = statusFilter === "" || cellStatus === statusFilter;
-        let matchDate = dateFilter === "" || cellDate === dateFilter;
+        const cellDate   = tr.cells[3]?.innerText.trim() || "";
+        const cellPiezas = (tr.cells[2]?.innerText || "").toLowerCase();
 
-        tr.style.display = (matchText && matchStatus && matchDate) ? "" : "none";
+        const matchText   = rowText.includes(textFilter);
+        const matchStatus = statusFilter === "" || cellStatus === statusFilter;
+        const matchDate   = dateFilter   === "" || cellDate   === dateFilter;
+        const matchCat    = catFilter    === "" || cellPiezas.includes(catFilter);
+
+        tr.style.display = (matchText && matchStatus && matchDate && matchCat) ? "" : "none";
     }
 }
 
@@ -704,69 +704,193 @@ function descargarPDF(contexto = 'ventas') {
     console.log("✅ Reporte Programático Generado Correctamente.");
 }
 
-function exportarExcel() {
+function exportarExcel(contexto) {
     if (typeof XLSX === 'undefined') {
         alert("La librería para exportar a Excel no está cargada.");
         return;
     }
-    
-    // Verificamos si estamos en Logística, Almacén o Ventas
-    const isLogistica = !!document.getElementById('tabla-logistica-body');
-    const isAlmacen = !!document.getElementById('tabla-almacen-body');
-    
-    let ws_data = [];
-    let fileName = "Reporte";
 
-    if (isLogistica) {
-        fileName = "LOGISTICA";
-        ws_data.push(["Guía", "Destinatario", "Courier", "Estado", "Entrega Est."]);
-        
-        // Usar los datos de la ventana o intentar leer de la tabla si fallan los datos globales
-        const dataArr = window.logisticaData || [];
-        if (dataArr.length > 0) {
-            dataArr.forEach(l => {
-                ws_data.push([
-                    l.guia || l.id_pedido, 
-                    l.cliente || l.destino || l.nombre, 
-                    l.courier || l.paqueteria || "Pendiente", 
-                    l.estado || "Recibido", 
-                    l.entrega_estimada || l.fecha || "Pendiente"
-                ]);
-            });
-        } else {
-            // Fallback: leer de la tabla física
-            const tableRows = document.querySelectorAll('#tabla-logistica-body tr');
-            tableRows.forEach(row => {
-                const cells = row.cells;
-                if (cells.length >= 6) {
-                    ws_data.push([
-                        cells[0].innerText.trim(),
-                        cells[1].innerText.trim(),
-                        cells[2].innerText.trim(),
-                        cells[4].innerText.trim(),
-                        cells[5].innerText.trim()
-                    ]);
-                }
-            });
-        }
-    } else if (isAlmacen) {
-        fileName = "ALMACEN";
-        ws_data.push(["SKU", "Pieza", "Categoría", "Stock", "Precio"]);
-        (window.inventarioData || []).forEach(i => {
-            ws_data.push([`#${i.id_puro}`, i.pieza, i.categoria, i.stock, i.precio]);
-        });
-    } else {
-        fileName = "VENTAS";
-        ws_data.push(["Folio", "Cliente", "Piezas", "Fecha", "Total", "Estatus"]);
-        (window.ventasData || []).forEach(v => {
-            ws_data.push([v.id, v.cliente, v.piezas, v.fecha, v.total, v.estatus]);
+    // Auto-detect context if not provided
+    if (!contexto) {
+        if (document.getElementById('tabla-logistica-body')) contexto = 'logistica';
+        else if (document.getElementById('tabla-almacen-body')) contexto = 'almacen';
+        else contexto = 'ventas';
+    }
+
+    const tableIds = {
+        ventas:    'tabla-ventas-body',
+        almacen:   'tabla-almacen-body',
+        logistica: 'tabla-logistica-body'
+    };
+
+    const headers = {
+        ventas:    ["Folio", "Cliente / Taller", "Piezas", "Fecha", "Total ($)", "Estatus"],
+        almacen:   ["SKU", "Pieza", "Categoría", "Ubicación", "Stock", "Precio ($)"],
+        logistica: ["Guía / ID", "Destinatario", "Paquetería", "Estado", "Entrega Est."]
+    };
+
+    const colIndexes = {
+        ventas:    [0, 1, 2, 3, 4, 5],
+        almacen:   [0, 1, 2, 3, 4, 5],
+        logistica: [0, 1, 2, 4, 5]
+    };
+
+    const fileName = contexto.toUpperCase();
+    const ws_data  = [];
+
+    // Metadata row with active filters
+    ws_data.push([`REPORTE DE ${fileName} - MACUIN Enterprise`]);
+    ws_data.push([`Generado: ${new Date().toLocaleString()}`]);
+    ws_data.push([_getActiveFiltersText(contexto)]);
+    ws_data.push([]); // blank row
+    ws_data.push(headers[contexto]);
+
+    // Read only visible rows (filters applied)
+    const tbody = document.getElementById(tableIds[contexto]);
+    if (tbody) {
+        Array.from(tbody.rows).forEach(row => {
+            if (row.style.display !== 'none') {
+                ws_data.push(colIndexes[contexto].map(ci => (row.cells[ci]?.innerText || "").trim()));
+            }
         });
     }
-    
+
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    // Bold the title row
+    if (ws['A1']) ws['A1'].s = { font: { bold: true } };
     XLSX.utils.book_append_sheet(wb, ws, fileName);
     XLSX.writeFile(wb, `REPORTE_MACUIN_${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+/**
+ * Returns a human-readable summary of active filters for a given context.
+ */
+function _getActiveFiltersText(contexto) {
+    const parts = ["Filtros activos:"];
+    if (contexto === 'ventas') {
+        const s = document.getElementById('filtro-estatus')?.value;
+        const d = document.getElementById('filtro-fecha')?.value;
+        const c = document.getElementById('filtro-categoria-v')?.value;
+        if (s) parts.push(`Estatus=${s}`);
+        if (d) parts.push(`Fecha=${d}`);
+        if (c) parts.push(`Categoría=${c}`);
+    } else if (contexto === 'almacen') {
+        const c = document.getElementById('filtro-categoria-a')?.value;
+        if (c) parts.push(`Categoría=${c}`);
+    } else if (contexto === 'logistica') {
+        const s   = document.getElementById('filtro-estatus-l')?.value;
+        const d   = document.getElementById('filtro-fecha-l')?.value;
+        const paq = document.getElementById('filtro-paqueteria-l')?.value;
+        if (s)   parts.push(`Estatus=${s}`);
+        if (d)   parts.push(`Fecha=${d}`);
+        if (paq) parts.push(`Paquetería=${paq}`);
+    }
+    return parts.length > 1 ? parts.join(" | ") : "Sin filtros aplicados";
+}
+
+/**
+ * Exportar a DOCX (Word) - usa html-docx-js si disponible, fallback a .doc HTML
+ */
+function exportarDocx(contexto) {
+    contexto = contexto || 'ventas';
+
+    const tableIds = {
+        ventas:    'tabla-ventas-body',
+        almacen:   'tabla-almacen-body',
+        logistica: 'tabla-logistica-body'
+    };
+
+    const headersByCtx = {
+        ventas:    ["Folio", "Cliente / Taller", "Piezas", "Fecha", "Total ($)", "Estatus"],
+        almacen:   ["SKU", "Pieza", "Categoría", "Ubicación", "Stock", "Precio ($)"],
+        logistica: ["Guía / ID", "Destinatario", "Paquetería", "Estado", "Entrega Est."]
+    };
+
+    const colsByCtx = {
+        ventas:    [0, 1, 2, 3, 4, 5],
+        almacen:   [0, 1, 2, 3, 4, 5],
+        logistica: [0, 1, 2, 4, 5]
+    };
+
+    const headers  = headersByCtx[contexto];
+    const colIdxs  = colsByCtx[contexto];
+    const tbody    = document.getElementById(tableIds[contexto]);
+    const filtersText = _getActiveFiltersText(contexto);
+    const fecha    = new Date().toLocaleString();
+
+    // Build HTML table with inline styles for Word compatibility
+    let tableRows = "";
+    if (tbody) {
+        Array.from(tbody.rows).forEach(row => {
+            if (row.style.display !== 'none') {
+                const cells = colIdxs.map(ci => `<td style="border:1px solid #ccc; padding:6px 10px; font-size:11pt;">${(row.cells[ci]?.innerText || "").trim()}</td>`).join('');
+                tableRows += `<tr>${cells}</tr>`;
+            }
+        });
+    }
+
+    const headerRow = headers.map(h => `<th style="background:#1e293b; color:white; border:1px solid #1e293b; padding:8px 10px; font-size:11pt; text-align:left;">${h}</th>`).join('');
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html xmlns:o='urn:schemas-microsoft-com:office:office'
+          xmlns:w='urn:schemas-microsoft-com:office:word'
+          xmlns='http://www.w3.org/TR/REC-html40'>
+    <head>
+        <meta charset='utf-8'>
+        <title>MACUIN - Reporte de ${contexto.toUpperCase()}</title>
+        <style>
+            body { font-family: Calibri, Arial, sans-serif; margin: 20mm; }
+            h1   { color: #1e293b; font-size: 16pt; margin-bottom: 4pt; }
+            p    { font-size: 9pt; color: #64748b; margin: 2pt 0; }
+            table { border-collapse: collapse; width: 100%; margin-top: 14pt; }
+        </style>
+    </head>
+    <body>
+        <h1>AUTOPARTES MACUIN &mdash; REPORTE DE ${contexto.toUpperCase()}</h1>
+        <p>Generado: ${fecha}</p>
+        <p>${filtersText}</p>
+        <table>
+            <thead><tr>${headerRow}</tr></thead>
+            <tbody>${tableRows}</tbody>
+        </table>
+        <p style="margin-top:20pt; font-size:8pt; color:#94a3b8;">
+            MACUIN Enterprise &mdash; Documento de Control Interno
+        </p>
+    </body>
+    </html>`;
+
+    const fileName = `MACUIN_${contexto.toUpperCase()}_${new Date().toISOString().split('T')[0]}`;
+
+    // Use html-docx-js if loaded (produces real .docx), else fallback to .doc blob
+    if (typeof htmlDocx !== 'undefined' && htmlDocx.asBlob) {
+        try {
+            const blob = htmlDocx.asBlob(htmlContent);
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = `${fileName}.docx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            return;
+        } catch (e) {
+            console.warn("html-docx-js falló, usando fallback .doc:", e);
+        }
+    }
+
+    // Fallback: HTML blob opened by Word as .doc
+    const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `${fileName}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 // ================================================================
@@ -1116,17 +1240,26 @@ async function restarUnoStock(id) {
 }
 
 /**
- * Filtro Maestro para Almacén (LA LUPITA)
+ * Filtro Maestro para Almacén
  */
 function filtrarAlmacen() {
-    const filter = (document.getElementById("buscador-almacen")?.value || "").toLowerCase();
+    const filter    = (document.getElementById("buscador-almacen")?.value || "").toLowerCase();
+    const catFilter = (document.getElementById("filtro-categoria-a")?.value || "").toLowerCase();
+
     const tbody = document.getElementById("tabla-almacen-body");
-    if(!tbody) return;
+    if (!tbody) return;
     const trs = tbody.getElementsByTagName("tr");
 
     for (let i = 0; i < trs.length; i++) {
         const tr = trs[i];
-        tr.style.display = tr.textContent.toLowerCase().includes(filter) ? "" : "none";
+        const rowText = tr.textContent.toLowerCase();
+        // categoria column index 2
+        const cellCat = (tr.cells[2]?.innerText || "").toLowerCase();
+
+        const matchText = rowText.includes(filter);
+        const matchCat  = catFilter === "" || cellCat.includes(catFilter);
+
+        tr.style.display = (matchText && matchCat) ? "" : "none";
     }
 }
 
@@ -1550,14 +1683,29 @@ function renderLogistica() {
 }
 
 function filtrarLogistica() {
-    const filter = (document.getElementById("buscador-logistica")?.value || "").toLowerCase();
+    const filter       = (document.getElementById("buscador-logistica")?.value || "").toLowerCase();
+    const statusFilter = (document.getElementById("filtro-estatus-l")?.value || "").toLowerCase();
+    const dateFilter   = document.getElementById("filtro-fecha-l")?.value || "";
+    const paqFilter    = (document.getElementById("filtro-paqueteria-l")?.value || "").toLowerCase();
+
     const tbody = document.getElementById("tabla-logistica-body");
-    if(!tbody) return;
+    if (!tbody) return;
     const trs = tbody.getElementsByTagName("tr");
 
     for (let i = 0; i < trs.length; i++) {
         const tr = trs[i];
-        tr.style.display = tr.textContent.toLowerCase().includes(filter) ? "" : "none";
+        const rowText   = tr.textContent.toLowerCase();
+        // columns: 0=Guía, 1=Destinatario, 2=Paquetería, 3=Progreso, 4=Estado, 5=Entrega Est.
+        const cellStatus = (tr.cells[4]?.innerText || "").toLowerCase();
+        const cellDate   = (tr.cells[5]?.innerText || "").trim();
+        const cellPaq    = (tr.cells[2]?.innerText || "").toLowerCase();
+
+        const matchText   = rowText.includes(filter);
+        const matchStatus = statusFilter === "" || cellStatus.includes(statusFilter);
+        const matchDate   = dateFilter   === "" || cellDate.includes(dateFilter);
+        const matchPaq    = paqFilter    === "" || cellPaq.includes(paqFilter);
+
+        tr.style.display = (matchText && matchStatus && matchDate && matchPaq) ? "" : "none";
     }
 }
 
@@ -2149,9 +2297,11 @@ function rechazarSolicitud(id) {
 window.onload = function() {
     if (document.getElementById("tabla-ventas-body") && typeof renderTabla === 'function') {
         renderTabla();
+        poblarCategoriasVentas();
     }
     if (document.getElementById("tabla-almacen-body") && typeof renderAlmacen === 'function') {
         renderAlmacen();
+        poblarCategoriasAlmacen();
     }
     if (document.getElementById("tabla-logistica-body") && typeof renderLogistica === 'function') {
         renderLogistica();
@@ -2164,8 +2314,41 @@ window.onload = function() {
     }
     // ── Init Notifications ──
     initNotifications();
-
 };
+
+/**
+ * Rellena el dropdown de categorías en la vista de Ventas.
+ * En ventas el inventario se expone como window.inventarioGlobal (no inventarioData).
+ */
+function poblarCategoriasVentas() {
+    const select = document.getElementById('filtro-categoria-v');
+    if (!select) return;
+    // ventas.html pasa el inventario como inventarioGlobal; almacen.html lo pasa como inventarioData
+    const source = window.inventarioGlobal || window.inventarioData || [];
+    const cats = [...new Set(source.map(i => i.categoria || i.nombre_categoria).filter(Boolean))].sort();
+    cats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.toLowerCase();
+        opt.textContent = cat;
+        select.appendChild(opt);
+    });
+}
+
+/**
+ * Rellena el dropdown de categorías en la vista de Almacén
+ * usando las categorías únicas de inventarioData.
+ */
+function poblarCategoriasAlmacen() {
+    const select = document.getElementById('filtro-categoria-a');
+    if (!select) return;
+    const cats = [...new Set((window.inventarioData || []).map(i => i.categoria).filter(Boolean))].sort();
+    cats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.toLowerCase();
+        opt.textContent = cat;
+        select.appendChild(opt);
+    });
+}
 
 async function initNotifications() {
     const badge = document.getElementById("notif-badge");

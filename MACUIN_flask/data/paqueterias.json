@@ -23,5 +23,10 @@
         "nombre": "ONEpaqueteria",
         "web": "https://onepaqueteria.com/sucursal/queretaro.html",
         "tel": "442-483-0969"
+    },
+    {
+        "nombre": "Redpack",
+        "web": "https://www.redpack.com.mx",
+        "tel": "800-733-7225"
     }
 ]

@@ -282,13 +282,13 @@ def almacen():
     
     almacen_list = []
     categorias_map = {
-        1: "Frenos", 
-        2: "Suspension y Direccion", 
-        3: "Iluminacion", 
-        4: "Carroceria y Colision",
-        5: "Llantas",
-        6: "Kits de Afinacion",
-        7: "Sensores y Electrico",
+        1: "Frenos",
+        2: "Motor y Mecánica",
+        3: "Suspensión y Dirección",
+        4: "Sistema Eléctrico",
+        5: "Fluidos y Filtros",
+        6: "Transmisión",
+        7: "Sensores y Eléctrico",
         8: "Aceites y Aditivos"
     }
     

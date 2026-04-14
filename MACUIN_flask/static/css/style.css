@@ -225,6 +225,8 @@ body {
 /* Dashboard Styles */
 .dashboard-container {
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     background-color: #f8f9fa;
 }
 
@@ -267,8 +269,7 @@ body {
 
 .dashboard-content {
     padding: 40px;
-    overflow-y: auto;
-    height: calc(100vh - 80px);
+    flex: 1;
 }
 
 .dashboard-content h2 {
