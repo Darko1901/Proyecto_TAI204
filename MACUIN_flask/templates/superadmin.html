@@ -10,8 +10,8 @@
 <body style="background-color: #f4f6f9; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column;">
 
     <div class="dashboard-container" style="min-height: 100vh; display: flex; flex-direction: column;">
-    <header class="dashboard-header" style="background: #000000; border-bottom: 3px solid #df6c6c; padding: 15px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
-        <h1 style="color: white; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;"><i class="fas fa-crown" style="color: #df6c6c; margin-right: 12px;"></i> MACUIN MASTER CONTROL</h1>
+    <header class="dashboard-header" style="background: #ffffff; border-bottom: 3px solid #000000; padding: 15px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+        <h1 style="color: #000000; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;"><i class="fas fa-crown" style="color: #000000; margin-right: 12px;"></i> MACUIN MASTER CONTROL</h1>
         <div class="user-info" style="display: flex; align-items: center; gap: 20px;">
             <!-- Menú de Navegación Rápida -->
             <div class="nav-dropdown-wrapper" onclick="toggleNavMenu(event)">
@@ -43,8 +43,8 @@
                 </div>
             </div>
 
-            <span style="color: #ffffff; font-weight: 700; border: 1px solid #444; padding: 5px 15px; border-radius: 20px;"><i class="fas fa-user-secret" style="color: #ffffff;"></i> Master: {{ session.get('nombre', session.get('usuario', 'Admin')) }}</span>
-            <a href="{{ url_for('auth.logout') }}" class="btn-logout" style="background: #ffffff; color: #000000; font-weight: 900;">
+            <span style="color: #000000; font-weight: 700; border: 1px solid #ddd; padding: 5px 15px; border-radius: 20px;"><i class="fas fa-user-secret" style="color: #000000;"></i> Master: {{ session.get('nombre', session.get('usuario', 'Admin')) }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="btn-logout" style="background: #f1f5f9; color: #000000; font-weight: 900; border: 1px solid #ddd;">
                 <i class="fas fa-power-off"></i> SALIR
             </a>
         </div>
@@ -56,8 +56,8 @@
         
         <style>
             .module-card-master {
-                background: #000000 !important;
-                border: 2px solid #222;
+                background: #ffffff !important;
+                border: 2px solid #e2e8f0;
                 border-radius: 16px;
                 padding: 35px 25px;
                 text-decoration: none;
@@ -65,7 +65,7 @@
                 flex-direction: column;
                 align-items: center;
                 transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05);
                 position: relative;
                 overflow: hidden;
             }
@@ -73,85 +73,84 @@
                 content: '';
                 position: absolute;
                 top: 0; left: 0; width: 100%; height: 5px;
-                background: var(--accent-color, #ffffff);
-                opacity: 0.3;
+                background: #000000;
+                opacity: 0.1;
                 transition: 0.3s;
             }
             .module-card-master:hover::before { opacity: 1; height: 8px; }
             
             .module-card-master:hover {
                 transform: translateY(-12px) scale(1.03);
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-                border-color: var(--accent-color, #ffffff);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                border-color: #000000;
             }
             .module-card-master i {
-                color: var(--accent-color, #ffffff) !important;
+                color: #000000 !important;
                 font-size: 3.2rem;
                 margin-bottom: 25px;
                 transition: transform 0.4s ease;
-                filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));
             }
             .module-card-master:hover i {
                 transform: scale(1.15) rotate(5deg);
-                filter: drop-shadow(0 0 15px var(--accent-color));
             }
             .kpi-card-master {
-                background: #000000 !important;
-                color: #ffffff !important;
-                border-left: 10px solid var(--kpi-color, #ffffff) !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                border: 1px solid #e2e8f0;
+                border-left: 10px solid var(--kpi-color, #000) !important;
                 padding: 30px;
                 border-radius: 18px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 transition: all 0.4s ease;
-                box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             }
             .kpi-card-master:hover {
                 transform: scale(1.04) translateX(10px);
-                box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             }
         </style>
 
         <div class="module-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 30px; margin-bottom: 50px;">
-            <a href="{{ url_for('views.ventas') }}" class="module-card-master" style="--accent-color: #3498db;">
-                <i class="fas fa-chart-line"></i>
-                <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; color: #ffffff; font-weight: 800;">FINANZAS</h3>
-                <p style="margin: 0; font-size: 0.85rem; color: #aaaaaa; text-transform: uppercase; letter-spacing: 1px;">Ventas & BI</p>
+            <a href="{{ url_for('views.ventas') }}" class="module-card-master">
+                <i class="fas fa-chart-line" style="color: #000 !important;"></i>
+                <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; color: #000; font-weight: 800;">FINANZAS</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Ventas & BI</p>
             </a>
-            <a href="{{ url_for('views.almacen') }}" class="module-card-master" style="--accent-color: #e67e22;">
-                <i class="fas fa-warehouse"></i>
-                <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; color: #ffffff; font-weight: 800;">INVENTARIO</h3>
-                <p style="margin: 0; font-size: 0.85rem; color: #aaaaaa; text-transform: uppercase; letter-spacing: 1px;">Control Global</p>
+            <a href="{{ url_for('views.almacen') }}" class="module-card-master">
+                <i class="fas fa-warehouse" style="color: #000 !important;"></i>
+                <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; color: #000; font-weight: 800;">INVENTARIO</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Control Global</p>
             </a>
-            <a href="{{ url_for('views.logistica') }}" class="module-card-master" style="--accent-color: #2ecc71;">
-                <i class="fas fa-map-location-dot"></i>
-                <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; color: #ffffff; font-weight: 800;">LOGÍSTICA</h3>
-                <p style="margin: 0; font-size: 0.85rem; color: #aaaaaa; text-transform: uppercase; letter-spacing: 1px;">Rastreo Maestro</p>
+            <a href="{{ url_for('views.logistica') }}" class="module-card-master">
+                <i class="fas fa-map-location-dot" style="color: #000 !important;"></i>
+                <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; color: #000; font-weight: 800;">LOGÍSTICA</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Rastreo Maestro</p>
             </a>
-            <a href="{{ url_for('views.usuarios') }}" class="module-card-master" style="--accent-color: #9b59b6;">
-                <i class="fas fa-fingerprint"></i>
-                <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; color: #ffffff; font-weight: 800;">SISTEMA</h3>
-                <p style="margin: 0; font-size: 0.85rem; color: #aaaaaa; text-transform: uppercase; letter-spacing: 1px;">Acceso & Perfiles</p>
+            <a href="{{ url_for('views.usuarios') }}" class="module-card-master">
+                <i class="fas fa-fingerprint" style="color: #000 !important;"></i>
+                <h3 style="margin: 0 0 8px 0; font-size: 1.3rem; color: #000; font-weight: 800;">SISTEMA</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Acceso & Perfiles</p>
             </a>
         </div>
 
-        <h2 class="section-title" style="border-left: 6px solid #000; padding-left: 20px; margin-bottom: 30px; font-weight: 900; color: #333; text-transform: uppercase; letter-spacing: 1px;"><i class="fas fa-bolt" style="color: #f1c40f;"></i> Estadísticas de Red</h2>
+        <h2 class="section-title" style="border-left: 6px solid #000; padding-left: 20px; margin-bottom: 30px; font-weight: 900; color: #333; text-transform: uppercase; letter-spacing: 1px;"><i class="fas fa-network-wired"></i> Estadísticas de Red</h2>
         
         <div class="kpis-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px;">
-            <div class="kpi-card-master" style="--kpi-color: #3498db;">
+            <div class="kpi-card-master" style="--kpi-color: #333;">
                 <div>
-                    <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #aaaaaa; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Entidades Activas</h4>
-                    <span id="kpi-empresas" style="font-size: 3rem; font-weight: 900; color: #ffffff;">0</span>
+                    <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Entidades Activas</h4>
+                    <span id="kpi-empresas" style="font-size: 3rem; font-weight: 900; color: #000;">0</span>
                 </div>
-                <i class="fas fa-city" style="font-size: 3.5rem; color: rgba(52, 152, 219, 0.15);"></i>
+                <i class="fas fa-city" style="font-size: 3.5rem; color: rgba(0, 0, 0, 0.05);"></i>
             </div>
-            <div class="kpi-card-master" style="--kpi-color: #e67e22;">
+            <div class="kpi-card-master" style="--kpi-color: #333;">
                 <div>
-                    <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #aaaaaa; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Usuarios del Sistema</h4>
-                    <span id="kpi-usuarios" style="font-size: 3rem; font-weight: 900; color: #ffffff;">0</span>
+                    <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Usuarios del Sistema</h4>
+                    <span id="kpi-usuarios" style="font-size: 3rem; font-weight: 900; color: #000;">0</span>
                 </div>
-                <i class="fas fa-user-gear" style="font-size: 3.5rem; color: rgba(230, 126, 34, 0.15);"></i>
+                <i class="fas fa-user-gear" style="font-size: 3.5rem; color: rgba(0, 0, 0, 0.05);"></i>
             </div>
         </div>
 
@@ -164,14 +163,14 @@
             </div>
             
             <table class="master-table" style="width: 100%; border-collapse: collapse;">
-                <thead style="background: #000; color: #fff;">
+                <thead style="background: #f1f5f9; color: #000; border-bottom: 2px solid #000;">
                     <tr>
-                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900;">ID</th>
-                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900;">Entidad / Usuario</th>
-                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900;">Asignación</th>
-                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900;">Perfil</th>
-                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900;">Status</th>
-                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900;">Comandos</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">ID</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">Entidad / Usuario</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">Asignación</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">Perfil</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">Status</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">Comandos</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-body"></tbody>
@@ -197,35 +196,57 @@
     </div>
 
     <div class="modal-overlay" id="modalUsuario">
-        <div class="modal-content">
+        <div class="modal-content" style="width: 650px; max-width: 95%;">
             <div class="modal-header">
-                <h3 style="margin: 0; color: #2c3e50;"><i class="fas fa-user-plus"></i> Alta de Usuario</h3>
+                <h3 style="margin: 0; color: #2c3e50;"><i class="fas fa-user-plus"></i> Alta de Usuario Maestra</h3>
                 <button class="btn-close" onclick="cerrarModalUsuariosMaster()">&times;</button>
             </div>
-            <form method="POST" action="{{ url_for('views.nuevo_usuario') }}">
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Nombre Completo</label>
-                    <input type="text" name="nombre" id="nuevo-nombre" required placeholder="Ej. Juan Pérez" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            <form method="POST" action="{{ url_for('views.nuevo_usuario') }}" style="padding: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Nombre(s)</label>
+                        <input type="text" name="nombre" required placeholder="Ej. Juan" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Apellido Paterno</label>
+                        <input type="text" name="apellido_paterno" required placeholder="Ej. Pérez" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Apellido Materno</label>
+                        <input type="text" name="apellido_materno" required placeholder="Ej. López" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Número de Teléfono</label>
+                        <input type="tel" name="telefono" required placeholder="10 dígitos" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
                 </div>
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Correo de Registro</label>
-                    <input type="email" name="correo" required placeholder="correo@empresa.com" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Correo Electrónico de Acceso</label>
+                    <input type="email" name="correo" required placeholder="ejemplo@macuin.com" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Contraseña Temporal</label>
-                    <input type="password" name="password" required placeholder="********" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Contraseña</label>
+                        <input type="password" name="password" required placeholder="********" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Confirmar Contraseña</label>
+                        <input type="password" name="confirm_password" required placeholder="********" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Tipo de Perfil (Rol Interno)</label>
-                    <select name="rol" id="nuevo-rol" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="2">Trabajador (Módulo Operativo)</option>
-                        <option value="3">Empresa / Cliente Corporativo</option>
-                        <option value="4">Ventas / Personal Interno</option>
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Asignación de Rol de Sistema</label>
+                    <select name="rol" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff;">
+                        <option value="2">Cliente Interno / Trabajador Operativo</option>
+                        <option value="3">Cliente Externo / Empresa (B2B)</option>
+                        <option value="4">Personal Administrativo / Ventas</option>
                     </select>
                 </div>
                 
-                <button type="submit" style="width: 100%; padding: 12px; background: #e53935; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; transition: background 0.2s;">
-                    <i class="fas fa-save"></i> Registrar Usuario Global
+                <button type="submit" style="width: 100%; padding: 15px; background: #000; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;">
+                    <i class="fas fa-user-check" style="margin-right: 10px;"></i> Finalizar Registro y Activar Usuario
                 </button>
             </form>
         </div>

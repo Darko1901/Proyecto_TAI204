@@ -36,6 +36,7 @@ class PedidoCreate(BaseModel):
     codigo_postal: str = Field(..., max_length=10)
     telefono_contacto: str = Field(..., max_length=20)
     notas: Optional[str] = None
+    paqueteria: Optional[str] = "MACUIN Fleet Management"
 
 class PedidoEstadoUpdate(BaseModel):
     id_estado: int

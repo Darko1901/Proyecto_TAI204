@@ -560,63 +560,94 @@ body {
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
 
 /* =========================================
-   MASTER OBSIDIAN SYSTEM (High Contrast)
+   MASTER CONTROL PANEL THEME (White/Gray/Black)
    ========================================= */
 
-.theme-dark {
-    background-color: #000000 !important;
+.theme-master {
+    background-color: #f4f6f9 !important;
 }
 
-.theme-dark .dashboard-header {
-    background: #000000 !important;
-    border-bottom: 3px solid #df6c6c !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+.theme-master .dashboard-header {
+    background: #ffffff !important;
+    border-bottom: 3px solid #000000 !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
 }
 
-.theme-dark .dashboard-content {
-    background-color: #000000 !important; /* Keep it dark for superadmin */
+.theme-master .dashboard-header h1,
+.theme-master .dashboard-header .user-info span,
+.theme-master .dashboard-header .user-info i {
+    color: #000000 !important;
 }
 
-.theme-dark .card,
-.theme-dark .stat-card,
-.theme-dark .table-container,
-.theme-dark #panel-ventas,
-.theme-dark #panel-almacen,
-.theme-dark #reporte-container {
-    background-color: #0c0c0c !important;
-    border: 1px solid #222 !important;
-    color: #ffffff !important;
+.theme-master .btn-logout {
+    background-color: #f1f5f9 !important;
+    color: #000000 !important;
+    border: 1px solid #ddd !important;
+    font-weight: 800 !important;
 }
 
-.theme-dark h1, .theme-dark h2, .theme-dark h3, .theme-dark h4, .theme-dark p, .theme-dark span, .theme-dark i {
-    color: #ffffff !important;
+.theme-master .dashboard-content {
+    background-color: #f4f6f9 !important;
 }
 
-.theme-dark .macuin-table th {
-    background: #000000 !important;
-    color: #ffffff !important;
-    border-bottom: 2px solid #333 !important;
+.theme-master .card,
+.theme-master .stat-card,
+.theme-master .table-container,
+.theme-master #panel-ventas,
+.theme-master #panel-almacen,
+.theme-master #panel-logistica,
+.theme-master #reporte-container {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #000000 !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
 }
 
-.theme-dark .macuin-table td {
-    background: #0c0c0c !important;
-    color: #ffffff !important;
-    border-color: #1a1a1a !important;
+.theme-master h1, .theme-master h2, .theme-master h3, .theme-master h4, 
+.theme-master p, .theme-master span, .theme-master i {
+    color: #000000 !important;
 }
 
-.theme-dark .search-box {
-    background: #0c0c0c !important;
-    border: 1px solid #333 !important;
+.theme-master .macuin-table th {
+    background: #f1f5f9 !important;
+    color: #000000 !important;
+    border-bottom: 2px solid #000000 !important;
+    border-top: none !important;
 }
 
-.theme-dark .search-box input {
-    color: #ffffff !important;
+.theme-master .macuin-table td {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-color: #eee !important;
 }
 
-.theme-dark .btn-logout {
-    background-color: #000000;
-    color: #ffffff;
-    border: 1px solid #ffffff;
+.theme-master .search-box {
+    background: #ffffff !important;
+    border: 1px solid #ddd !important;
+}
+
+.theme-master .search-box input {
+    color: #000000 !important;
+}
+
+.theme-master .notif-dropdown {
+    background: #ffffff !important;
+    border-color: #ddd !important;
+}
+
+.theme-master .notif-header {
+    background: #f1f5f9 !important;
+}
+
+.theme-master .btn-nav-modules {
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: #000 !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.theme-master .btn-nav-modules:hover {
+    background: #000 !important;
+    color: #fff !important;
 }
 
 

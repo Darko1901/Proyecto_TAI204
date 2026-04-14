@@ -1,7 +1,23 @@
 from flask import Blueprint, render_template, redirect, url_for, session, request, flash, jsonify, Response
-from security.api_client import fetch_data, post_data, patch_data, delete_data, fetch_raw
+import json
+import os
+from security.api_client import fetch_data, post_data, patch_data, delete_data, fetch_raw, post_multipart, patch_multipart
 
 views_bp = Blueprint('views', __name__)
+
+# --- Auxiliares para Paqueterías (Phase 13 Persistence) ---
+PAQUETERIAS_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'paqueterias.json')
+
+def load_paqueterias():
+    if not os.path.exists(PAQUETERIAS_FILE):
+        return [{"nombre": "MACUIN Fleet Management"}]
+    with open(PAQUETERIAS_FILE, 'r') as f:
+        return json.load(f)
+
+def save_paqueterias(data):
+    os.makedirs(os.path.dirname(PAQUETERIAS_FILE), exist_ok=True)
+    with open(PAQUETERIAS_FILE, 'w') as f:
+        json.dump(data, f, indent=4)
 
 @views_bp.route('/reporte/excel')
 def reporte_excel_proxy():
@@ -26,7 +42,6 @@ def dashboard():
         return redirect(url_for('auth.login_personal_interno'))
     
     token = session.get('token')
-    # Datos para la campanita de notificaciones
     inventario_raw = fetch_data("/v1/autopartes/", token)
     if inventario_raw == "__TOKEN_INVALIDO__":
         session.clear()
@@ -36,9 +51,16 @@ def dashboard():
     pedidos_raw = fetch_data("/v1/pedidos/", token)
     pedidos = pedidos_raw.get('items', []) if isinstance(pedidos_raw, dict) else (pedidos_raw if isinstance(pedidos_raw, list) else [])
     
+    try:
+        inv_data = fetch_data("/v1/autopartes/?limit=500", session.get('token'))
+        inventario_global = inv_data.get('items', []) if isinstance(inv_data, dict) else []
+    except:
+        inventario_global = []
+
     return render_template('dashboard.html', 
                           inventarioData=inventario, 
-                          logisticaData=pedidos)
+                          logisticaData=pedidos,
+                          inventarioGlobal=inventario_global)
 
 @views_bp.route('/superadmin')
 def superadmin():
@@ -52,7 +74,6 @@ def superadmin():
     usuarios_data = fetch_data("/v1/usuarios/", session.get('token'))
     usuarios_list = []
     
-    # usuarios_data puede ser Lista o Dict con 'items'
     usuarios_raw = []
     if isinstance(usuarios_data, list):
         usuarios_raw = usuarios_data
@@ -89,7 +110,6 @@ def ventas():
         return redirect(url_for('auth.login_personal_interno'))
     ventas_list = []
     
-    # pedidos_data puede ser Lista o Dict con 'items'
     pedidos_raw = []
     if isinstance(pedidos_data, list):
         pedidos_raw = pedidos_data
@@ -113,8 +133,7 @@ def ventas():
             "estatus": estatus
         })
 
-    # IMPORTANTE: /v1/autopartes/ devuelve un DICT {"items": [], "total": X}
-    response_autopartes = fetch_data("/v1/autopartes/", session.get('token'))
+    response_autopartes = fetch_data("/v1/autopartes/?limit=2000", session.get('token'))
     inventario_global = []
     
     if isinstance(response_autopartes, dict):
@@ -130,7 +149,6 @@ def ventas():
             "precio": float(p.get('precio', 0.0))
         })
 
-    # Agregación para Gráficas
     status_counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
     total_acumulado = 0.0
     for p in pedidos_raw:
@@ -138,9 +156,7 @@ def ventas():
         status_counts[id_est] = status_counts.get(id_est, 0) + 1
         total_acumulado += float(p.get("total", 0.0))
 
-    # Top Vendidos
     top_v = fetch_data("/v1/reportes/top-productos", session.get('token'))
-    # Tendencia de Ventas (Real)
     tendencia = fetch_data("/v1/reportes/ventas/tendencia", session.get('token'))
 
     chart_data = {
@@ -154,7 +170,7 @@ def ventas():
         "trend_orders": [item.get('cantidad') for item in tendencia] if isinstance(tendencia, list) else []
     }
 
-    return render_template('ventas.html', ventasData=ventas_list, chartData=chart_data, kpis=kpis, inventarioGlobal=inventario_global)
+    return render_template('ventas.html', ventasData=ventas_list, chartData=chart_data, kpis=kpis, inventarioGlobal=inventario_global, paqueterias=load_paqueterias())
 
 @views_bp.route('/ventas/detalle/<int:id_pedido>')
 def obtener_detalle_venta(id_pedido):
@@ -167,7 +183,6 @@ def obtener_detalle_venta(id_pedido):
 @views_bp.route('/ventas/confirmar/<int:id_pedido>', methods=['POST'])
 def confirmar_pedido(id_pedido):
     if 'usuario' not in session: return jsonify({"error": "No autenticado"}), 401
-    # Estado 2 = Surtido
     response = patch_data(f"/v1/pedidos/{id_pedido}/estado", {"id_estado": 2}, session.get('token'))
     if response and response.status_code == 200:
         return jsonify({"status": "success", "message": "Pedido confirmado. Notificación enviada al cliente."})
@@ -185,20 +200,19 @@ def eliminar_venta(id_pedido):
 def editar_pedido_completo(id_pedido):
     if 'usuario' not in session: return jsonify({"error": "No autenticado"}), 401
     
-    # 1. Actualizar Datos de Envío (Filtrar solo los que tienen contenido para evitar wipes)
     datos_envio = {}
     mapping = {
         "direccion": "direccion",
         "ciudad": "ciudad",
         "codigo_postal": "codigo_postal",
-        "telefono_contacto": "telefono_contacto", # Corregido: antes buscaba 'telefono'
+        "telefono_contacto": "telefono_contacto",
         "notas": "notas",
         "paqueteria": "paqueteria"
     }
     
     for form_key, api_key in mapping.items():
         val = request.form.get(form_key)
-        if val: # Solo si no es vacío/None
+        if val:
             datos_envio[api_key] = val
             
     if datos_envio:
@@ -206,7 +220,6 @@ def editar_pedido_completo(id_pedido):
         if not res_envio or res_envio.status_code != 200:
             return jsonify({"status": "error", "message": "No se pudo actualizar la información de envío en el servidor."}), 400
     
-    # 2. Actualizar Estado
     id_estado_str = request.form.get('id_estado')
     if id_estado_str:
         id_estado = int(id_estado_str)
@@ -233,6 +246,22 @@ def asignar_paqueteria_fast(id_pedido):
         
     return jsonify({"status": "error", "message": "Error al sincronizar con el servidor central."}), 400
 
+@views_bp.route('/logistica/paqueteria', methods=['POST'])
+def registrar_paqueteria():
+    if 'usuario' not in session: return jsonify({"status": "error", "message": "No autorizado"}), 401
+    data = request.get_json()
+    nombre = data.get('nombre')
+    if not nombre: return jsonify({"status": "error", "message": "Nombre requerido"}), 400
+    paqs = load_paqueterias()
+    if any(p['nombre'].lower() == nombre.lower() for p in paqs):
+        return jsonify({"status": "error", "message": "Esta paquetería ya existe"}), 400
+    paqs.append({"nombre": nombre, "web": data.get('web', ''), "tel": data.get('tel', '')})
+    save_paqueterias(paqs)
+    return jsonify({"status": "success", "message": "Paquetería registrada correctamente"})
+
+@views_bp.route('/logistica/paqueterias')
+def obtener_paqueterias():
+    return jsonify(load_paqueterias())
 
 @views_bp.route('/almacen')
 def almacen():
@@ -297,30 +326,35 @@ def almacen():
                           totalPages=total_pages,
                           pageRange=page_range)
 
+@views_bp.route('/almacen/ajustar/<int:id_producto>', methods=['POST'])
 @views_bp.route('/almacen/ajustar/<int:id_producto>/<string:cantidad>', methods=['POST'])
-def ajustar_stock(id_producto, cantidad):
+def ajustar_stock(id_producto, cantidad=None):
+    if 'usuario' not in session: return {"status": "error", "message": "No autorizado"}, 401
+    if cantidad is None:
+        cantidad = request.form.get('stock')
     try:
         cant_int = int(cantidad)
     except:
-        return {"status": "error", "message": "Invalid quantity"}, 400
-    if 'usuario' not in session: return "No autorizado", 401
-    response = post_data(f"/v1/autopartes/{id_producto}/ajustar_stock?cantidad={cantidad}", {}, session.get('token'))
+        return {"status": "error", "message": "Cantidad inválida"}, 400
+        
+    response = post_data(f"/v1/autopartes/{id_producto}/ajustar_stock?cantidad={cant_int}", {}, session.get('token'))
     if response and response.status_code == 200:
-        return {"status": "success", "data": response.json()}
-    return {"status": "error"}, 500
+        return {"status": "success", "data": response.json(), "message": "Stock actualizado"}
+    return {"status": "error", "message": "Error al comunicar con la API"}, 500
 
 @views_bp.route('/almacen/editar/<int:id_producto>', methods=['POST'])
 def editar_pieza_api(id_producto):
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
     
     form_data = {
-        "nombre_producto": request.form.get('nombre'),
+        "nombre_producto": request.form.get('nombre_producto'),
         "precio": request.form.get('precio', '0.0'),
-        "id_categoria": request.form.get('categoria', '1'),
+        "id_categoria": request.form.get('id_categoria', '1'),
         "descripcion": request.form.get('descripcion', ''),
         "marca": request.form.get('marca', ''),
         "modelo": request.form.get('modelo', ''),
-        "compatibilidad": request.form.get('descripcion', '')
+        "compatibilidad": request.form.get('descripcion', ''),
+        "garantia": "1 año"
     }
     
     files = {}
@@ -329,7 +363,6 @@ def editar_pieza_api(id_producto):
         if file.filename != '':
             files['imagen'] = (file.filename, file.read(), file.content_type)
     
-    from security.api_client import patch_multipart
     response = patch_multipart(f"/v1/autopartes/{id_producto}", form_data, files, session.get('token'))
     
     if response and response.status_code in [200, 201]:
@@ -339,19 +372,19 @@ def editar_pieza_api(id_producto):
 @views_bp.route('/almacen/eliminar/<int:id_producto>', methods=['POST'])
 def eliminar_pieza_api(id_producto):
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
-    from security.api_client import delete_data
     response = delete_data(f"/v1/autopartes/{id_producto}", session.get('token'))
     if response and response.status_code in [200, 204]:
         return {"status": "success"}, 200
     return {"status": "error"}, 500
 
-@views_bp.route('/almacen/nueva', methods=['POST'])
+@views_bp.route('/almacen/nuevo', methods=['POST'])
 def nueva_pieza():
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
+    
     form_data = {
-        "nombre_producto": request.form.get('nombre'),
+        "nombre_producto": request.form.get('nombre_producto'),
         "precio": request.form.get('precio', '0.0'),
-        "id_categoria": request.form.get('categoria', '1'),
+        "id_categoria": request.form.get('id_categoria', '1'),
         "descripcion": request.form.get('descripcion', ''),
         "marca": request.form.get('marca', ''),
         "modelo": request.form.get('modelo', ''),
@@ -365,24 +398,22 @@ def nueva_pieza():
         if file.filename != '':
             files['imagen'] = (file.filename, file.read(), file.content_type)
     
-    from security.api_client import post_multipart
     response = post_multipart("/v1/autopartes/", form_data, files, session.get('token'))
     
     if response and response.status_code == 201:
-        return {"status": "success"}, 201
+        return {"status": "success", "message": "Producto registrado correctamente"}, 201
     elif response:
         try:
             detail = response.json().get('detail', 'Error desconocido en el servidor')
         except:
             detail = f"Error del servidor (Status {response.status_code})"
         return {"status": "error", "message": detail}, response.status_code
-    return {"status": "error", "message": "No se pudo conectar con la API"}, 500
+    return {"status": "error", "message": "No se pudo conectar con el API"}, 500
 
 @views_bp.route('/logistica')
 def logistica():
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
     kpis = fetch_data("/v1/reportes/dashboard", session.get('token'))
-    # El equipo operativo ve TODO el flujo para recibir, enviar y entregar.
     pedidos_data = fetch_data("/v1/pedidos/", session.get('token'))
     logistica_list = []
     
@@ -394,12 +425,8 @@ def logistica():
 
     for p in pedidos_raw:
         estados_map = {1: "Recibido", 2: "Surtido", 3: "Enviado", 4: "Completado", 5: "Cancelado"}
-        
-        # Formatear cliente
         u = p.get("usuario")
         nombre_cliente = f"{u.get('nombre')} {u.get('apellido_paterno')}" if u else f"Cliente #{p.get('id_usuario', 'N/A')}"
-        
-        # Extraer paquetería (Phase 11 Expansion)
         env = p.get("envio")
         paqueteria_txt = env.get("paqueteria") if env else "MACUIN Fleet Management"
 
@@ -413,13 +440,12 @@ def logistica():
             "estado": estados_map.get(p.get("id_estado"), "Pendiente"),
             "fecha": p.get('fecha_pedido', '').split('T')[0] if p.get('fecha_pedido') else "Pendiente"
         })
-    # KPIs Operativos para Logística (Phase 8 Expansion)
     op_kpis = {
-        "recibido": 0,    # Status 1
-        "surtido": 0,     # Status 2
-        "transito": 0,    # Status 3 (Enviado)
-        "completos": 0,   # Status 4
-        "cancelados": 0,  # Status 5
+        "recibido": 0,
+        "surtido": 0,
+        "transito": 0,
+        "completos": 0,
+        "cancelados": 0,
         "total_entregados": 0,
         "total_cancelados": 0
     }
@@ -436,7 +462,30 @@ def logistica():
             op_kpis["cancelados"] += 1
             op_kpis["total_cancelados"] += 1
 
-    return render_template('logistica.html', logisticaData=logistica_list, kpis=op_kpis)
+    paqueterias = load_paqueterias()
+    
+    # Carga de Inventario Global para los selectores (Phase 13 Sync - Fixed Mapping)
+    try:
+        response_autopartes = fetch_data("/v1/autopartes/?limit=2000", session.get('token'))
+        inventario_global = []
+        if isinstance(response_autopartes, dict):
+            productos_all = response_autopartes.get('items', [])
+            for p in productos_all:
+                inventario_global.append({
+                    "id_puro": p.get('id_producto'),
+                    "id": f"SKU-{p.get('id_producto')}",
+                    "pieza": p.get('nombre_producto'),
+                    "precio": float(p.get('precio', 0.0))
+                })
+    except Exception as e:
+        print(f"Error cargando inventario en logistica: {e}")
+        inventario_global = []
+
+    return render_template('logistica.html', 
+                          logisticaData=logistica_list, 
+                          kpis=op_kpis, 
+                          paqueterias=paqueterias, 
+                          inventarioGlobal=inventario_global)
 
 @views_bp.route('/ventas/nueva', methods=['POST'])
 def nueva_venta():
@@ -461,13 +510,18 @@ def nueva_venta():
             })
 
         telefono = str(data.get('telefono', '0000000000'))[:20]
+        cliente_nombre = data.get('cliente_nombre', 'Cliente de Mostrador')
+        original_notas = data.get('notas', '')
+        notas_finales = f"CLIENTE: {cliente_nombre} | {original_notas or 'Venta de Mostrador'}"
+
         payload = {
             "detalles": detalles,
             "direccion": data.get('direccion', 'Venta de Mostrador'),
             "ciudad": data.get('ciudad', 'Local'),
             "codigo_postal": data.get('codigo_postal', '00000'),
             "telefono_contacto": telefono,
-            "notas": data.get('notas', 'Registrado desde Módulo de Ventas')
+            "notas": notas_finales,
+            "paqueteria": data.get('paqueteria', 'MACUIN Fleet Management')
         }
 
         response = post_data("/v1/pedidos/", payload, session.get('token'))
@@ -489,7 +543,6 @@ def usuarios():
     usuarios_data = fetch_data("/v1/usuarios/", session.get('token'))
     usuarios_list = []
     
-    # usuarios_data puede ser Lista o Dict con 'items'
     usuarios_raw = []
     if isinstance(usuarios_data, list):
         usuarios_raw = usuarios_data
@@ -509,20 +562,43 @@ def usuarios():
 @views_bp.route('/superadmin/usuario', methods=['POST'])
 def nuevo_usuario():
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
-    nombre_completo = request.form.get('nombre', '')
-    nombres = nombre_completo.split()
-    nombre = nombres[0] if len(nombres) > 0 else "N/A"
-    apellido = nombres[1] if len(nombres) > 1 else "N/A"
+    
+    # Recolectar datos del formulario
+    nombre = request.form.get('nombre')
+    apellido_paterno = request.form.get('apellido_paterno')
+    apellido_materno = request.form.get('apellido_materno')
+    telefono = request.form.get('telefono')
+    correo = request.form.get('correo')
+    password = request.form.get('password')
+    confirm_password = request.form.get('confirm_password')
+    id_rol = request.form.get('rol')
+
+    # Validaciones básicas
+    if password != confirm_password:
+        flash("Las contraseñas no coinciden.", "error")
+        return redirect(url_for('views.superadmin'))
+
     usuario_data = {
-        "nombre": nombre, "apellido_paterno": apellido, "apellido_materno": "",
-        "correo": request.form.get('correo'), "password": request.form.get('password'),
-        "id_rol": int(request.form.get('rol', '2')), "telefono": "000"
+        "nombre": nombre,
+        "apellido_paterno": apellido_paterno,
+        "apellido_materno": apellido_materno,
+        "correo": correo,
+        "password": password,
+        "telefono": telefono,
+        "id_rol": int(id_rol)
     }
+
+    # Llamada al API
     response = post_data("/v1/usuarios/", usuario_data, session.get('token'))
+    
     if response and response.status_code == 201:
-        flash("Usuario creado.", "success")
+        flash(f"Usuario {nombre} registrado exitosamente.", "success")
     else:
-        flash("Error al crear usuario.", "error")
+        error_msg = "Error al crear usuario."
+        if response and response.status_code == 400:
+            error_msg = "El correo ya está registrado o los datos son inválidos."
+        flash(error_msg, "error")
+        
     return redirect(url_for('views.superadmin'))
 
 @views_bp.route('/superadmin/empresa', methods=['POST'])
