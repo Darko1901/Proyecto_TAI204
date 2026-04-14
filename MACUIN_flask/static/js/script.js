@@ -559,11 +559,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // 4. FILTROS Y EXPORTACIÓN
 // ================================================================
 
+// Función auxiliar para normalizar cadenas (quitar tildes y pasar a minúsculas)
+function normalizeStr(str) {
+    if (!str) return "";
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
 function filtrarTabla() {
-    const textFilter   = (document.getElementById("buscador")?.value || "").toLowerCase();
+    const textFilter   = normalizeStr(document.getElementById("buscador")?.value || "");
     const statusFilter = document.getElementById("filtro-estatus")?.value || "";
     const dateFilter   = document.getElementById("filtro-fecha")?.value || "";
-    const catFilter    = (document.getElementById("filtro-categoria-v")?.value || "").toLowerCase();
+    const catFilter    = normalizeStr(document.getElementById("filtro-categoria-v")?.value || "");
 
     const tbody = document.getElementById("tabla-ventas-body");
     if (!tbody) return;
@@ -571,10 +577,10 @@ function filtrarTabla() {
 
     for (let i = 0; i < trs.length; i++) {
         const tr = trs[i];
-        const rowText    = tr.textContent.toLowerCase();
+        const rowText    = normalizeStr(tr.textContent);
         const cellStatus = tr.cells[5]?.innerText.trim() || "";
         const cellDate   = tr.cells[3]?.innerText.trim() || "";
-        const cellPiezas = (tr.cells[2]?.innerText || "").toLowerCase();
+        const cellPiezas = normalizeStr(tr.cells[2]?.innerText || "");
 
         const matchText   = rowText.includes(textFilter);
         const matchStatus = statusFilter === "" || cellStatus === statusFilter;
@@ -786,7 +792,7 @@ function _getActiveFiltersText(contexto) {
         if (d)   parts.push(`Fecha=${d}`);
         if (paq) parts.push(`Paquetería=${paq}`);
     }
-    return parts.length > 1 ? parts.join(" | ") : "Sin filtros aplicados";
+    return parts.length > 0 ? parts.join(" | ") : "";
 }
 
 /**
@@ -1079,17 +1085,21 @@ function renderAlmacen() {
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    // Usar datos ordenados si existen, de lo contrario los originales
-    const dataAlmacen = window.inventarioGlobalSorted || window.inventarioData || [];
-
+    // Usar datos filtrados o globales
+    const rawData = window.inventarioFiltered || window.inventarioGlobalSorted || window.inventarioData || [];
+    
     const isDark = document.body.classList.contains('theme-dark');
     const textColor = isDark ? '#ffffff' : '#000000';
     const borderColor = isDark ? '#333' : '#eee';
 
-    // Paginación lógica
+    // Paginación lógica sobre el set de datos actual (filtrado o completo)
     const inicio = (paginaActualAlmacen - 1) * itemsPorPaginaAlmacen;
     const fin = inicio + itemsPorPaginaAlmacen;
-    const dataPaginada = dataAlmacen.slice(inicio, fin);
+    const dataPaginada = rawData.slice(inicio, fin);
+
+    if (dataPaginada.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;">No se encontraron resultados para los filtros aplicados.</td></tr>`;
+    }
 
     dataPaginada.forEach(item => {
         let stockVal = parseInt(item.stock) || 0;
@@ -1108,20 +1118,26 @@ function renderAlmacen() {
                     <button class="btn-action-sm" onclick="sumarUnoStock('${item.id_puro || item.id_producto}')" title="Agregar 1 Stock" style="background:#2ecc71; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;"><i class="fas fa-plus"></i></button>
                     <button class="btn-action-sm" onclick="restarUnoStock('${item.id_puro || item.id_producto}')" title="Restar 1 Stock" style="background:#e67e22; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;"><i class="fas fa-minus"></i></button>
                     <button class="btn-action-sm btn-edit-sm" onclick="handleInventorySelection('${item.id_puro || item.id_producto}', 'edit')" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button class="btn-action-sm" onclick="eliminarProducto('${item.id_puro || item.id_producto}')" title="Eliminar Producto" style="background:#ef5350; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;"><i class="fas fa-trash-alt"></i></button>
                 </td>
             </tr>
         `;
     });
-    renderPaginacionAlmacen();
+    renderPaginacionAlmacen(rawData.length);
 }
 
-function renderPaginacionAlmacen() {
+function renderPaginacionAlmacen(totalItems) {
     const container = document.getElementById("paginacion-almacen");
     if (!container) return;
     container.innerHTML = "";
     
-    const paginasTotales = Math.ceil(inventarioData.length / itemsPorPaginaAlmacen);
-    if (paginasTotales <= 1) return;
+    // Si no se pasa totalItems, usamos la longitud de inventarioData por defecto
+    const itemsCount = (typeof totalItems === 'number') ? totalItems : (window.inventarioData || []).length;
+    const paginasTotales = Math.ceil(itemsCount / itemsPorPaginaAlmacen);
+    if (paginasTotales <= 1) {
+        if (itemsCount === 0) container.innerHTML = "";
+        return;
+    }
 
     // Contenedor de Estilo Premium
     const nav = document.createElement("div");
@@ -1239,28 +1255,68 @@ async function restarUnoStock(id) {
     } catch (e) { console.error(e); }
 }
 
+async function eliminarProducto(id) {
+    if (!confirm("¿Estás seguro de que deseas eliminar este producto? Esto lo ocultará del inventario y del catálogo de clientes.")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/almacen/eliminar/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            alert("Producto eliminado correctamente.");
+            // Eliminar de los datos en memoria para actualizar visualmente
+            if (window.inventarioData) {
+                window.inventarioData = window.inventarioData.filter(i => (i.id_puro || i.id_producto).toString() !== id.toString());
+            }
+            if (window.inventarioFiltered) {
+                window.inventarioFiltered = window.inventarioFiltered.filter(i => (i.id_puro || i.id_producto).toString() !== id.toString());
+            }
+            renderAlmacen();
+        } else {
+            alert("Error al eliminar el producto del servidor.");
+        }
+    } catch (err) {
+        console.error("Error en eliminarProducto:", err);
+        alert("Ocurrió un error al procesar la solicitud.");
+    }
+}
+
 /**
  * Filtro Maestro para Almacén
  */
 function filtrarAlmacen() {
-    const filter    = (document.getElementById("buscador-almacen")?.value || "").toLowerCase();
-    const catFilter = (document.getElementById("filtro-categoria-a")?.value || "").toLowerCase();
+    const textFilter = normalizeStr(document.getElementById("buscador-almacen")?.value || "");
+    const catFilter  = normalizeStr(document.getElementById("filtro-categoria-a")?.value || "");
 
-    const tbody = document.getElementById("tabla-almacen-body");
-    if (!tbody) return;
-    const trs = tbody.getElementsByTagName("tr");
+    const sourceData = window.inventarioGlobalSorted || window.inventarioData || [];
 
-    for (let i = 0; i < trs.length; i++) {
-        const tr = trs[i];
-        const rowText = tr.textContent.toLowerCase();
-        // categoria column index 2
-        const cellCat = (tr.cells[2]?.innerText || "").toLowerCase();
+    // Si ambos filtros están vacíos, limpiar inventarioFiltered y resetear
+    if (textFilter === "" && catFilter === "") {
+        window.inventarioFiltered = null;
+    } else {
+        window.inventarioFiltered = sourceData.filter(item => {
+            const piezaLabel = normalizeStr(item.pieza || item.nombre_producto || "");
+            const catLabel   = normalizeStr(item.categoria || "");
+            const idLabel    = (item.id_puro || item.id_producto || "").toString();
 
-        const matchText = rowText.includes(filter);
-        const matchCat  = catFilter === "" || cellCat.includes(catFilter);
+            const matchText = textFilter === "" || 
+                              piezaLabel.includes(textFilter) || 
+                              idLabel.includes(textFilter) ||
+                              catLabel.includes(textFilter);
+            
+            const matchCat  = catFilter === "" || catLabel.includes(catFilter);
 
-        tr.style.display = (matchText && matchCat) ? "" : "none";
+            return matchText && matchCat;
+        });
     }
+
+    paginaActualAlmacen = 1;
+    renderAlmacen();
 }
 
 function actualizarKPIsAlmacen() {

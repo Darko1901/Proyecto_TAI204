@@ -116,6 +116,17 @@ def ventas():
     elif isinstance(pedidos_data, dict):
         pedidos_raw = pedidos_data.get('items', [])
         
+    categorias_map = {
+        1: "Frenado",
+        2: "Suspensión y Dirección",
+        3: "Iluminación",
+        4: "Motor y Transmisión",
+        5: "Llantas",
+        6: "Kits de Afinación",
+        7: "Sensores y Eléctrico",
+        8: "Aceites y Aditivos"
+    }
+
     for p in pedidos_raw:
         estados_map = {1: "Recibido", 2: "Surtido", 3: "Enviado", 4: "Completado", 5: "Cancelado"}
         estatus = estados_map.get(p.get("id_estado"), "Procesando")
@@ -123,11 +134,28 @@ def ventas():
         u = p.get("usuario")
         nombre_cliente = f"{u.get('nombre')} {u.get('apellido_paterno')}" if u else f"Cliente #{p.get('id_usuario', 'N/A')}"
         
+        # Procesar piezas reales (Phase 16 Fix)
+        detalles = p.get("detalles", [])
+        piezas_str = "Sin productos"
+        if detalles:
+            items_text = []
+            for d in detalles:
+                # El detalle puede traer nombre_producto o debemos buscarlo
+                p_name = d.get('nombre_producto') or d.get('producto', {}).get('nombre_producto')
+                if not p_name:
+                    p_name = f"Pieza #{d.get('id_producto', 'SQL')}"
+                # Obtener categoría
+                p_cat_id = d.get('producto', {}).get('id_categoria', 1) if d.get('producto') else 1
+                cat_name = categorias_map.get(p_cat_id, "General")
+                
+                items_text.append(f"#{d.get('id_producto') or '??'}")
+            piezas_str = ", ".join(items_text)
+
         ventas_list.append({
             "id": f"V-{p.get('id_pedido', '')}",
             "id_puro": p.get('id_pedido'),
             "cliente": nombre_cliente,
-            "piezas": "Piezas del Pedido",
+            "piezas": piezas_str,
             "fecha": p.get('fecha_pedido', '').split('T')[0] if p.get('fecha_pedido') else 'N/A',
             "total": float(p.get('total', 0.0)),
             "estatus": estatus
@@ -142,10 +170,12 @@ def ventas():
         productos_all = response_autopartes
 
     for p in productos_all:
+        id_cat = p.get('id_categoria', 1)
+        cat_name = categorias_map.get(id_cat, "General")
         inventario_global.append({
             "id_puro": p.get('id_producto'),
             "id": f"SKU-{p.get('id_producto')}",
-            "pieza": p.get('nombre_producto'),
+            "pieza": f"[{cat_name}] {p.get('nombre_producto')}",
             "precio": float(p.get('precio', 0.0))
         })
 
@@ -282,12 +312,12 @@ def almacen():
     
     almacen_list = []
     categorias_map = {
-        1: "Frenos",
-        2: "Motor y Mecánica",
-        3: "Suspensión y Dirección",
-        4: "Sistema Eléctrico",
-        5: "Fluidos y Filtros",
-        6: "Transmisión",
+        1: "Frenado",
+        2: "Suspensión y Dirección",
+        3: "Iluminación",
+        4: "Motor y Transmisión",
+        5: "Llantas",
+        6: "Kits de Afinación",
         7: "Sensores y Eléctrico",
         8: "Aceites y Aditivos"
     }

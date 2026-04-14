@@ -6,8 +6,38 @@
 
 body {
     font-family: 'Arial', sans-serif;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Premium Custom Scrollbar - Windows Enhanced Style */
+::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+}
+
+::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 0px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 0px;
+    border: 3px solid #e2e8f0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* Master Theme Scrollbar */
+.theme-master ::-webkit-scrollbar-thumb {
+    background: #000000;
+}
+.theme-master ::-webkit-scrollbar-track {
+    background: #cccccc;
 }
 
 .container {
