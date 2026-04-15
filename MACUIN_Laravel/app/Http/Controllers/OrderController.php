@@ -62,13 +62,29 @@ class OrderController extends Controller
 
     public function checkout(Request $request)
     {
-        // En un sistema real, el carrito vendría de la sesión o DB.
-        // Aquí simulamos que recibimos los datos del formulario de checkout.
-        
         $token = session('token');
         if (!$token) {
             return redirect()->route('login')->withErrors(['message' => 'Debes iniciar sesión para comprar.']);
         }
+
+        $request->validate([
+            'direccion'          => 'required|string|min:5',
+            'ciudad'             => 'required|string|min:2',
+            'codigo_postal'      => ['required', 'regex:/^\d{5}$/'],
+            'telefono_contacto'  => ['required', 'regex:/^\d{10}$/'],
+            'metodo_pago'        => 'required|in:Tarjeta,Efectivo',
+        ], [
+            'direccion.required'         => 'La dirección es obligatoria.',
+            'direccion.min'              => 'La dirección debe tener al menos 5 caracteres.',
+            'ciudad.required'            => 'La ciudad es obligatoria.',
+            'ciudad.min'                 => 'La ciudad debe tener al menos 2 caracteres.',
+            'codigo_postal.required'     => 'El código postal es obligatorio.',
+            'codigo_postal.regex'        => 'El código postal debe tener exactamente 5 dígitos numéricos.',
+            'telefono_contacto.required' => 'El teléfono de contacto es obligatorio.',
+            'telefono_contacto.regex'    => 'El teléfono debe tener exactamente 10 dígitos numéricos, sin letras ni espacios.',
+            'metodo_pago.required'       => 'Selecciona un método de pago.',
+            'metodo_pago.in'             => 'Método de pago no válido.',
+        ]);
 
         $carritoJson = $request->input('carrito_data', '[]');
         $itemsRaw = json_decode($carritoJson, true);
@@ -131,7 +147,8 @@ class OrderController extends Controller
         $content .= "----------------------------\n";
         $content .= "PRODUCTOS:\n";
         foreach ($pedido['detalles'] as $d) {
-            $content .= "- " . ($d['producto']['nombre_producto'] ?? 'Producto') . " x" . $d['cantidad'] . " : $" . number_format($d['subtotal'], 2) . "\n";
+            $subtotal = ($d['precio_unitario'] ?? 0) * ($d['cantidad'] ?? 1);
+            $content .= "- " . ($d['nombre_producto'] ?? $d['producto']['nombre_producto'] ?? 'Producto') . " x" . $d['cantidad'] . " : $" . number_format($subtotal, 2) . "\n";
         }
         $content .= "----------------------------\n";
         $content .= "TOTAL: $" . number_format($pedido['total'], 2) . " MXN\n";

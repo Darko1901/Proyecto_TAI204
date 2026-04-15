@@ -93,11 +93,11 @@
     <nav class="navbar">
         <div class="nav-logo">MACUIN</div>
         <div class="nav-links">
-            <a href="/">Inicio</a>
             <a href="{{ route('catalogo') }}">Catálogo</a>
-            <a href="#contacto">Contacto</a>
             @if(session()->has('token'))
-                <a href="{{ route('dashboard') }}" class="btn-auth">Mi Cuenta</a>
+                <a href="{{ route('pedidos') }}">Pedidos</a>
+                <a href="{{ route('carrito') }}"><i class="fas fa-shopping-cart"></i> Carrito</a>
+                <a href="{{ route('dashboard') }}" class="btn-auth">Panel</a>
             @else
                 <a href="{{ route('login') }}" class="btn-auth">Acceder</a>
             @endif
