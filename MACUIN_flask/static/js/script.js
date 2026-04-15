@@ -559,29 +559,35 @@ document.addEventListener('DOMContentLoaded', () => {
 // 4. FILTROS Y EXPORTACIÓN
 // ================================================================
 
+// Función auxiliar para normalizar cadenas (quitar tildes y pasar a minúsculas)
+function normalizeStr(str) {
+    if (!str) return "";
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
 function filtrarTabla() {
-    const textFilter = (document.getElementById("buscador")?.value || "").toLowerCase();
+    const textFilter   = normalizeStr(document.getElementById("buscador")?.value || "");
     const statusFilter = document.getElementById("filtro-estatus")?.value || "";
-    const dateFilter = document.getElementById("filtro-fecha")?.value || "";
-    
+    const dateFilter   = document.getElementById("filtro-fecha")?.value || "";
+    const catFilter    = normalizeStr(document.getElementById("filtro-categoria-v")?.value || "");
+
     const tbody = document.getElementById("tabla-ventas-body");
-    if(!tbody) return;
+    if (!tbody) return;
     const trs = tbody.getElementsByTagName("tr");
 
     for (let i = 0; i < trs.length; i++) {
         const tr = trs[i];
-        const rowText = tr.textContent.toLowerCase();
-        
-        // Estatus column is index 5
+        const rowText    = normalizeStr(tr.textContent);
         const cellStatus = tr.cells[5]?.innerText.trim() || "";
-        // Date column is index 3
-        const cellDate = tr.cells[3]?.innerText.trim() || "";
-        
-        let matchText = rowText.includes(textFilter);
-        let matchStatus = statusFilter === "" || cellStatus === statusFilter;
-        let matchDate = dateFilter === "" || cellDate === dateFilter;
+        const cellDate   = tr.cells[3]?.innerText.trim() || "";
+        const cellPiezas = normalizeStr(tr.cells[2]?.innerText || "");
 
-        tr.style.display = (matchText && matchStatus && matchDate) ? "" : "none";
+        const matchText   = rowText.includes(textFilter);
+        const matchStatus = statusFilter === "" || cellStatus === statusFilter;
+        const matchDate   = dateFilter   === "" || cellDate   === dateFilter;
+        const matchCat    = catFilter    === "" || cellPiezas.includes(catFilter);
+
+        tr.style.display = (matchText && matchStatus && matchDate && matchCat) ? "" : "none";
     }
 }
 
@@ -704,69 +710,193 @@ function descargarPDF(contexto = 'ventas') {
     console.log("✅ Reporte Programático Generado Correctamente.");
 }
 
-function exportarExcel() {
+function exportarExcel(contexto) {
     if (typeof XLSX === 'undefined') {
         alert("La librería para exportar a Excel no está cargada.");
         return;
     }
-    
-    // Verificamos si estamos en Logística, Almacén o Ventas
-    const isLogistica = !!document.getElementById('tabla-logistica-body');
-    const isAlmacen = !!document.getElementById('tabla-almacen-body');
-    
-    let ws_data = [];
-    let fileName = "Reporte";
 
-    if (isLogistica) {
-        fileName = "LOGISTICA";
-        ws_data.push(["Guía", "Destinatario", "Courier", "Estado", "Entrega Est."]);
-        
-        // Usar los datos de la ventana o intentar leer de la tabla si fallan los datos globales
-        const dataArr = window.logisticaData || [];
-        if (dataArr.length > 0) {
-            dataArr.forEach(l => {
-                ws_data.push([
-                    l.guia || l.id_pedido, 
-                    l.cliente || l.destino || l.nombre, 
-                    l.courier || l.paqueteria || "Pendiente", 
-                    l.estado || "Recibido", 
-                    l.entrega_estimada || l.fecha || "Pendiente"
-                ]);
-            });
-        } else {
-            // Fallback: leer de la tabla física
-            const tableRows = document.querySelectorAll('#tabla-logistica-body tr');
-            tableRows.forEach(row => {
-                const cells = row.cells;
-                if (cells.length >= 6) {
-                    ws_data.push([
-                        cells[0].innerText.trim(),
-                        cells[1].innerText.trim(),
-                        cells[2].innerText.trim(),
-                        cells[4].innerText.trim(),
-                        cells[5].innerText.trim()
-                    ]);
-                }
-            });
-        }
-    } else if (isAlmacen) {
-        fileName = "ALMACEN";
-        ws_data.push(["SKU", "Pieza", "Categoría", "Stock", "Precio"]);
-        (window.inventarioData || []).forEach(i => {
-            ws_data.push([`#${i.id_puro}`, i.pieza, i.categoria, i.stock, i.precio]);
-        });
-    } else {
-        fileName = "VENTAS";
-        ws_data.push(["Folio", "Cliente", "Piezas", "Fecha", "Total", "Estatus"]);
-        (window.ventasData || []).forEach(v => {
-            ws_data.push([v.id, v.cliente, v.piezas, v.fecha, v.total, v.estatus]);
+    // Auto-detect context if not provided
+    if (!contexto) {
+        if (document.getElementById('tabla-logistica-body')) contexto = 'logistica';
+        else if (document.getElementById('tabla-almacen-body')) contexto = 'almacen';
+        else contexto = 'ventas';
+    }
+
+    const tableIds = {
+        ventas:    'tabla-ventas-body',
+        almacen:   'tabla-almacen-body',
+        logistica: 'tabla-logistica-body'
+    };
+
+    const headers = {
+        ventas:    ["Folio", "Cliente / Taller", "Piezas", "Fecha", "Total ($)", "Estatus"],
+        almacen:   ["SKU", "Pieza", "Categoría", "Ubicación", "Stock", "Precio ($)"],
+        logistica: ["Guía / ID", "Destinatario", "Paquetería", "Estado", "Entrega Est."]
+    };
+
+    const colIndexes = {
+        ventas:    [0, 1, 2, 3, 4, 5],
+        almacen:   [0, 1, 2, 3, 4, 5],
+        logistica: [0, 1, 2, 4, 5]
+    };
+
+    const fileName = contexto.toUpperCase();
+    const ws_data  = [];
+
+    // Metadata row with active filters
+    ws_data.push([`REPORTE DE ${fileName} - MACUIN Enterprise`]);
+    ws_data.push([`Generado: ${new Date().toLocaleString()}`]);
+    ws_data.push([_getActiveFiltersText(contexto)]);
+    ws_data.push([]); // blank row
+    ws_data.push(headers[contexto]);
+
+    // Read only visible rows (filters applied)
+    const tbody = document.getElementById(tableIds[contexto]);
+    if (tbody) {
+        Array.from(tbody.rows).forEach(row => {
+            if (row.style.display !== 'none') {
+                ws_data.push(colIndexes[contexto].map(ci => (row.cells[ci]?.innerText || "").trim()));
+            }
         });
     }
-    
+
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    // Bold the title row
+    if (ws['A1']) ws['A1'].s = { font: { bold: true } };
     XLSX.utils.book_append_sheet(wb, ws, fileName);
     XLSX.writeFile(wb, `REPORTE_MACUIN_${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+/**
+ * Returns a human-readable summary of active filters for a given context.
+ */
+function _getActiveFiltersText(contexto) {
+    const parts = ["Filtros activos:"];
+    if (contexto === 'ventas') {
+        const s = document.getElementById('filtro-estatus')?.value;
+        const d = document.getElementById('filtro-fecha')?.value;
+        const c = document.getElementById('filtro-categoria-v')?.value;
+        if (s) parts.push(`Estatus=${s}`);
+        if (d) parts.push(`Fecha=${d}`);
+        if (c) parts.push(`Categoría=${c}`);
+    } else if (contexto === 'almacen') {
+        const c = document.getElementById('filtro-categoria-a')?.value;
+        if (c) parts.push(`Categoría=${c}`);
+    } else if (contexto === 'logistica') {
+        const s   = document.getElementById('filtro-estatus-l')?.value;
+        const d   = document.getElementById('filtro-fecha-l')?.value;
+        const paq = document.getElementById('filtro-paqueteria-l')?.value;
+        if (s)   parts.push(`Estatus=${s}`);
+        if (d)   parts.push(`Fecha=${d}`);
+        if (paq) parts.push(`Paquetería=${paq}`);
+    }
+    return parts.length > 0 ? parts.join(" | ") : "";
+}
+
+/**
+ * Exportar a DOCX (Word) - usa html-docx-js si disponible, fallback a .doc HTML
+ */
+function exportarDocx(contexto) {
+    contexto = contexto || 'ventas';
+
+    const tableIds = {
+        ventas:    'tabla-ventas-body',
+        almacen:   'tabla-almacen-body',
+        logistica: 'tabla-logistica-body'
+    };
+
+    const headersByCtx = {
+        ventas:    ["Folio", "Cliente / Taller", "Piezas", "Fecha", "Total ($)", "Estatus"],
+        almacen:   ["SKU", "Pieza", "Categoría", "Ubicación", "Stock", "Precio ($)"],
+        logistica: ["Guía / ID", "Destinatario", "Paquetería", "Estado", "Entrega Est."]
+    };
+
+    const colsByCtx = {
+        ventas:    [0, 1, 2, 3, 4, 5],
+        almacen:   [0, 1, 2, 3, 4, 5],
+        logistica: [0, 1, 2, 4, 5]
+    };
+
+    const headers  = headersByCtx[contexto];
+    const colIdxs  = colsByCtx[contexto];
+    const tbody    = document.getElementById(tableIds[contexto]);
+    const filtersText = _getActiveFiltersText(contexto);
+    const fecha    = new Date().toLocaleString();
+
+    // Build HTML table with inline styles for Word compatibility
+    let tableRows = "";
+    if (tbody) {
+        Array.from(tbody.rows).forEach(row => {
+            if (row.style.display !== 'none') {
+                const cells = colIdxs.map(ci => `<td style="border:1px solid #ccc; padding:6px 10px; font-size:11pt;">${(row.cells[ci]?.innerText || "").trim()}</td>`).join('');
+                tableRows += `<tr>${cells}</tr>`;
+            }
+        });
+    }
+
+    const headerRow = headers.map(h => `<th style="background:#1e293b; color:white; border:1px solid #1e293b; padding:8px 10px; font-size:11pt; text-align:left;">${h}</th>`).join('');
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html xmlns:o='urn:schemas-microsoft-com:office:office'
+          xmlns:w='urn:schemas-microsoft-com:office:word'
+          xmlns='http://www.w3.org/TR/REC-html40'>
+    <head>
+        <meta charset='utf-8'>
+        <title>MACUIN - Reporte de ${contexto.toUpperCase()}</title>
+        <style>
+            body { font-family: Calibri, Arial, sans-serif; margin: 20mm; }
+            h1   { color: #1e293b; font-size: 16pt; margin-bottom: 4pt; }
+            p    { font-size: 9pt; color: #64748b; margin: 2pt 0; }
+            table { border-collapse: collapse; width: 100%; margin-top: 14pt; }
+        </style>
+    </head>
+    <body>
+        <h1>AUTOPARTES MACUIN &mdash; REPORTE DE ${contexto.toUpperCase()}</h1>
+        <p>Generado: ${fecha}</p>
+        <p>${filtersText}</p>
+        <table>
+            <thead><tr>${headerRow}</tr></thead>
+            <tbody>${tableRows}</tbody>
+        </table>
+        <p style="margin-top:20pt; font-size:8pt; color:#94a3b8;">
+            MACUIN Enterprise &mdash; Documento de Control Interno
+        </p>
+    </body>
+    </html>`;
+
+    const fileName = `MACUIN_${contexto.toUpperCase()}_${new Date().toISOString().split('T')[0]}`;
+
+    // Use html-docx-js if loaded (produces real .docx), else fallback to .doc blob
+    if (typeof htmlDocx !== 'undefined' && htmlDocx.asBlob) {
+        try {
+            const blob = htmlDocx.asBlob(htmlContent);
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = `${fileName}.docx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            return;
+        } catch (e) {
+            console.warn("html-docx-js falló, usando fallback .doc:", e);
+        }
+    }
+
+    // Fallback: HTML blob opened by Word as .doc
+    const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `${fileName}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 // ================================================================
@@ -955,17 +1085,21 @@ function renderAlmacen() {
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    // Usar datos ordenados si existen, de lo contrario los originales
-    const dataAlmacen = window.inventarioGlobalSorted || window.inventarioData || [];
-
+    // Usar datos filtrados o globales
+    const rawData = window.inventarioFiltered || window.inventarioGlobalSorted || window.inventarioData || [];
+    
     const isDark = document.body.classList.contains('theme-dark');
     const textColor = isDark ? '#ffffff' : '#000000';
     const borderColor = isDark ? '#333' : '#eee';
 
-    // Paginación lógica
+    // Paginación lógica sobre el set de datos actual (filtrado o completo)
     const inicio = (paginaActualAlmacen - 1) * itemsPorPaginaAlmacen;
     const fin = inicio + itemsPorPaginaAlmacen;
-    const dataPaginada = dataAlmacen.slice(inicio, fin);
+    const dataPaginada = rawData.slice(inicio, fin);
+
+    if (dataPaginada.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;">No se encontraron resultados para los filtros aplicados.</td></tr>`;
+    }
 
     dataPaginada.forEach(item => {
         let stockVal = parseInt(item.stock) || 0;
@@ -984,20 +1118,26 @@ function renderAlmacen() {
                     <button class="btn-action-sm" onclick="sumarUnoStock('${item.id_puro || item.id_producto}')" title="Agregar 1 Stock" style="background:#2ecc71; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;"><i class="fas fa-plus"></i></button>
                     <button class="btn-action-sm" onclick="restarUnoStock('${item.id_puro || item.id_producto}')" title="Restar 1 Stock" style="background:#e67e22; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;"><i class="fas fa-minus"></i></button>
                     <button class="btn-action-sm btn-edit-sm" onclick="handleInventorySelection('${item.id_puro || item.id_producto}', 'edit')" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button class="btn-action-sm" onclick="eliminarProducto('${item.id_puro || item.id_producto}')" title="Eliminar Producto" style="background:#ef5350; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;"><i class="fas fa-trash-alt"></i></button>
                 </td>
             </tr>
         `;
     });
-    renderPaginacionAlmacen();
+    renderPaginacionAlmacen(rawData.length);
 }
 
-function renderPaginacionAlmacen() {
+function renderPaginacionAlmacen(totalItems) {
     const container = document.getElementById("paginacion-almacen");
     if (!container) return;
     container.innerHTML = "";
     
-    const paginasTotales = Math.ceil(inventarioData.length / itemsPorPaginaAlmacen);
-    if (paginasTotales <= 1) return;
+    // Si no se pasa totalItems, usamos la longitud de inventarioData por defecto
+    const itemsCount = (typeof totalItems === 'number') ? totalItems : (window.inventarioData || []).length;
+    const paginasTotales = Math.ceil(itemsCount / itemsPorPaginaAlmacen);
+    if (paginasTotales <= 1) {
+        if (itemsCount === 0) container.innerHTML = "";
+        return;
+    }
 
     // Contenedor de Estilo Premium
     const nav = document.createElement("div");
@@ -1115,19 +1255,68 @@ async function restarUnoStock(id) {
     } catch (e) { console.error(e); }
 }
 
+async function eliminarProducto(id) {
+    if (!confirm("¿Estás seguro de que deseas eliminar este producto? Esto lo ocultará del inventario y del catálogo de clientes.")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/almacen/eliminar/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            alert("Producto eliminado correctamente.");
+            // Eliminar de los datos en memoria para actualizar visualmente
+            if (window.inventarioData) {
+                window.inventarioData = window.inventarioData.filter(i => (i.id_puro || i.id_producto).toString() !== id.toString());
+            }
+            if (window.inventarioFiltered) {
+                window.inventarioFiltered = window.inventarioFiltered.filter(i => (i.id_puro || i.id_producto).toString() !== id.toString());
+            }
+            renderAlmacen();
+        } else {
+            alert("Error al eliminar el producto del servidor.");
+        }
+    } catch (err) {
+        console.error("Error en eliminarProducto:", err);
+        alert("Ocurrió un error al procesar la solicitud.");
+    }
+}
+
 /**
- * Filtro Maestro para Almacén (LA LUPITA)
+ * Filtro Maestro para Almacén
  */
 function filtrarAlmacen() {
-    const filter = (document.getElementById("buscador-almacen")?.value || "").toLowerCase();
-    const tbody = document.getElementById("tabla-almacen-body");
-    if(!tbody) return;
-    const trs = tbody.getElementsByTagName("tr");
+    const textFilter = normalizeStr(document.getElementById("buscador-almacen")?.value || "");
+    const catFilter  = normalizeStr(document.getElementById("filtro-categoria-a")?.value || "");
 
-    for (let i = 0; i < trs.length; i++) {
-        const tr = trs[i];
-        tr.style.display = tr.textContent.toLowerCase().includes(filter) ? "" : "none";
+    const sourceData = window.inventarioGlobalSorted || window.inventarioData || [];
+
+    // Si ambos filtros están vacíos, limpiar inventarioFiltered y resetear
+    if (textFilter === "" && catFilter === "") {
+        window.inventarioFiltered = null;
+    } else {
+        window.inventarioFiltered = sourceData.filter(item => {
+            const piezaLabel = normalizeStr(item.pieza || item.nombre_producto || "");
+            const catLabel   = normalizeStr(item.categoria || "");
+            const idLabel    = (item.id_puro || item.id_producto || "").toString();
+
+            const matchText = textFilter === "" || 
+                              piezaLabel.includes(textFilter) || 
+                              idLabel.includes(textFilter) ||
+                              catLabel.includes(textFilter);
+            
+            const matchCat  = catFilter === "" || catLabel.includes(catFilter);
+
+            return matchText && matchCat;
+        });
     }
+
+    paginaActualAlmacen = 1;
+    renderAlmacen();
 }
 
 function actualizarKPIsAlmacen() {
@@ -1550,14 +1739,29 @@ function renderLogistica() {
 }
 
 function filtrarLogistica() {
-    const filter = (document.getElementById("buscador-logistica")?.value || "").toLowerCase();
+    const filter       = (document.getElementById("buscador-logistica")?.value || "").toLowerCase();
+    const statusFilter = (document.getElementById("filtro-estatus-l")?.value || "").toLowerCase();
+    const dateFilter   = document.getElementById("filtro-fecha-l")?.value || "";
+    const paqFilter    = (document.getElementById("filtro-paqueteria-l")?.value || "").toLowerCase();
+
     const tbody = document.getElementById("tabla-logistica-body");
-    if(!tbody) return;
+    if (!tbody) return;
     const trs = tbody.getElementsByTagName("tr");
 
     for (let i = 0; i < trs.length; i++) {
         const tr = trs[i];
-        tr.style.display = tr.textContent.toLowerCase().includes(filter) ? "" : "none";
+        const rowText   = tr.textContent.toLowerCase();
+        // columns: 0=Guía, 1=Destinatario, 2=Paquetería, 3=Progreso, 4=Estado, 5=Entrega Est.
+        const cellStatus = (tr.cells[4]?.innerText || "").toLowerCase();
+        const cellDate   = (tr.cells[5]?.innerText || "").trim();
+        const cellPaq    = (tr.cells[2]?.innerText || "").toLowerCase();
+
+        const matchText   = rowText.includes(filter);
+        const matchStatus = statusFilter === "" || cellStatus.includes(statusFilter);
+        const matchDate   = dateFilter   === "" || cellDate.includes(dateFilter);
+        const matchPaq    = paqFilter    === "" || cellPaq.includes(paqFilter);
+
+        tr.style.display = (matchText && matchStatus && matchDate && matchPaq) ? "" : "none";
     }
 }
 
@@ -1989,10 +2193,15 @@ function renderTablaUsuarios() {
                 <td><i class="fas ${iconoOrigen}" style="color:#7f8c8d; font-size: 0.8rem; margin-right: 5px;"></i> ${usr.origen}</td>
                 <td><strong>${usr.rol}</strong></td>
                 <td><span class="${badgeClass}">${usr.estado}</span></td>
-                <td>
-                    <button style="background:none; border:none; color:#3498db; cursor:pointer; font-size: 1.1rem; margin-right: 15px;" title="Editar" onclick="abrirModalEditar('${usr.id}')"><i class="fas fa-edit"></i></button>
-                    <button style="background:none; border:none; color:${usr.estado === 'Activo' ? '#e74c3c' : '#2ecc71'}; cursor:pointer; font-size: 1.1rem;" title="${usr.estado === 'Activo' ? 'Suspender' : 'Activar'}" onclick="suspenderUsuario(${usr.id_puro})">
+                <td style="display:flex; gap:10px; align-items:center;">
+                    <button style="background:none; border:none; color:#3498db; cursor:pointer; font-size: 1.1rem;" title="Editar usuario" onclick="abrirModalEditar('${usr.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button style="background:none; border:none; color:${usr.estado === 'Activo' ? '#f59e0b' : '#2ecc71'}; cursor:pointer; font-size: 1.1rem;" title="${usr.estado === 'Activo' ? 'Suspender' : 'Activar'}" onclick="suspenderUsuario(${usr.id_puro})">
                         <i class="fas ${usr.estado === 'Activo' ? 'fa-user-slash' : 'fa-user-check'}"></i>
+                    </button>
+                    <button style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size: 1.1rem;" title="Eliminar usuario permanentemente" onclick="eliminarUsuario(${usr.id_puro}, '${usr.nombre.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
             </tr>
@@ -2086,34 +2295,81 @@ function cerrarMasterModal() {
 
 function abrirModalEditar(id) {
     const usuario = usuariosGlobales.find(u => u.id === id);
-    if(usuario) {
-        usuarioEnEdicion = id;
-        document.getElementById('edit-nombre').value = usuario.nombre;
-        document.getElementById('edit-rol').value = usuario.rol;
-        document.getElementById('edit-origen').value = usuario.origen;
-        document.getElementById('modalEditarUsuario').style.display = 'flex';
+    if (!usuario) return;
+    usuarioEnEdicion = id;
+
+    // Separar nombre y apellido del nombre completo guardado
+    const partes = (usuario.nombre || '').split(' ');
+    document.getElementById('edit-id-puro').value  = usuario.id_puro;
+    document.getElementById('edit-nombre').value   = partes[0] || '';
+    document.getElementById('edit-apellido').value = partes[1] || '';
+    document.getElementById('edit-id-rol').value   = usuario.id_rol || 2;
+    document.getElementById('edit-info-nombre').textContent = usuario.nombre;
+    document.getElementById('edit-info-correo').textContent = usuario.correo || '';
+    document.getElementById('modalEditarUsuario').style.display = 'flex';
+}
+
+function cerrarModalEditar() {
+    document.getElementById('modalEditarUsuario').style.display = 'none';
+    usuarioEnEdicion = null;
+}
+
+async function guardarEdicionUsuario() {
+    const idPuro  = document.getElementById('edit-id-puro').value;
+    const nombre  = document.getElementById('edit-nombre').value.trim();
+    const apellido = document.getElementById('edit-apellido').value.trim();
+    const idRol   = document.getElementById('edit-id-rol').value;
+
+    if (!nombre || !apellido) {
+        alert("Nombre y apellido son requeridos.");
+        return;
+    }
+
+    const btn = document.querySelector('#modalEditarUsuario button[onclick="guardarEdicionUsuario()"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+    try {
+        const formData = new FormData();
+        formData.append('nombre', nombre);
+        formData.append('apellido_paterno', apellido);
+        formData.append('id_rol', idRol);
+
+        const response = await fetch(`/superadmin/editar/${idPuro}`, {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+            cerrarModalEditar();
+            location.reload();
+        } else {
+            alert('Error al actualizar: ' + (result.message || 'Intente de nuevo.'));
+        }
+    } catch (e) {
+        alert('Error de conexión al actualizar usuario.');
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Guardar Cambios'; }
     }
 }
 
-function cerrarModalEditar() { 
-    document.getElementById('modalEditarUsuario').style.display = 'none'; 
-    usuarioEnEdicion = null; 
-}
+async function eliminarUsuario(id_puro, nombre) {
+    if (!confirm(`¿Eliminar permanentemente a "${nombre}" (ID: ${id_puro})?\nEsta acción no se puede deshacer.`)) return;
 
-function guardarEdicionUsuario() {
-    if(usuarioEnEdicion) {
-        const usuario = usuariosGlobales.find(u => u.id === usuarioEnEdicion);
-        usuario.nombre = document.getElementById('edit-nombre').value;
-        usuario.rol = document.getElementById('edit-rol').value;
-        usuario.origen = document.getElementById('edit-origen').value;
-        
-        cerrarModalEditar();
-        renderTablas();
+    try {
+        const response = await fetch(`/superadmin/eliminar/${id_puro}`, { method: 'POST' });
+        const result = await response.json();
+        if (result.status === 'success') {
+            location.reload();
+        } else {
+            alert('Error al eliminar: ' + (result.message || 'Intente de nuevo.'));
+        }
+    } catch (e) {
+        alert('Error de conexión al eliminar usuario.');
     }
 }
 
 function suspenderUsuario(id_puro) {
-    if(confirm("¿Cambiar el estado de este usuario?")) {
+    if (confirm("¿Cambiar el estado activo/inactivo de este usuario?")) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/superadmin/toggle/${id_puro}`;
@@ -2149,9 +2405,11 @@ function rechazarSolicitud(id) {
 window.onload = function() {
     if (document.getElementById("tabla-ventas-body") && typeof renderTabla === 'function') {
         renderTabla();
+        poblarCategoriasVentas();
     }
     if (document.getElementById("tabla-almacen-body") && typeof renderAlmacen === 'function') {
         renderAlmacen();
+        poblarCategoriasAlmacen();
     }
     if (document.getElementById("tabla-logistica-body") && typeof renderLogistica === 'function') {
         renderLogistica();
@@ -2164,8 +2422,41 @@ window.onload = function() {
     }
     // ── Init Notifications ──
     initNotifications();
-
 };
+
+/**
+ * Rellena el dropdown de categorías en la vista de Ventas.
+ * En ventas el inventario se expone como window.inventarioGlobal (no inventarioData).
+ */
+function poblarCategoriasVentas() {
+    const select = document.getElementById('filtro-categoria-v');
+    if (!select) return;
+    // ventas.html pasa el inventario como inventarioGlobal; almacen.html lo pasa como inventarioData
+    const source = window.inventarioGlobal || window.inventarioData || [];
+    const cats = [...new Set(source.map(i => i.categoria || i.nombre_categoria).filter(Boolean))].sort();
+    cats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.toLowerCase();
+        opt.textContent = cat;
+        select.appendChild(opt);
+    });
+}
+
+/**
+ * Rellena el dropdown de categorías en la vista de Almacén
+ * usando las categorías únicas de inventarioData.
+ */
+function poblarCategoriasAlmacen() {
+    const select = document.getElementById('filtro-categoria-a');
+    if (!select) return;
+    const cats = [...new Set((window.inventarioData || []).map(i => i.categoria).filter(Boolean))].sort();
+    cats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.toLowerCase();
+        opt.textContent = cat;
+        select.appendChild(opt);
+    });
+}
 
 async function initNotifications() {
     const badge = document.getElementById("notif-badge");

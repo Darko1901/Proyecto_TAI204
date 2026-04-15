@@ -11,10 +11,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/html-docx-js@0.3.1/dist/html-docx.js"></script>
 </head>
 <body class="{% if session.get('rol') == 1 %}theme-master{% endif %}">
     <div class="dashboard-container" style="min-height: 100vh; display: flex; flex-direction: column;">
-        
+
         <header class="dashboard-header">
             <h1>Autopartes MACUIN - Módulo de Ventas</h1>
             <div class="user-info">
@@ -116,12 +117,29 @@
                         <input type="date" id="filtro-fecha" onchange="filtrarTabla()" style="width: 100%; padding: 9px; border-radius: 10px; border: 1px solid #e2e8f0; color: #1e293b; font-weight: 700; font-size: 0.85rem; cursor: pointer; background: white;">
                     </div>
 
+                    <div class="filter-group" style="width: 160px;">
+                        <select id="filtro-categoria-v" onchange="filtrarTabla()" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; color: #1e293b; font-weight: 700; font-size: 0.85rem; cursor: pointer; background: white;">
+                            <option value="">-- Categoría --</option>
+                            <option value="Frenado">Frenado</option>
+                            <option value="Suspensión">Suspensión y Dirección</option>
+                            <option value="Iluminación">Iluminación</option>
+                            <option value="Motor">Motor y Transmisión</option>
+                            <option value="Llantas">Llantas</option>
+                            <option value="Afinación">Kits de Afinación</option>
+                            <option value="Sensores">Sensores y Eléctrico</option>
+                            <option value="Aceites">Aceites y Aditivos</option>
+                        </select>
+                    </div>
+
                     <div class="toolbar-actions" style="display: flex; gap: 8px; margin-left: auto;">
-                        <button class="btn-action btn-pdf" onclick="descargarPDF()" style="background: #1e293b; color: white; padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                        <button class="btn-action btn-pdf" onclick="descargarPDF('ventas')" style="background: #1e293b; color: white; padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
                             <i class="fas fa-file-pdf"></i> PDF
                         </button>
-                        <button class="btn-action btn-excel" onclick="exportarExcel()" style="background: #166534; color: white; padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                        <button class="btn-action btn-excel" onclick="exportarExcel('ventas')" style="background: #166534; color: white; padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
                             <i class="fas fa-file-excel"></i> Excel
+                        </button>
+                        <button class="btn-action btn-docx" onclick="exportarDocx('ventas')" style="background: #1d4ed8; color: white; padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                            <i class="fas fa-file-word"></i> DOCX
                         </button>
                         <button class="btn-action btn-add" onclick="abrirModalVenta(true)" style="background: #e57373; color: white; padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(229, 115, 115, 0.2); transition: all 0.2s;">
                             <i class="fas fa-plus-circle"></i> Nueva Venta

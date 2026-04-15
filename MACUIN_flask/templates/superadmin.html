@@ -253,31 +253,50 @@
     </div>
 
     <div class="modal-overlay" id="modalEditarUsuario">
-        <div class="modal-content">
+        <div class="modal-content" style="width: 500px; max-width: 95%;">
             <div class="modal-header">
                 <h3 style="margin: 0; color: #1e293b;"><i class="fas fa-edit"></i> Editar Usuario</h3>
                 <button class="btn-close" onclick="cerrarModalEditar()">&times;</button>
             </div>
-            <div style="padding: 20px;">
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Nombre Completo</label>
-                    <input type="text" id="edit-nombre" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            <div style="padding: 25px;">
+                <input type="hidden" id="edit-id-puro">
+
+                <div style="background: #f8fafc; border-radius: 8px; padding: 12px 15px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                    <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Editando usuario:</span>
+                    <span id="edit-info-nombre" style="font-weight: 800; color: #1e293b; margin-left: 8px;"></span>
+                    <span id="edit-info-correo" style="font-size: 0.8rem; color: #94a3b8; margin-left: 6px;"></span>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Tipo de Perfil (Rol)</label>
-                    <select id="edit-rol" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="Cliente">Cliente (Comprador)</option>
-                        <option value="Trabajador">Trabajador Interno</option>
-                        <option value="Empresa">Empresa / Taller B2B</option>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700; color: #334155;">Nombre(s)</label>
+                        <input type="text" id="edit-nombre" placeholder="Nombre" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-weight: 600; box-sizing: border-box;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700; color: #334155;">Apellido Paterno</label>
+                        <input type="text" id="edit-apellido" placeholder="Apellido" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-weight: 600; box-sizing: border-box;">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700; color: #334155;">Rol del Sistema</label>
+                    <select id="edit-id-rol" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-weight: 600; background: white; cursor: pointer;">
+                        <option value="2">Trabajador Interno</option>
+                        <option value="3">Empresa / Taller B2B</option>
+                        <option value="4">Personal de Ventas</option>
+                        <option value="5">Cliente</option>
+                        <option value="1">Superadmin</option>
                     </select>
                 </div>
-                <div style="margin-bottom: 25px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Origen / Asignación</label>
-                    <select id="edit-origen" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></select>
+
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="guardarEdicionUsuario()" style="flex: 2; padding: 12px; background: #1e293b; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 800; transition: background 0.2s;">
+                        <i class="fas fa-check"></i> Guardar Cambios
+                    </button>
+                    <button onclick="cerrarModalEditar()" style="flex: 1; padding: 12px; background: #f1f5f9; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 700;">
+                        Cancelar
+                    </button>
                 </div>
-                <button onclick="guardarEdicionUsuario()" style="width: 100%; padding: 12px; background: #1e293b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; transition: background 0.2s;">
-                    <i class="fas fa-check"></i> Aplicar Cambios
-                </button>
             </div>
         </div>
     </div>

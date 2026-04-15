@@ -8,6 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/html-docx-js@0.3.1/dist/html-docx.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
@@ -112,26 +113,55 @@
             <div class="card" id="panel-logistica" style="width: 100%;">
                 {% include 'components/pdf_template.html' %}
                 
-                <div class="toolbar" style="display: flex; gap: 12px; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
-                    <div class="search-box" style="flex: 1;">
+                <div class="toolbar" style="display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; flex-wrap: wrap;">
+                    <div class="search-box" style="flex: 1; min-width: 180px;">
                         <i class="fas fa-search" style="color: #e57373;"></i>
                         <input type="text" id="buscador-logistica" placeholder="Rastreo por #Guía, Cliente o Courier..." onkeyup="filtrarLogistica()" style="color: #000; font-weight: 500;">
                     </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn-action btn-pdf" onclick="descargarPDF('logistica')" style="background: #333; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;">
+
+                    <!-- Filtro de Estatus -->
+                    <div class="filter-group">
+                        <select id="filtro-estatus-l" onchange="filtrarLogistica()" style="padding: 9px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: white; color: #1e293b;">
+                            <option value="">-- Estatus --</option>
+                            <option value="Recibido">Recibido</option>
+                            <option value="Surtido">Surtido</option>
+                            <option value="Enviado">Enviado</option>
+                            <option value="Completado">Completado</option>
+                            <option value="Cancelado">Cancelado</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro de Fecha -->
+                    <div class="filter-group">
+                        <input type="date" id="filtro-fecha-l" onchange="filtrarLogistica()" title="Filtrar por Entrega Estimada" style="padding: 9px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: white; color: #1e293b;">
+                    </div>
+
+                    <!-- Filtro de Paquetería -->
+                    <div class="filter-group">
+                        <select id="filtro-paqueteria-l" onchange="filtrarLogistica()" style="padding: 9px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: white; color: #1e293b;">
+                            <option value="">-- Paquetería --</option>
+                            {% for p in paqueterias %}
+                            <option value="{{ p.nombre }}">{{ p.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap;">
+                        <button class="btn-action btn-pdf" onclick="descargarPDF('logistica')" style="background: #1e293b; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 6px;">
                             <i class="fas fa-file-pdf"></i> PDF
                         </button>
-                        <button class="btn-action btn-excel" onclick="exportarExcel()" style="background: #27ae60; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;">
+                        <button class="btn-action btn-excel" onclick="exportarExcel('logistica')" style="background: #166534; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 6px;">
                             <i class="fas fa-file-excel"></i> Excel
                         </button>
-                        <div style="display: flex; gap: 10px;">
-                        <button class="btn-action btn-add" onclick="abrirModalVenta(true)" style="background: #e57373; color: white; border: none; border-radius: 10px; padding: 0 20px; font-weight: 700; cursor: pointer; height: 40px;">
-                            <i class="fas fa-plus-circle"></i> Registrar Nuevo Pedido
+                        <button class="btn-action btn-docx" onclick="exportarDocx('logistica')" style="background: #1d4ed8; color: white; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-file-word"></i> DOCX
                         </button>
-                        <button class="btn-action btn-add" onclick="abrirModalLogistica()" style="background: #2c3e50; color: white; border: none; border-radius: 10px; padding: 0 20px; font-weight: 700; cursor: pointer; height: 40px;">
-                            <i class="fas fa-truck-fast"></i> Gestionar Paqueterías
+                        <button class="btn-action btn-add" onclick="abrirModalVenta(true)" style="background: #e57373; color: white; border: none; border-radius: 8px; padding: 10px 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-plus-circle"></i> Registrar Pedido
                         </button>
-                    </div>
+                        <button class="btn-action btn-add" onclick="abrirModalLogistica()" style="background: #2c3e50; color: white; border: none; border-radius: 8px; padding: 10px 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-truck-fast"></i> Paqueterías
+                        </button>
                     </div>
                 </div>
                 <table class="macuin-table">

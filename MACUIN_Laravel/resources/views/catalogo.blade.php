@@ -39,6 +39,20 @@
                     <input type="text" name="q" value="{{ $q }}" placeholder="¿Qué pieza buscas hoy?" style="width:100%; padding:15px 45px; border-radius:10px; border:1px solid #ddd; font-size:1rem;">
                     <i class="fas fa-search" style="position:absolute; left:18px; top:50%; transform:translateY(-50%); color:#999;"></i>
                 </div>
+
+                <div style="width:200px;">
+                    <select name="categoria" onchange="this.form.submit()" style="width:100%; padding:14px; border-radius:10px; border:1px solid #ddd; font-weight:600; cursor:pointer;">
+                        <option value="">-- Todas las Categorías --</option>
+                        <option value="1" {{ request('categoria') == '1' ? 'selected' : '' }}>Frenado</option>
+                        <option value="2" {{ request('categoria') == '2' ? 'selected' : '' }}>Suspensión y Dirección</option>
+                        <option value="3" {{ request('categoria') == '3' ? 'selected' : '' }}>Iluminación</option>
+                        <option value="4" {{ request('categoria') == '4' ? 'selected' : '' }}>Motor y Transmisión</option>
+                        <option value="5" {{ request('categoria') == '5' ? 'selected' : '' }}>Llantas</option>
+                        <option value="6" {{ request('categoria') == '6' ? 'selected' : '' }}>Kits de Afinación</option>
+                        <option value="7" {{ request('categoria') == '7' ? 'selected' : '' }}>Sensores y Eléctrico</option>
+                        <option value="8" {{ request('categoria') == '8' ? 'selected' : '' }}>Aceites y Aditivos</option>
+                    </select>
+                </div>
                 
                 <div style="width:200px;">
                     <select name="sort" onchange="this.form.submit()" style="width:100%; padding:14px; border-radius:10px; border:1px solid #ddd; font-weight:600; cursor:pointer;">

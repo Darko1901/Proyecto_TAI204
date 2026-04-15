@@ -42,7 +42,7 @@
                     <div style="text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
                         <span class="status-badge" style="background:#e8f5e9; color:#2e7d32; padding:10px 25px; border-radius:30px; font-weight:800; text-transform:uppercase;">{{ [1 => 'Recibido', 2 => 'Surtido', 3 => 'Enviado', 4 => 'Entregado', 5 => 'Cancelado'][$pedido['id_estado']] }}</span>
                         <a href="{{ route('pedido.factura', $id) }}" class="btn-login" style="background:#fff; color:#b71c1c; border:1px solid #ffcdd2; padding:8px 15px; font-size:0.85rem; width:auto; font-weight:700;">
-                            <i class="fas fa-file-invoice-dollar"></i> Descargar Factura PDF
+                            <i class="fas fa-file-invoice-dollar"></i> Descargar Factura
                         </a>
                     </div>
                 </div>

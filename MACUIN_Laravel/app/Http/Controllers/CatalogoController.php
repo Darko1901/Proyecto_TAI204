@@ -119,13 +119,13 @@ class CatalogoController extends Controller
     private function getNombreCategoria($id)
     {
         $map = [
-            1 => 'Frenos',
-            2 => 'Suspension y Direccion',
-            3 => 'Iluminacion',
-            4 => 'Carroceria y Colision',
+            1 => 'Frenado',
+            2 => 'Suspensión y Dirección',
+            3 => 'Iluminación',
+            4 => 'Motor y Transmisión',
             5 => 'Llantas',
-            6 => 'Kits de Afinacion',
-            7 => 'Sensores y Electrico',
+            6 => 'Kits de Afinación',
+            7 => 'Sensores y Eléctrico',
             8 => 'Aceites y Aditivos'
         ];
         return $map[$id] ?? 'General';

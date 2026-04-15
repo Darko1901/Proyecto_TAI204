@@ -63,25 +63,29 @@
 
                     <div class="form-group" style="margin-bottom:25px;">
                         <label style="font-weight:700; color:#444; margin-bottom:10px;"><i class="fas fa-map-marker-alt" style="color:#b71c1c; margin-right:8px;"></i> DIRECCIÓN COMPLETA</label>
-                        <input type="text" name="direccion" placeholder="Calle, Número, Colonia" required value="{{ old('direccion', $usuario['direccion'] ?? '') }}" style="padding:15px; border-radius:10px; border:1px solid #ddd; width:100%;">
+                        <input type="text" id="f-direccion" name="direccion" placeholder="Calle, Número, Colonia" value="{{ old('direccion', $usuario['direccion'] ?? '') }}" style="padding:15px; border-radius:10px; border:1px solid {{ $errors->has('direccion') ? '#e53935' : '#ddd' }}; width:100%;">
+                        <span class="field-error" id="err-direccion" @if($errors->has('direccion')) style="display:block" @endif>{{ $errors->first('direccion') }}</span>
                     </div>
 
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:25px;">
                         <div class="form-group">
                             <label style="font-weight:700; color:#444; margin-bottom:10px;"><i class="fas fa-city" style="color:#b71c1c; margin-right:8px;"></i> CIUDAD</label>
-                            <input type="text" name="ciudad" placeholder="Ciudad / Estado" required value="{{ old('ciudad') }}" style="padding:15px; border-radius:10px; border:1px solid #ddd; width:100%;">
+                            <input type="text" id="f-ciudad" name="ciudad" placeholder="Ciudad / Estado" value="{{ old('ciudad') }}" style="padding:15px; border-radius:10px; border:1px solid {{ $errors->has('ciudad') ? '#e53935' : '#ddd' }}; width:100%;">
+                            <span class="field-error" id="err-ciudad" @if($errors->has('ciudad')) style="display:block" @endif>{{ $errors->first('ciudad') }}</span>
                         </div>
                         <div class="form-group">
                             <label style="font-weight:700; color:#444; margin-bottom:10px;"><i class="fas fa-mail-bulk" style="color:#b71c1c; margin-right:8px;"></i> CÓDIGO POSTAL</label>
-                            <input type="text" name="codigo_postal" placeholder="C.P." required maxlength="10" value="{{ old('codigo_postal') }}" style="padding:15px; border-radius:10px; border:1px solid #ddd; width:100%;">
+                            <input type="text" id="f-cp" name="codigo_postal" placeholder="C.P. (5 dígitos)" maxlength="5" value="{{ old('codigo_postal') }}" style="padding:15px; border-radius:10px; border:1px solid {{ $errors->has('codigo_postal') ? '#e53935' : '#ddd' }}; width:100%;">
+                            <span class="field-error" id="err-cp" @if($errors->has('codigo_postal')) style="display:block" @endif>{{ $errors->first('codigo_postal') }}</span>
                         </div>
                     </div>
 
                     <div class="form-group" style="margin-bottom:25px;">
                         <label style="font-weight:700; color:#444; margin-bottom:10px;"><i class="fas fa-phone" style="color:#b71c1c; margin-right:8px;"></i> TELÉFONO DE CONTACTO</label>
-                        <input type="tel" name="telefono_contacto" placeholder="Tu número de 10 dígitos" required maxlength="20" value="{{ old('telefono_contacto', $usuario['telefono'] ?? '') }}" style="padding:15px; border-radius:10px; border:1px solid #ddd; width:100%;">
+                        <input type="tel" id="f-tel" name="telefono_contacto" placeholder="10 dígitos, sin espacios ni guiones" maxlength="10" value="{{ old('telefono_contacto', $usuario['telefono'] ?? '') }}" style="padding:15px; border-radius:10px; border:1px solid {{ $errors->has('telefono_contacto') ? '#e53935' : '#ddd' }}; width:100%;">
+                        <span class="field-error" id="err-tel" @if($errors->has('telefono_contacto')) style="display:block" @endif>{{ $errors->first('telefono_contacto') }}</span>
                     </div>
-                    
+
                     <div class="form-group" style="margin-bottom:35px;">
                         <label style="font-weight:700; color:#444; margin-bottom:10px;"><i class="fas fa-info-circle" style="color:#b71c1c; margin-right:8px;"></i> REFERENCIAS DE UBICACIÓN</label>
                         <textarea name="referencias" rows="3" placeholder="Descripción de la fachada, entre qué calles, etc." style="padding:15px; border-radius:10px; border:1px solid #ddd; width:100%; border-radius:10px; resize:none;"></textarea>
@@ -111,16 +115,19 @@
                         <div id="card-details" style="display:block;">
                             <div class="form-group" style="margin-bottom:15px;">
                                 <label style="font-size:0.75rem; font-weight:700; color:#666;">NÚMERO DE TARJETA</label>
-                                <input type="text" placeholder="0000 0000 0000 0000" style="padding:12px; border-radius:8px; border:1px solid #ddd; width:100%;">
+                                <input type="text" id="f-card-num" placeholder="0000 0000 0000 0000" maxlength="19" style="padding:12px; border-radius:8px; border:1px solid #ddd; width:100%;">
+                                <span class="field-error" id="err-card-num"></span>
                             </div>
                             <div style="display:grid; grid-template-columns:1.5fr 1fr; gap:15px;">
                                 <div>
                                     <label style="font-size:0.75rem; font-weight:700; color:#666;">VENCIMIENTO</label>
-                                    <input type="text" placeholder="MM/YY" style="padding:12px; border-radius:8px; border:1px solid #ddd; width:100%;">
+                                    <input type="text" id="f-card-exp" placeholder="MM/YY" maxlength="5" style="padding:12px; border-radius:8px; border:1px solid #ddd; width:100%;">
+                                    <span class="field-error" id="err-card-exp"></span>
                                 </div>
                                 <div>
                                     <label style="font-size:0.75rem; font-weight:700; color:#666;">CVV</label>
-                                    <input type="password" placeholder="***" style="padding:12px; border-radius:8px; border:1px solid #ddd; width:100%;">
+                                    <input type="password" id="f-card-cvv" placeholder="***" maxlength="4" style="padding:12px; border-radius:8px; border:1px solid #ddd; width:100%;">
+                                    <span class="field-error" id="err-card-cvv"></span>
                                 </div>
                             </div>
                         </div>
@@ -181,8 +188,106 @@
             document.getElementById('cash-details').style.display = type === 'cash' ? 'block' : 'none';
         }
 
-        // Interceptar envío del formulario para mostrar loader
+        // Auto-format card number as user types (groups of 4)
+        document.getElementById('f-card-num').addEventListener('input', function() {
+            let v = this.value.replace(/\D/g, '').slice(0, 16);
+            this.value = v.replace(/(.{4})/g, '$1 ').trim();
+        });
+
+        // Auto-format expiry MM/YY
+        document.getElementById('f-card-exp').addEventListener('input', function() {
+            let v = this.value.replace(/\D/g, '').slice(0, 4);
+            if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
+            this.value = v;
+        });
+
+        // Phone: only allow digits
+        document.getElementById('f-tel').addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 10);
+        });
+
+        // CP: only allow digits
+        document.getElementById('f-cp').addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 5);
+        });
+
+        function setFieldError(fieldId, errorId, message) {
+            const field = document.getElementById(fieldId);
+            const err   = document.getElementById(errorId);
+            if (message) {
+                field.style.borderColor = '#e53935';
+                field.style.boxShadow = '0 0 0 3px rgba(229,57,53,0.15)';
+                err.textContent = message;
+                err.style.display = 'block';
+                return false;
+            } else {
+                field.style.borderColor = '#ddd';
+                field.style.boxShadow = '';
+                err.textContent = '';
+                err.style.display = 'none';
+                return true;
+            }
+        }
+
+        function validateCheckout() {
+            let ok = true;
+
+            // Dirección
+            const dir = document.getElementById('f-direccion').value.trim();
+            ok = setFieldError('f-direccion', 'err-direccion', dir ? '' : 'La dirección es obligatoria.') && ok;
+
+            // Ciudad
+            const ciudad = document.getElementById('f-ciudad').value.trim();
+            ok = setFieldError('f-ciudad', 'err-ciudad', ciudad ? '' : 'La ciudad es obligatoria.') && ok;
+
+            // Código postal: exactamente 5 dígitos
+            const cp = document.getElementById('f-cp').value.trim();
+            let cpErr = '';
+            if (!cp) cpErr = 'El código postal es obligatorio.';
+            else if (!/^\d{5}$/.test(cp)) cpErr = 'El código postal debe tener exactamente 5 dígitos.';
+            ok = setFieldError('f-cp', 'err-cp', cpErr) && ok;
+
+            // Teléfono: exactamente 10 dígitos
+            const tel = document.getElementById('f-tel').value.trim();
+            let telErr = '';
+            if (!tel) telErr = 'El teléfono es obligatorio.';
+            else if (!/^\d{10}$/.test(tel)) telErr = 'El teléfono debe tener exactamente 10 dígitos numéricos.';
+            ok = setFieldError('f-tel', 'err-tel', telErr) && ok;
+
+            // Si el pago es con tarjeta, validar campos de tarjeta
+            const metodoPago = document.querySelector('input[name="metodo_pago"]:checked');
+            if (metodoPago && metodoPago.value === 'Tarjeta') {
+                const cardNum = document.getElementById('f-card-num').value.replace(/\s/g, '');
+                let cardNumErr = '';
+                if (!cardNum) cardNumErr = 'El número de tarjeta es obligatorio.';
+                else if (!/^\d{16}$/.test(cardNum)) cardNumErr = 'El número de tarjeta debe tener 16 dígitos.';
+                ok = setFieldError('f-card-num', 'err-card-num', cardNumErr) && ok;
+
+                const exp = document.getElementById('f-card-exp').value.trim();
+                let expErr = '';
+                if (!exp) expErr = 'La fecha de vencimiento es obligatoria.';
+                else if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(exp)) expErr = 'Formato inválido. Usa MM/YY.';
+                ok = setFieldError('f-card-exp', 'err-card-exp', expErr) && ok;
+
+                const cvv = document.getElementById('f-card-cvv').value.trim();
+                let cvvErr = '';
+                if (!cvv) cvvErr = 'El CVV es obligatorio.';
+                else if (!/^\d{3,4}$/.test(cvv)) cvvErr = 'El CVV debe tener 3 o 4 dígitos.';
+                ok = setFieldError('f-card-cvv', 'err-card-cvv', cvvErr) && ok;
+            }
+
+            return ok;
+        }
+
+        // Interceptar envío del formulario para validar y mostrar loader
         document.getElementById('checkout-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!validateCheckout()) {
+                // Scroll al primer error visible
+                const firstErr = document.querySelector('.field-error[style*="block"]');
+                if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
             Swal.fire({
                 title: 'Procesando Pedido',
                 text: 'Estamos validando tus datos, por favor espera...',
@@ -192,6 +297,7 @@
                     Swal.showLoading();
                 }
             });
+            this.submit();
         });
 
         function initCheckout() {
@@ -252,6 +358,13 @@
             outline: none;
             border-color: #b71c1c !important;
             box-shadow: 0 0 0 3px rgba(183, 28, 28, 0.1);
+        }
+        .field-error {
+            display: none;
+            color: #e53935;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-top: 6px;
         }
     </style>
 </body>
