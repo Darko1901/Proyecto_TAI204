@@ -631,6 +631,50 @@ def nuevo_usuario():
         
     return redirect(url_for('views.superadmin'))
 
+@views_bp.route('/superadmin/toggle/<int:id_usuario>', methods=['POST'])
+def toggle_usuario(id_usuario):
+    if 'usuario' not in session:
+        return redirect(url_for('auth.login_personal_interno'))
+    if session.get('rol') != 1:
+        flash("Sin permisos de Superadmin.", "error")
+        return redirect(url_for('views.superadmin'))
+    response = post_data(f"/v1/usuarios/{id_usuario}/toggle-active", {}, session.get('token'))
+    if response and response.status_code == 200:
+        flash("Estado del usuario actualizado correctamente.", "success")
+    else:
+        flash("Error al cambiar el estado del usuario.", "error")
+    return redirect(url_for('views.superadmin'))
+
+@views_bp.route('/superadmin/eliminar/<int:id_usuario>', methods=['POST'])
+def eliminar_usuario(id_usuario):
+    if 'usuario' not in session:
+        return jsonify({"status": "error", "message": "No autenticado"}), 401
+    if session.get('rol') != 1:
+        return jsonify({"status": "error", "message": "Sin permisos"}), 403
+    response = delete_data(f"/v1/usuarios/{id_usuario}", session.get('token'))
+    if response and response.status_code in [200, 204]:
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error", "message": "Error al eliminar usuario"}), 400
+
+@views_bp.route('/superadmin/editar/<int:id_usuario>', methods=['POST'])
+def editar_usuario(id_usuario):
+    if 'usuario' not in session:
+        return jsonify({"status": "error", "message": "No autenticado"}), 401
+    usuario_data = {}
+    nombre = request.form.get('nombre', '').strip()
+    apellido_paterno = request.form.get('apellido_paterno', '').strip()
+    id_rol = request.form.get('id_rol')
+    if nombre:
+        usuario_data['nombre'] = nombre
+    if apellido_paterno:
+        usuario_data['apellido_paterno'] = apellido_paterno
+    if id_rol:
+        usuario_data['id_rol'] = int(id_rol)
+    response = patch_data(f"/v1/usuarios/{id_usuario}", usuario_data, session.get('token'))
+    if response and response.status_code == 200:
+        return jsonify({"status": "success", "data": response.json()})
+    return jsonify({"status": "error", "message": "Error al actualizar usuario"}), 400
+
 @views_bp.route('/superadmin/empresa', methods=['POST'])
 def nueva_empresa():
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))

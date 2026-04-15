@@ -2193,10 +2193,15 @@ function renderTablaUsuarios() {
                 <td><i class="fas ${iconoOrigen}" style="color:#7f8c8d; font-size: 0.8rem; margin-right: 5px;"></i> ${usr.origen}</td>
                 <td><strong>${usr.rol}</strong></td>
                 <td><span class="${badgeClass}">${usr.estado}</span></td>
-                <td>
-                    <button style="background:none; border:none; color:#3498db; cursor:pointer; font-size: 1.1rem; margin-right: 15px;" title="Editar" onclick="abrirModalEditar('${usr.id}')"><i class="fas fa-edit"></i></button>
-                    <button style="background:none; border:none; color:${usr.estado === 'Activo' ? '#e74c3c' : '#2ecc71'}; cursor:pointer; font-size: 1.1rem;" title="${usr.estado === 'Activo' ? 'Suspender' : 'Activar'}" onclick="suspenderUsuario(${usr.id_puro})">
+                <td style="display:flex; gap:10px; align-items:center;">
+                    <button style="background:none; border:none; color:#3498db; cursor:pointer; font-size: 1.1rem;" title="Editar usuario" onclick="abrirModalEditar('${usr.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button style="background:none; border:none; color:${usr.estado === 'Activo' ? '#f59e0b' : '#2ecc71'}; cursor:pointer; font-size: 1.1rem;" title="${usr.estado === 'Activo' ? 'Suspender' : 'Activar'}" onclick="suspenderUsuario(${usr.id_puro})">
                         <i class="fas ${usr.estado === 'Activo' ? 'fa-user-slash' : 'fa-user-check'}"></i>
+                    </button>
+                    <button style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size: 1.1rem;" title="Eliminar usuario permanentemente" onclick="eliminarUsuario(${usr.id_puro}, '${usr.nombre.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
             </tr>
@@ -2290,34 +2295,81 @@ function cerrarMasterModal() {
 
 function abrirModalEditar(id) {
     const usuario = usuariosGlobales.find(u => u.id === id);
-    if(usuario) {
-        usuarioEnEdicion = id;
-        document.getElementById('edit-nombre').value = usuario.nombre;
-        document.getElementById('edit-rol').value = usuario.rol;
-        document.getElementById('edit-origen').value = usuario.origen;
-        document.getElementById('modalEditarUsuario').style.display = 'flex';
+    if (!usuario) return;
+    usuarioEnEdicion = id;
+
+    // Separar nombre y apellido del nombre completo guardado
+    const partes = (usuario.nombre || '').split(' ');
+    document.getElementById('edit-id-puro').value  = usuario.id_puro;
+    document.getElementById('edit-nombre').value   = partes[0] || '';
+    document.getElementById('edit-apellido').value = partes[1] || '';
+    document.getElementById('edit-id-rol').value   = usuario.id_rol || 2;
+    document.getElementById('edit-info-nombre').textContent = usuario.nombre;
+    document.getElementById('edit-info-correo').textContent = usuario.correo || '';
+    document.getElementById('modalEditarUsuario').style.display = 'flex';
+}
+
+function cerrarModalEditar() {
+    document.getElementById('modalEditarUsuario').style.display = 'none';
+    usuarioEnEdicion = null;
+}
+
+async function guardarEdicionUsuario() {
+    const idPuro  = document.getElementById('edit-id-puro').value;
+    const nombre  = document.getElementById('edit-nombre').value.trim();
+    const apellido = document.getElementById('edit-apellido').value.trim();
+    const idRol   = document.getElementById('edit-id-rol').value;
+
+    if (!nombre || !apellido) {
+        alert("Nombre y apellido son requeridos.");
+        return;
+    }
+
+    const btn = document.querySelector('#modalEditarUsuario button[onclick="guardarEdicionUsuario()"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+    try {
+        const formData = new FormData();
+        formData.append('nombre', nombre);
+        formData.append('apellido_paterno', apellido);
+        formData.append('id_rol', idRol);
+
+        const response = await fetch(`/superadmin/editar/${idPuro}`, {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+            cerrarModalEditar();
+            location.reload();
+        } else {
+            alert('Error al actualizar: ' + (result.message || 'Intente de nuevo.'));
+        }
+    } catch (e) {
+        alert('Error de conexión al actualizar usuario.');
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Guardar Cambios'; }
     }
 }
 
-function cerrarModalEditar() { 
-    document.getElementById('modalEditarUsuario').style.display = 'none'; 
-    usuarioEnEdicion = null; 
-}
+async function eliminarUsuario(id_puro, nombre) {
+    if (!confirm(`¿Eliminar permanentemente a "${nombre}" (ID: ${id_puro})?\nEsta acción no se puede deshacer.`)) return;
 
-function guardarEdicionUsuario() {
-    if(usuarioEnEdicion) {
-        const usuario = usuariosGlobales.find(u => u.id === usuarioEnEdicion);
-        usuario.nombre = document.getElementById('edit-nombre').value;
-        usuario.rol = document.getElementById('edit-rol').value;
-        usuario.origen = document.getElementById('edit-origen').value;
-        
-        cerrarModalEditar();
-        renderTablas();
+    try {
+        const response = await fetch(`/superadmin/eliminar/${id_puro}`, { method: 'POST' });
+        const result = await response.json();
+        if (result.status === 'success') {
+            location.reload();
+        } else {
+            alert('Error al eliminar: ' + (result.message || 'Intente de nuevo.'));
+        }
+    } catch (e) {
+        alert('Error de conexión al eliminar usuario.');
     }
 }
 
 function suspenderUsuario(id_puro) {
-    if(confirm("¿Cambiar el estado de este usuario?")) {
+    if (confirm("¿Cambiar el estado activo/inactivo de este usuario?")) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/superadmin/toggle/${id_puro}`;
