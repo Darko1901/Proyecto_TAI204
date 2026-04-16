@@ -50,8 +50,14 @@ async def actualizar_usuario(id_usuario: int, datos: UsuarioUpdate, db: Session 
     usuario = db.query(Usuario).filter(Usuario.id_usuario == id_usuario).first()
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    for campo, valor in datos.model_dump(exclude_none=True).items():
+    
+    update_data = datos.model_dump(exclude_none=True)
+    if "password" in update_data:
+        update_data["password"] = hashear_password(update_data["password"])
+        
+    for campo, valor in update_data.items():
         setattr(usuario, campo, valor)
+        
     db.commit()
     db.refresh(usuario)
     return usuario
@@ -62,6 +68,22 @@ async def eliminar_usuario(id_usuario: int, db: Session = Depends(get_db), usuar
     usuario = db.query(Usuario).filter(Usuario.id_usuario == id_usuario).first()
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+    from app.models.resena import Resena
+    from app.models.pedido import Pedido
+    from app.models.detalle_pedido import DetallePedido
+    from app.models.envio import Envio
+    
+    # Borrar reseñas asociadas
+    db.query(Resena).filter(Resena.id_usuario == id_usuario).delete(synchronize_session=False)
+    
+    # Borrar pedidos y sus dependencias (detalles y envíos)
+    pedidos = db.query(Pedido).filter(Pedido.id_usuario == id_usuario).all()
+    for p in pedidos:
+        db.query(DetallePedido).filter(DetallePedido.id_pedido == p.id_pedido).delete(synchronize_session=False)
+        db.query(Envio).filter(Envio.id_pedido == p.id_pedido).delete(synchronize_session=False)
+        db.delete(p)
+        
     db.delete(usuario)
     db.commit()
 

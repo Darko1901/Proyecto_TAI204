@@ -117,9 +117,12 @@ class OrderController extends Controller
         if (!$token) return redirect()->route('login');
 
         $response = Http::withToken($token)->get($this->apiUrl . '/v1/pedidos/' . $id);
+        $envioR = Http::withToken($token)->get($this->apiUrl . '/v1/pedidos/' . $id . '/envio');
+        
         if (!$response->successful()) return back()->withErrors(['message' => 'No se encontró el pedido.']);
 
         $pedido = $response->json();
+        $envio = $envioR->successful() ? $envioR->json() : [];
         
         // Simulación de generación de factura
         $content = "FACTURA EJECUTIVA - MACUIN\n";
@@ -127,11 +130,13 @@ class OrderController extends Controller
         $content .= "PEDIDO #" . str_pad($pedido['id_pedido'], 5, '0', STR_PAD_LEFT) . "\n";
         $content .= "FECHA: " . $pedido['fecha_pedido'] . "\n";
         $content .= "CLIENTE: " . session('user_name', 'Cliente MACUIN') . "\n";
-        $content .= "DIRECCIÓN: " . ($pedido['direccion_entrega'] ?? 'N/A') . "\n";
+        $content .= "DIRECCIÓN: " . ($envio['direccion'] ?? 'N/A') . "\n";
         $content .= "----------------------------\n";
         $content .= "PRODUCTOS:\n";
         foreach ($pedido['detalles'] as $d) {
-            $content .= "- " . ($d['producto']['nombre_producto'] ?? 'Producto') . " x" . $d['cantidad'] . " : $" . number_format($d['subtotal'], 2) . "\n";
+            $nombre = $d['nombre_producto'] ?? 'Producto';
+            $sub = floatval($d['cantidad']) * floatval($d['precio_unitario']);
+            $content .= "- " . $nombre . " x" . $d['cantidad'] . " : $" . number_format($sub, 2) . "\n";
         }
         $content .= "----------------------------\n";
         $content .= "TOTAL: $" . number_format($pedido['total'], 2) . " MXN\n";
@@ -141,5 +146,21 @@ class OrderController extends Controller
         return response($content)
             ->header('Content-Type', 'text/plain')
             ->header('Content-Disposition', 'attachment; filename="Factura_MACUIN_'. $id .'.txt"');
+    }
+
+    public function updateShipping(Request $request, $id)
+    {
+        $token = session('token');
+        if (!$token) return redirect()->route('login');
+
+        $data = $request->only(['direccion', 'codigo_postal', 'telefono_contacto', 'referencias']);
+        
+        $response = Http::withToken($token)->patch($this->apiUrl . '/v1/pedidos/' . $id . '/envio', $data);
+
+        if ($response->successful()) {
+            return back()->with('success', 'Dirección de envío actualizada correctamente.');
+        }
+
+        return back()->withErrors(['message' => 'Error al actualizar la dirección (el pedido podría estar ya enviado).']);
     }
 }

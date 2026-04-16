@@ -62,6 +62,7 @@ Route::post('/perfil/actualizar', [ProfileController::class, 'update'])->name('p
 Route::get('/pedidos', [OrderController::class, 'index'])->name('pedidos');
 Route::get('/pedido/{id}', [OrderController::class, 'show'])->name('pedido.detalle');
 Route::get('/pedido/{id}/factura', [OrderController::class, 'downloadInvoice'])->name('pedido.factura');
+Route::post('/pedido/{id}/envio', [OrderController::class, 'updateShipping'])->name('pedido.updateEnvio');
 Route::post('/pedido/{id}/cancelar', [OrderController::class, 'cancel'])->name('pedido.cancelar');
 
 // Reseñas

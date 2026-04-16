@@ -36,6 +36,33 @@ def reporte_excel_proxy():
     flash("Error al generar el reporte Excel desde el servidor.", "error")
     return redirect(url_for('views.ventas'))
 
+@views_bp.route('/reportes/docx/<tipo>')
+def reportes_docx_download(tipo):
+    if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
+    
+    if tipo == 'ventas':
+        endpoint = "/v1/reportes/pedidos/docx"
+        filename = "Reporte_Pedidos_MACUIN.docx"
+    elif tipo == 'almacen':
+        endpoint = "/v1/reportes/productos/docx"
+        filename = "Reporte_Productos_MACUIN.docx"
+    elif tipo == 'logistica':
+        endpoint = "/v1/reportes/pedidos/docx"
+        filename = "Reporte_Logistica_MACUIN.docx"
+    else:
+        return "Tipo de reporte inválido", 400
+
+    token = session.get('token')
+    # Make request to the API
+    response = fetch_raw(endpoint, token)
+    if response and response.status_code == 200:
+        return Response(
+            response.content,
+            mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    return "Error al generar reporte", 500
+
 @views_bp.route('/dashboard')
 def dashboard():
     if 'usuario' not in session:
@@ -98,6 +125,61 @@ def superadmin():
         })
 
     return render_template('superadmin.html', usuariosGlobales=usuarios_list)
+
+@views_bp.route('/superadmin/detalle/<int:id_usuario>')
+def obtener_detalle_usuario(id_usuario):
+    if 'usuario' not in session or session.get('rol') != 1:
+        return jsonify({"error": "No autorizado"}), 403
+    usuario = fetch_data(f"/v1/usuarios/{id_usuario}", session.get('token'))
+    if usuario:
+        return jsonify(usuario)
+    return jsonify({"error": "Usuario no encontrado"}), 404
+
+@views_bp.route('/superadmin/editar/<int:id_usuario>', methods=['POST'])
+def editar_usuario_post(id_usuario):
+    if 'usuario' not in session or session.get('rol') != 1:
+        return jsonify({"status": "error", "message": "No autorizado"}), 403
+    
+    usuario_data = {
+        "nombre": request.form.get('nombre'),
+        "apellido_paterno": request.form.get('apellido_paterno'),
+        "apellido_materno": request.form.get('apellido_materno'),
+        "correo": request.form.get('correo'),
+        "telefono": request.form.get('telefono'),
+        "id_rol": int(request.form.get('rol'))
+    }
+    
+    password = request.form.get('password')
+    if password:
+        usuario_data["password"] = password
+        
+    response = patch_data(f"/v1/usuarios/{id_usuario}", usuario_data, session.get('token'))
+    if response and response.status_code == 200:
+        return jsonify({"status": "success", "message": "Usuario actualizado correctamente"})
+    return jsonify({"status": "error", "message": "Error al actualizar usuario en el API"}), 500
+
+@views_bp.route('/superadmin/eliminar/<int:id_usuario>', methods=['POST'])
+def eliminar_usuario_post(id_usuario):
+    if 'usuario' not in session or session.get('rol') != 1:
+        return jsonify({"status": "error", "message": "No autorizado"}), 403
+    
+    response = delete_data(f"/v1/usuarios/{id_usuario}", session.get('token'))
+    if response and response.status_code in [200, 204]:
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error", "message": "Error al eliminar usuario en el API"}), 500
+
+@views_bp.route('/superadmin/toggle/<int:id_usuario>', methods=['POST'])
+def toggle_usuario_status(id_usuario):
+    if 'usuario' not in session or session.get('rol') != 1:
+        flash("Acceso denegado.", "error")
+        return redirect(url_for('views.superadmin'))
+    
+    response = post_data(f"/v1/usuarios/{id_usuario}/toggle-active", {}, session.get('token'))
+    if response and response.status_code == 200:
+        flash("Estado del usuario actualizado.", "success")
+    else:
+        flash("Error al actualizar el estado del usuario.", "error")
+    return redirect(url_for('views.superadmin'))
 
 @views_bp.route('/ventas')
 def ventas():
@@ -377,7 +459,7 @@ def editar_pieza_api(id_producto):
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
     
     form_data = {
-        "nombre_producto": request.form.get('nombre_producto'),
+        "nombre_producto": request.form.get('nombre_producto', ''),
         "precio": request.form.get('precio', '0.0'),
         "id_categoria": request.form.get('id_categoria', '1'),
         "descripcion": request.form.get('descripcion', ''),
@@ -395,9 +477,15 @@ def editar_pieza_api(id_producto):
     
     response = patch_multipart(f"/v1/autopartes/{id_producto}", form_data, files, session.get('token'))
     
-    if response and response.status_code in [200, 201]:
+    if response is not None and response.status_code in [200, 201]:
         return {"status": "success"}, 200
-    return {"status": "error"}, 500
+    elif response is not None:
+        try:
+            detail = response.json().get('detail', 'Error al modificar pieza en el servidor')
+        except:
+            detail = f"Error del servidor (Status {response.status_code})"
+        return {"status": "error", "message": detail}, response.status_code
+    return {"status": "error", "message": "No se pudo conectar con el API"}, 500
 
 @views_bp.route('/almacen/eliminar/<int:id_producto>', methods=['POST'])
 def eliminar_pieza_api(id_producto):
@@ -412,7 +500,7 @@ def nueva_pieza():
     if 'usuario' not in session: return redirect(url_for('auth.login_personal_interno'))
     
     form_data = {
-        "nombre_producto": request.form.get('nombre_producto'),
+        "nombre_producto": request.form.get('nombre_producto', ''),
         "precio": request.form.get('precio', '0.0'),
         "id_categoria": request.form.get('id_categoria', '1'),
         "descripcion": request.form.get('descripcion', ''),
@@ -430,9 +518,9 @@ def nueva_pieza():
     
     response = post_multipart("/v1/autopartes/", form_data, files, session.get('token'))
     
-    if response and response.status_code == 201:
+    if response is not None and response.status_code == 201:
         return {"status": "success", "message": "Producto registrado correctamente"}, 201
-    elif response:
+    elif response is not None:
         try:
             detail = response.json().get('detail', 'Error desconocido en el servidor')
         except:

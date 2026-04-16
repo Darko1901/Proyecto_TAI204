@@ -106,12 +106,44 @@
 
                     <div>
                         <div class="card" style="background:#f9f9f9; padding:25px; border:none; margin-bottom:20px;">
-                            <h4 style="margin-bottom:15px; color:#333;">Información de Envío</h4>
-                            <p style="font-size:0.9rem; color:#666; line-height:1.6;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                                <h4 style="color:#333; margin:0;">Información de Envío</h4>
+                                <button onclick="document.getElementById('edit-envio').style.display='block'; document.getElementById('view-envio').style.display='none';" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:700;"><i class="fas fa-edit"></i> Modificar</button>
+                            </div>
+                            
+                            <div id="view-envio" style="font-size:0.9rem; color:#666; line-height:1.6;">
                                 <strong>Dirección:</strong><br>{{ $pedido['direccion_entrega'] ?? ($envio['direccion'] ?? 'No especificada') }}<br><br>
+                                <strong>C.P.:</strong><br>{{ $envio['codigo_postal'] ?? 'N/A' }}<br><br>
+                                <strong>Teléfono:</strong><br>{{ $envio['telefono_contacto'] ?? 'N/A' }}<br><br>
                                 <strong>Referencias:</strong><br>{{ $pedido['referencias'] ?? ($envio['referencias'] ?? 'Ninguna') }}<br><br>
                                 <strong>Pago:</strong><br>{{ $pedido['metodo_pago'] ?? 'Tarjeta' }}
-                            </p>
+                            </div>
+
+                            <div id="edit-envio" style="display:none; font-size:0.9rem; color:#444;">
+                                <form method="POST" action="{{ route('pedido.updateEnvio', $pedido['id_pedido']) }}">
+                                    @csrf
+                                    <div style="margin-bottom:10px;">
+                                        <label style="font-weight:700; margin-bottom:5px; display:block;">Dirección</label>
+                                        <input type="text" name="direccion" value="{{ $envio['direccion'] ?? '' }}" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:5px;">
+                                    </div>
+                                    <div style="margin-bottom:10px;">
+                                        <label style="font-weight:700; margin-bottom:5px; display:block;">Código Postal</label>
+                                        <input type="text" name="codigo_postal" value="{{ $envio['codigo_postal'] ?? '' }}" required maxlength="5" pattern="\d{5}" oninput="this.value=this.value.replace(/[^0-9]/g, '');" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:5px;">
+                                    </div>
+                                    <div style="margin-bottom:10px;">
+                                        <label style="font-weight:700; margin-bottom:5px; display:block;">Teléfono Contacto</label>
+                                        <input type="tel" name="telefono_contacto" value="{{ $envio['telefono_contacto'] ?? '' }}" required maxlength="10" pattern="\d{10}" oninput="this.value=this.value.replace(/[^0-9]/g, '');" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:5px;">
+                                    </div>
+                                    <div style="margin-bottom:15px;">
+                                        <label style="font-weight:700; margin-bottom:5px; display:block;">Referencias</label>
+                                        <input type="text" name="referencias" value="{{ $envio['referencias'] ?? '' }}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:5px;">
+                                    </div>
+                                    <div style="display:flex; gap:10px;">
+                                        <button type="button" onclick="document.getElementById('edit-envio').style.display='none'; document.getElementById('view-envio').style.display='block';" style="background:#eee; color:#333; border:none; padding:10px; border-radius:8px; cursor:pointer; flex:1;">Cancelar</button>
+                                        <button type="submit" style="background:var(--primary); color:white; border:none; padding:10px; border-radius:8px; cursor:pointer; flex:1;">Guardar Cambios</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                         
                         <div class="card" style="padding:20px; text-align:center; background:#fff8f8; border:1px solid #ffcdd2;">

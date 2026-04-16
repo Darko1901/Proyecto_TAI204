@@ -39,7 +39,10 @@ class UsuarioUpdate(BaseModel):
     nombre: Optional[str] = Field(None, min_length=2, max_length=50)
     apellido_paterno: Optional[str] = Field(None, min_length=2, max_length=50)
     apellido_materno: Optional[str] = Field(None, min_length=2, max_length=50)
+    correo: Optional[str] = Field(None, max_length=100)
     telefono: Optional[str] = Field(None, max_length=20)
+    password: Optional[str] = Field(None, min_length=6)
+    id_rol: Optional[int] = None
     activo: Optional[bool] = None
 
 class UsuarioResponse(BaseModel):

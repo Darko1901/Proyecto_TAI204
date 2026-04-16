@@ -73,13 +73,13 @@
                         </div>
                         <div class="form-group">
                             <label style="font-weight:700; color:#444; margin-bottom:10px;"><i class="fas fa-mail-bulk" style="color:#b71c1c; margin-right:8px;"></i> CÓDIGO POSTAL</label>
-                            <input type="text" name="codigo_postal" placeholder="C.P." required maxlength="10" value="{{ old('codigo_postal') }}" style="padding:15px; border-radius:10px; border:1px solid #ddd; width:100%;">
+                            <input type="text" name="codigo_postal" placeholder="C.P." required maxlength="5" pattern="\d{5}" oninput="this.value=this.value.replace(/[^0-9]/g, '');" value="{{ old('codigo_postal') }}" style="padding:15px; border-radius:10px; border:1px solid #ddd; width:100%;">
                         </div>
                     </div>
 
                     <div class="form-group" style="margin-bottom:25px;">
                         <label style="font-weight:700; color:#444; margin-bottom:10px;"><i class="fas fa-phone" style="color:#b71c1c; margin-right:8px;"></i> TELÉFONO DE CONTACTO</label>
-                        <input type="tel" name="telefono_contacto" placeholder="Tu número de 10 dígitos" required maxlength="20" value="{{ old('telefono_contacto', $usuario['telefono'] ?? '') }}" style="padding:15px; border-radius:10px; border:1px solid #ddd; width:100%;">
+                        <input type="tel" name="telefono_contacto" placeholder="Tu número de 10 dígitos" required maxlength="10" pattern="\d{10}" oninput="this.value=this.value.replace(/[^0-9]/g, '');" value="{{ old('telefono_contacto', $usuario['telefono'] ?? '') }}" style="padding:15px; border-radius:10px; border:1px solid #ddd; width:100%;">
                     </div>
                     
                     <div class="form-group" style="margin-bottom:35px;">

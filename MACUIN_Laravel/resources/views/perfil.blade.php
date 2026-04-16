@@ -68,7 +68,7 @@
 
                     <div class="form-group">
                         <label>Teléfono</label>
-                        <input type="text" name="telefono" value="{{ old('telefono', $usuario['telefono'] ?? '') }}" required>
+                        <input type="text" name="telefono" value="{{ old('telefono', $usuario['telefono'] ?? '') }}" required maxlength="10" pattern="\d{10}" oninput="this.value=this.value.replace(/[^0-9]/g, '');">
                     </div>
 
                     <div style="margin-top:30px; border-top:1px solid #f0f0f0; padding-top:20px;">

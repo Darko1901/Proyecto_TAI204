@@ -237,7 +237,7 @@ function agregarPiezaALista() {
     select.dataset.nombre = '';
 }
 
-function eliminarPieza(index) {
+function eliminarItemVenta(index) {
     listaItemsVenta.splice(index, 1);
     renderListaItems();
 }
@@ -265,7 +265,7 @@ function renderListaItems() {
                 </td>
                 <td style="padding: 10px; text-align: right; font-weight: 700;">$${item.subtotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                 <td style="padding: 10px; text-align: center;">
-                    <button type="button" onclick="eliminarPieza(${index})" style="background: none; border: none; color: #e57373; cursor: pointer;">
+                    <button type="button" onclick="eliminarItemVenta(${index})" style="background: none; border: none; color: #e57373; cursor: pointer;">
                         <i class="fas fa-times"></i>
                     </button>
                 </td>
@@ -800,103 +800,7 @@ function _getActiveFiltersText(contexto) {
  */
 function exportarDocx(contexto) {
     contexto = contexto || 'ventas';
-
-    const tableIds = {
-        ventas:    'tabla-ventas-body',
-        almacen:   'tabla-almacen-body',
-        logistica: 'tabla-logistica-body'
-    };
-
-    const headersByCtx = {
-        ventas:    ["Folio", "Cliente / Taller", "Piezas", "Fecha", "Total ($)", "Estatus"],
-        almacen:   ["SKU", "Pieza", "Categoría", "Ubicación", "Stock", "Precio ($)"],
-        logistica: ["Guía / ID", "Destinatario", "Paquetería", "Estado", "Entrega Est."]
-    };
-
-    const colsByCtx = {
-        ventas:    [0, 1, 2, 3, 4, 5],
-        almacen:   [0, 1, 2, 3, 4, 5],
-        logistica: [0, 1, 2, 4, 5]
-    };
-
-    const headers  = headersByCtx[contexto];
-    const colIdxs  = colsByCtx[contexto];
-    const tbody    = document.getElementById(tableIds[contexto]);
-    const filtersText = _getActiveFiltersText(contexto);
-    const fecha    = new Date().toLocaleString();
-
-    // Build HTML table with inline styles for Word compatibility
-    let tableRows = "";
-    if (tbody) {
-        Array.from(tbody.rows).forEach(row => {
-            if (row.style.display !== 'none') {
-                const cells = colIdxs.map(ci => `<td style="border:1px solid #ccc; padding:6px 10px; font-size:11pt;">${(row.cells[ci]?.innerText || "").trim()}</td>`).join('');
-                tableRows += `<tr>${cells}</tr>`;
-            }
-        });
-    }
-
-    const headerRow = headers.map(h => `<th style="background:#1e293b; color:white; border:1px solid #1e293b; padding:8px 10px; font-size:11pt; text-align:left;">${h}</th>`).join('');
-
-    const htmlContent = `
-    <!DOCTYPE html>
-    <html xmlns:o='urn:schemas-microsoft-com:office:office'
-          xmlns:w='urn:schemas-microsoft-com:office:word'
-          xmlns='http://www.w3.org/TR/REC-html40'>
-    <head>
-        <meta charset='utf-8'>
-        <title>MACUIN - Reporte de ${contexto.toUpperCase()}</title>
-        <style>
-            body { font-family: Calibri, Arial, sans-serif; margin: 20mm; }
-            h1   { color: #1e293b; font-size: 16pt; margin-bottom: 4pt; }
-            p    { font-size: 9pt; color: #64748b; margin: 2pt 0; }
-            table { border-collapse: collapse; width: 100%; margin-top: 14pt; }
-        </style>
-    </head>
-    <body>
-        <h1>AUTOPARTES MACUIN &mdash; REPORTE DE ${contexto.toUpperCase()}</h1>
-        <p>Generado: ${fecha}</p>
-        <p>${filtersText}</p>
-        <table>
-            <thead><tr>${headerRow}</tr></thead>
-            <tbody>${tableRows}</tbody>
-        </table>
-        <p style="margin-top:20pt; font-size:8pt; color:#94a3b8;">
-            MACUIN Enterprise &mdash; Documento de Control Interno
-        </p>
-    </body>
-    </html>`;
-
-    const fileName = `MACUIN_${contexto.toUpperCase()}_${new Date().toISOString().split('T')[0]}`;
-
-    // Use html-docx-js if loaded (produces real .docx), else fallback to .doc blob
-    if (typeof htmlDocx !== 'undefined' && htmlDocx.asBlob) {
-        try {
-            const blob = htmlDocx.asBlob(htmlContent);
-            const url  = URL.createObjectURL(blob);
-            const a    = document.createElement('a');
-            a.href     = url;
-            a.download = `${fileName}.docx`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            return;
-        } catch (e) {
-            console.warn("html-docx-js falló, usando fallback .doc:", e);
-        }
-    }
-
-    // Fallback: HTML blob opened by Word as .doc
-    const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `${fileName}.doc`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    window.location.href = "/reportes/docx/" + contexto;
 }
 
 // ================================================================
@@ -2167,8 +2071,17 @@ let usuarioEnEdicion = null;
 
 function renderTablas() {
     renderTablaUsuarios();
-    renderTablaSolicitudes();
-    actualizarListasEmpresas();
+}
+
+function filtrarTablaSuperadmin() {
+    const filter = normalizeStr(document.getElementById("buscador")?.value || "");
+    const tbody = document.getElementById("tabla-body");
+    if (!tbody) return;
+    const rows = tbody.getElementsByTagName("tr");
+
+    for (let row of rows) {
+        row.style.display = normalizeStr(row.textContent).includes(filter) ? "" : "none";
+    }
 }
 
 function renderTablaUsuarios() {
@@ -2183,8 +2096,9 @@ function renderTablaUsuarios() {
         if (usr.estado === 'Activo') usuariosActivosCount++;
 
         let iconoOrigen = "fa-user";
-        if (usr.rol === "Empresa") iconoOrigen = "fa-building";
-        if (usr.rol === "Trabajador") iconoOrigen = "fa-id-badge";
+        if (usr.rol === "Superadmin") iconoOrigen = "fa-crown";
+        else if (usr.rol === "Trabajador") iconoOrigen = "fa-briefcase";
+        else if (usr.rol === "Cliente") iconoOrigen = "fa-shopping-cart";
 
         tbody.innerHTML += `
             <tr>
@@ -2194,9 +2108,12 @@ function renderTablaUsuarios() {
                 <td><strong>${usr.rol}</strong></td>
                 <td><span class="${badgeClass}">${usr.estado}</span></td>
                 <td>
-                    <button style="background:none; border:none; color:#3498db; cursor:pointer; font-size: 1.1rem; margin-right: 15px;" title="Editar" onclick="abrirModalEditar('${usr.id}')"><i class="fas fa-edit"></i></button>
-                    <button style="background:none; border:none; color:${usr.estado === 'Activo' ? '#e74c3c' : '#2ecc71'}; cursor:pointer; font-size: 1.1rem;" title="${usr.estado === 'Activo' ? 'Suspender' : 'Activar'}" onclick="suspenderUsuario(${usr.id_puro})">
+                    <button style="background:none; border:none; color:#3498db; cursor:pointer; font-size: 1.1rem; margin-right: 15px;" title="Editar" onclick="abrirModalEditar('${usr.id_puro}')"><i class="fas fa-edit"></i></button>
+                    <button style="background:none; border:none; color:${usr.estado === 'Activo' ? '#e74c3c' : '#2ecc71'}; cursor:pointer; font-size: 1.1rem; margin-right: 15px;" title="${usr.estado === 'Activo' ? 'Suspender' : 'Activar'}" onclick="suspenderUsuario(${usr.id_puro})">
                         <i class="fas ${usr.estado === 'Activo' ? 'fa-user-slash' : 'fa-user-check'}"></i>
+                    </button>
+                    <button style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size: 1.1rem;" title="Eliminar Permanentemente" onclick="eliminarUsuarioMaster(${usr.id_puro})">
+                        <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
             </tr>
@@ -2288,31 +2205,78 @@ function cerrarMasterModal() {
     document.getElementById('modalAlmacen').style.display = 'none';
 }
 
-function abrirModalEditar(id) {
-    const usuario = usuariosGlobales.find(u => u.id === id);
-    if(usuario) {
-        usuarioEnEdicion = id;
-        document.getElementById('edit-nombre').value = usuario.nombre;
-        document.getElementById('edit-rol').value = usuario.rol;
-        document.getElementById('edit-origen').value = usuario.origen;
-        document.getElementById('modalEditarUsuario').style.display = 'flex';
+async function abrirModalEditar(id) {
+    const modal = document.getElementById('modalEditarUsuario');
+    if (!modal) return;
+    
+    // Limpiar form
+    document.getElementById('formEditarUsuarioMaster').reset();
+    document.getElementById('edit-password').value = "";
+    
+    try {
+        const response = await fetch(`/superadmin/detalle/${id}`);
+        const data = await response.json();
+        
+        if (data.id_usuario) {
+            document.getElementById('edit-id-puro').value = data.id_usuario;
+            document.getElementById('edit-nombre').value = data.nombre;
+            document.getElementById('edit-apellido-paterno').value = data.apellido_paterno;
+            document.getElementById('edit-apellido-materno').value = data.apellido_materno;
+            document.getElementById('edit-correo').value = data.correo;
+            document.getElementById('edit-telefono').value = data.telefono || "";
+            document.getElementById('edit-id-rol').value = data.id_rol;
+            
+            modal.style.display = 'flex';
+        }
+    } catch (e) {
+        alert("Error al cargar datos del usuario.");
     }
 }
 
 function cerrarModalEditar() { 
     document.getElementById('modalEditarUsuario').style.display = 'none'; 
-    usuarioEnEdicion = null; 
 }
 
-function guardarEdicionUsuario() {
-    if(usuarioEnEdicion) {
-        const usuario = usuariosGlobales.find(u => u.id === usuarioEnEdicion);
-        usuario.nombre = document.getElementById('edit-nombre').value;
-        usuario.rol = document.getElementById('edit-rol').value;
-        usuario.origen = document.getElementById('edit-origen').value;
-        
-        cerrarModalEditar();
-        renderTablas();
+// Inicializar edición Superadmin
+document.addEventListener('DOMContentLoaded', () => {
+    const formEdit = document.getElementById('formEditarUsuarioMaster');
+    if (formEdit) {
+        formEdit.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id-puro').value;
+            const formData = new FormData(formEdit);
+            
+            try {
+                const response = await fetch(`/superadmin/editar/${id}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (result.status === "success") {
+                    alert("¡Usuario Actualizado Correctamente en la BD!");
+                    location.reload();
+                } else {
+                    alert("Error: " + result.message);
+                }
+            } catch (err) {
+                alert("Error de conexión al servidor.");
+            }
+        });
+    }
+});
+
+function eliminarUsuarioMaster(id) {
+    if (confirm("¿ESTÁS COMPLETAMENTE SEGURO de eliminar este usuario permanentemente? Esta acción NO se puede deshacer y borrará todo su historial.")) {
+        fetch(`/superadmin/eliminar/${id}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === "success") {
+                    location.reload();
+                } else {
+                    alert("Error al eliminar.");
+                }
+            })
+            .catch(e => alert("Error de red."));
     }
 }
 
@@ -2326,26 +2290,6 @@ function suspenderUsuario(id_puro) {
     }
 }
 
-function abrirModalEmpresa() { document.getElementById('modalEmpresa').style.display = 'flex'; }
-function cerrarModalEmpresa() { document.getElementById('modalEmpresa').style.display = 'none'; }
-
-function aceptarSolicitud(id) {
-    const index = solicitudesEmpresas.findIndex(s => s.id === id);
-    if(index !== -1) {
-        const empresaAceptada = solicitudesEmpresas[index].nombre;
-        empresasActivas.push(empresaAceptada); 
-        solicitudesEmpresas.splice(index, 1); 
-        renderTablas();
-        alert(`¡Empresa aceptada! "${empresaAceptada}" ya aparece en el seleccionador.`);
-    }
-}
-
-function rechazarSolicitud(id) {
-    if(confirm("¿Seguro que deseas rechazar esta solicitud? Se eliminará de la tabla.")) {
-        solicitudesEmpresas = solicitudesEmpresas.filter(s => s.id !== id);
-        renderTablas();
-    }
-}
 
 // ================================================================
 // INICIALIZACIÓN GLOBAL INTELIGENTE (CARGADOR MAESTRO)

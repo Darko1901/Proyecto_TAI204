@@ -54,8 +54,8 @@
                     <a href="{{ route('pedido.detalle', $pedido['id_pedido']) }}" class="btn-logout" style="background:#f1f5f9; color:#475569; border:none; padding:10px 20px; font-weight:700; display:flex; align-items:center; gap:8px;">
                         <i class="fas fa-eye"></i> Detalles
                     </a>
-                    <a href="{{ route('pedido.factura', $pedido['id_pedido']) }}" class="btn-logout" style="background:#fff; color:#b71c1c; border:1px solid #ffcdd2; padding:10px 20px; font-weight:700; display:flex; align-items:center; gap:8px;">
-                        <i class="fas fa-file-invoice-dollar"></i> Descargar Factura
+                    <a href="{{ route('pedido.factura', $pedido['id_pedido']) }}" class="btn-logout" style="background:#b71c1c; color:#ffffff !important; border:none; padding:10px 20px; font-weight:700; display:flex; align-items:center; gap:8px;">
+                        <i class="fas fa-file-invoice-dollar" style="color: #ffffff;"></i> Descargar Factura
                     </a>
                     @if($pedido['id_estado'] == 1)
                         <form action="{{ route('pedido.cancelar', $pedido['id_pedido']) }}" method="POST" style="display:inline; margin-left:auto;">

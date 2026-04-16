@@ -96,6 +96,7 @@
             <a href="/">Inicio</a>
             <a href="{{ route('catalogo') }}">Catálogo</a>
             <a href="#contacto">Contacto</a>
+            <a href="{{ route('carrito') }}" class="nav-item cart-icon"><i class="fas fa-shopping-cart"></i></a>
             @if(session()->has('token'))
                 <a href="{{ route('dashboard') }}" class="btn-auth">Mi Cuenta</a>
             @else

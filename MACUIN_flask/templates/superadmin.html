@@ -140,7 +140,7 @@
         <div class="kpis-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px;">
             <div class="kpi-card-master" style="--kpi-color: #333;">
                 <div>
-                    <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Entidades Activas</h4>
+                    <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Personas bloqueadas</h4>
                     <span id="kpi-empresas" style="font-size: 3rem; font-weight: 900; color: #000;">0</span>
                 </div>
                 <i class="fas fa-city" style="font-size: 3.5rem; color: rgba(0, 0, 0, 0.05);"></i>
@@ -156,9 +156,9 @@
 
         <div class="table-container" style="background: white; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #eee;">
             <div class="table-toolbar" style="padding: 20px; background: #fdfdfd; border-bottom: 2px solid #000; display: flex; justify-content: space-between; align-items: center;">
-                <input type="text" id="buscador" placeholder="🔎 Filtrar base de datos maestra..." onkeyup="filtrarTabla()" style="padding: 12px 20px; border-radius: 8px; border: 1px solid #ddd; width: 300px; font-weight: 600;">
+                <input type="text" id="buscador" placeholder="🔎 Buscar por nombre o ID..." onkeyup="filtrarTablaSuperadmin()" style="padding: 12px 20px; border-radius: 8px; border: 1px solid #ddd; width: 300px; font-weight: 600;">
                 <button class="btn-add-user" onclick="abrirModalUsuariosMaster()" style="background: #000; color: #fff; padding: 12px 25px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.3s;">
-                    <i class="fas fa-plus"></i> ALTA MAESTRA
+                    <i class="fas fa-plus"></i> ALTA
                 </button>
             </div>
             
@@ -168,37 +168,22 @@
                         <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">ID</th>
                         <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">Entidad / Usuario</th>
                         <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">Asignación</th>
-                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">Perfil</th>
-                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">Status</th>
-                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">Comandos</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">PERFIL / ROL</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">STATUS</th>
+                        <th style="padding: 18px; text-align: left; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; font-weight: 900; color: #000;">COMANDOS</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-body"></tbody>
             </table>
         </div>
 
-        <h2 class="section-title" style="margin-top: 40px;"><i class="fas fa-handshake"></i> Solicitudes de Registro (Empresas)</h2>
-        <div class="table-container">
-            <table class="master-table">
-                <thead>
-                    <tr>
-                        <th>ID Solicitud</th>
-                        <th>Razón Social / Taller</th>
-                        <th>Correo de Contacto</th>
-                        <th>Estado</th>
-                        <th>Validación</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-solicitudes-body"></tbody>
-            </table>
-        </div>
 
     </div>
 
     <div class="modal-overlay" id="modalUsuario">
         <div class="modal-content" style="width: 650px; max-width: 95%;">
             <div class="modal-header">
-                <h3 style="margin: 0; color: #2c3e50;"><i class="fas fa-user-plus"></i> Alta de Usuario Maestra</h3>
+                <h3 style="margin: 0; color: #2c3e50;"><i class="fas fa-user-plus"></i> Alta</h3>
                 <button class="btn-close" onclick="cerrarModalUsuariosMaster()">&times;</button>
             </div>
             <form method="POST" action="{{ url_for('views.nuevo_usuario') }}" style="padding: 20px;">
@@ -239,9 +224,9 @@
                 <div style="margin-bottom: 25px;">
                     <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Asignación de Rol de Sistema</label>
                     <select name="rol" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff;">
-                        <option value="2">Cliente Interno / Trabajador Operativo</option>
-                        <option value="3">Cliente Externo / Empresa (B2B)</option>
-                        <option value="4">Personal Administrativo / Ventas</option>
+                        <option value="5">Cliente</option>
+                        <option value="2">Personal Interno</option>
+                        <option value="1">Superadmin</option>
                     </select>
                 </div>
                 
@@ -253,60 +238,57 @@
     </div>
 
     <div class="modal-overlay" id="modalEditarUsuario">
-        <div class="modal-content">
+        <div class="modal-content" style="width: 650px; max-width: 95%;">
             <div class="modal-header">
                 <h3 style="margin: 0; color: #1e293b;"><i class="fas fa-edit"></i> Editar Usuario</h3>
                 <button class="btn-close" onclick="cerrarModalEditar()">&times;</button>
             </div>
-            <div style="padding: 20px;">
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Nombre Completo</label>
-                    <input type="text" id="edit-nombre" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            <form id="formEditarUsuarioMaster" style="padding: 20px;">
+                <input type="hidden" id="edit-id-puro">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Nombre(s)</label>
+                        <input type="text" id="edit-nombre" name="nombre" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Apellido Paterno</label>
+                        <input type="text" id="edit-apellido-paterno" name="apellido_paterno" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Apellido Materno</label>
+                        <input type="text" id="edit-apellido-materno" name="apellido_materno" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Número de Teléfono</label>
+                        <input type="tel" id="edit-telefono" name="telefono" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
                 </div>
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Tipo de Perfil (Rol)</label>
-                    <select id="edit-rol" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="Cliente">Cliente (Comprador)</option>
-                        <option value="Trabajador">Trabajador Interno</option>
-                        <option value="Empresa">Empresa / Taller B2B</option>
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Correo Electrónico</label>
+                    <input type="email" id="edit-correo" name="correo" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Cambiar Contraseña (opcional)</label>
+                    <input type="password" id="edit-password" name="password" placeholder="Solo si deseas cambiarla" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 700;">Rol de Sistema</label>
+                    <select id="edit-id-rol" name="rol" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff;">
+                        <option value="5">Cliente</option>
+                        <option value="2">Personal Interno</option>
+                        <option value="1">Superadmin</option>
                     </select>
                 </div>
-                <div style="margin-bottom: 25px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Origen / Asignación</label>
-                    <select id="edit-origen" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></select>
-                </div>
-                <button onclick="guardarEdicionUsuario()" style="width: 100%; padding: 12px; background: #1e293b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; transition: background 0.2s;">
-                    <i class="fas fa-check"></i> Aplicar Cambios
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="modalEmpresa">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 style="margin: 0; color: #1e293b;"><i class="fas fa-building"></i> Registro de Nueva Empresa</h3>
-                <button class="btn-close" onclick="cerrarModalEmpresa()">&times;</button>
-            </div>
-            <form method="POST" action="{{ url_for('views.nueva_empresa') }}" style="padding: 20px;">
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Razón Social o Taller</label>
-                    <input type="text" name="nombre" required placeholder="Ej. Autopartes del Centro" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Correo de Contacto</label>
-                    <input type="email" name="correo" required placeholder="contacto@empresa.com" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-                <div style="margin-bottom: 25px;">
-                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600;">Contraseña de Acceso</label>
-                    <input type="password" name="password" required placeholder="********" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-                <button type="submit" style="width: 100%; padding: 12px; background: #e53935; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; transition: background 0.2s;">
-                    <i class="fas fa-paper-plane"></i> Finalizar y Dar de Alta
+                
+                <button type="submit" style="width: 100%; padding: 15px; background: #1e293b; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;">
+                    <i class="fas fa-save" style="margin-right: 10px;"></i> Guardar Cambios en la BD
                 </button>
             </form>
         </div>
     </div>
+
 
     <script>
         window.usuariosGlobales = {{ usuariosGlobales|tojson|safe if usuariosGlobales else 'null' }};

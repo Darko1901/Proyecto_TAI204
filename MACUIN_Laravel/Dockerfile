@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     zip \
     unzip \
-    && docker-php-ext-install pdo_mysql
+    libpq-dev \
+    && docker-php-ext-install pdo_pgsql pdo_mysql
 
 # Instalamos composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -15,7 +16,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Configuramos el directorio de trabajo
 WORKDIR /app
 
-# Copiamos los composer
+# Copiamos los archivos de composer primero para aprovechar el cache
 COPY composer.json composer.lock ./
 
 # Instalamos las dependencias de Laravel
@@ -24,11 +25,12 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 # Copiamos el resto del código
 COPY . .
 
-# Configurar permisos
-RUN chmod -R 775 storage bootstrap/cache
+# Asegurar que storage y bootstrap/cache existen y tienen permisos
+RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
 # Exponemos el puerto 8000
 EXPOSE 8000
 
-#Comando para ejecutar el servidor de Laravel
+# Comando para ejecutar el servidor de Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
